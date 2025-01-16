@@ -83,7 +83,7 @@ const createTenantIntoDB = async (payload: any) => {
         throw new AppError(httpStatus.EXPECTATION_FAILED, "This unit already booked");
     }
     if(!isPropertiesExists){
-        throw new AppError(httpStatus.EXPECTATION_FAILED, "Properties not founddd");
+        throw new AppError(httpStatus.EXPECTATION_FAILED, "Properties not found");
     }
     const { name, email, role, password : pass , isDeleted, ...allIds } = payload;   
     const password = await bcrypt.hash(pass, 8 );
