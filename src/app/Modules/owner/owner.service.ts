@@ -57,19 +57,26 @@ const createUnitIntoDB = async (payload : TUnits )=>{
     if(!isUserExists){
         throw new AppError(httpStatus.NOT_FOUND, "User not found")
     }
+
+    const numberOfTotalUnits = typeof isUserExists.numberOfTotalUnits === 'string' ? parseFloat(isUserExists.numberOfTotalUnits) : isUserExists.numberOfTotalUnits;
+    const totalAmount = typeof isUserExists.totalAmount === 'string' ? parseFloat(isUserExists.totalAmount) : isUserExists.totalAmount;
+    const rent = typeof payload?.rent === 'string' ? parseFloat(payload.rent) : payload.rent;
+    const totalRent = typeof isExists.totalRent === 'string' ? parseFloat(isExists.totalRent) : isExists.totalRent;
+
+
     if(isUserExists){
                 await User.findByIdAndUpdate(
                      {_id : payload.ownerId},
                      {$set : { 
-                        numberOfTotalUnits : (parseInt(isUserExists.numberOfTotalUnits) || 0 ) + 1,
-                        totalAmount : ( parseInt(isUserExists.totalAmount) || 0) + parseInt(payload?.rent)
+                        numberOfTotalUnits : (numberOfTotalUnits || 0 ) + 1,
+                        totalAmount : ( totalAmount || 0) + rent
                     }}
                     )
             }
 
                 await Properties.findByIdAndUpdate({_id : payload.propertyId} , {
                     $set : {
-                        totalRent : parseInt(isExists.totalRent.toString()) + parseInt(payload?.rent.toString()),
+                        totalRent : totalRent + rent,
                         numberOfUnits : isExists.numberOfUnits + 1,
                          }
                 }  )
@@ -121,23 +128,33 @@ const createTenantIntoDB = async (payload: any) => {
 
             
     // =============== >>>  totalAmount update in User module
+    
     const userDataMain = await User.findById({ _id: payload.ownerId });
-    if (userDataMain && unitResult ) {
+    const totalRentAmount = typeof userDataMain?.totalRentAmount === 'string' ? parseFloat(userDataMain?.totalRentAmount) : userDataMain?.totalRentAmount;
+    const rent = typeof unitResult?.rent === 'string' ? parseFloat(unitResult?.rent) : unitResult?.rent;
+    const bookedUnitNumber = typeof userDataMain?.bookedUnitNumber === 'string' ? parseFloat(userDataMain?.bookedUnitNumber) : userDataMain?.bookedUnitNumber;
+    
+    if (userDataMain && unitResult && rent ) {
         await User.findByIdAndUpdate(
             { _id: payload.ownerId },
             {
                 $set: {
-                    totalRentAmount : ( parseInt(userDataMain?.totalRentAmount) || 0 ) + parseInt(unitResult?.rent) ,
-                    bookedUnitNumber : ( parseInt(userDataMain?.bookedUnitNumber) || 0 ) + 1
+                    totalRentAmount : ( totalRentAmount || 0 ) + rent ,
+                    bookedUnitNumber : ( bookedUnitNumber || 0 ) + 1
                 },
             }
         );
     }
-    if(unitResult){
+
+    const totalBookedRent = typeof isPropertiesExists.totalBookedRent === 'string' ? parseFloat(isPropertiesExists.totalBookedRent) :isPropertiesExists.totalBookedRent;
+    const numberOfBookedUnits = typeof isPropertiesExists.numberOfBookedUnits === 'string' ? parseFloat(isPropertiesExists.numberOfBookedUnits) :isPropertiesExists.numberOfBookedUnits;
+    
+
+    if(unitResult && rent ){
         await Properties.findByIdAndUpdate({_id : payload.propertyId} , {
             $set : {
-                 totalBookedRent : parseInt(isPropertiesExists.totalBookedRent) + parseInt(unitResult?.rent),
-                 numberOfBookedUnits : parseInt(isPropertiesExists.numberOfBookedUnits) + 1,
+                 totalBookedRent : totalBookedRent + rent,
+                 numberOfBookedUnits : numberOfBookedUnits + 1,
                  }
         }  )
     }
