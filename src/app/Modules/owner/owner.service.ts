@@ -7,6 +7,22 @@ import bcrypt from 'bcrypt';
 import { AppError } from "../../errors/AppErrors";
 import httpStatus from "http-status";
 
+// const createPropertiesDB = async (payload: TProperties) => {
+//     const isExists = await Properties.findOne({ houseNumber : payload.houseNumber})
+//     if(isExists){
+//         throw new AppError(httpStatus.ALREADY_REPORTED, "Property already exixts")
+//     }    
+//     const result = await Properties.create(payload);
+//     const userData  = await User.findById({_id : payload.ownerId})
+
+//     if(userData){
+//         await User.findByIdAndUpdate(
+//              {_id : payload.ownerId},
+//              {numberOfProperty : userData?.numberOfProperty + 1, numberOfTotalUnits : userData.numberOfTotalUnits +  payload.numberOfUnits }
+//              )
+//     }
+//     return result;
+// };
 
 const createPropertiesDB = async (payload: TProperties) => {
     const result = await Properties.create(payload);

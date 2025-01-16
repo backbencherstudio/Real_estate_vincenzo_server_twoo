@@ -21,7 +21,7 @@ router.get(
 
 router.get(
     '/getSingleTenantDetailse/:id',
-    Auth(User_Role.admin),
+    Auth(User_Role.admin, User_Role.owner),
     AdminController.getSingleTenantDetailse,
 );
 

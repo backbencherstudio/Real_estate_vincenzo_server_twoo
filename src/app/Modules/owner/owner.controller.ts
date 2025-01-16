@@ -1,20 +1,97 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable no-undef */
 import httpStatus from "http-status";
 import { catchAsync } from "../../utils/catchAsync";
 import sendResponse from "../../utils/sendResponse";
 import { OwnerServices } from "./owner.service";
 
+// const createProperties = catchAsync(async (req, res) => {
+//     const { propertyData } = req.body;
+
+//     console.log(10, propertyData);
+    
+//     const result = await OwnerServices.createPropertiesDB(propertyData);  
+//     sendResponse(res, {
+//       statusCode: httpStatus.OK,
+//       success: true,
+//       message: 'Property create successfully',
+//       data: result,  
+//     });
+//   });
+
+
+//================================= worked 
+// const createProperties = catchAsync(async (req, res) => {
+//   try {
+//     const propertyData = {
+//       ...req.body,
+//       availableParking: req.body.availableParking === 'true', 
+//       propertyLocation: JSON.parse(req.body.propertyLocation), 
+//       propertyImages: req.files.map((file) => `/uploads/${file.filename}`), 
+//     };
+//     const result = await OwnerServices.createPropertiesDB(propertyData);
+//     sendResponse(res, {
+//       statusCode: httpStatus.OK,
+//       success: true,
+//       message: 'Property created successfully',
+//       data: result,
+//     });
+//   } catch (error) {
+//     console.error("Error:", error);
+//     res.status(500).json({ message: 'Internal server error' });
+//   }
+// });
 
 const createProperties = catchAsync(async (req, res) => {
-    const { propertyData } = req.body;     
-    const result = await OwnerServices.createPropertiesDB(propertyData);  
+  try {
+    if (!req.files || !Array.isArray(req.files)) {
+      return res.status(400).json({ message: 'No files uploaded or invalid format' });
+    }
+
+    const propertyData = {
+      ...req.body,
+      availableParking: req.body.availableParking === 'true',
+      propertyLocation: JSON.parse(req.body.propertyLocation),
+      propertyImages: req.files.map((file: Express.Multer.File) => `/uploads/${file.filename}`),
+    };
+
+    const result = await OwnerServices.createPropertiesDB(propertyData);
     sendResponse(res, {
       statusCode: httpStatus.OK,
       success: true,
-      message: 'Property create successfully',
-      data: result,  
+      message: 'Property created successfully',
+      data: result,
     });
-  });
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
 
+// const createProperties = catchAsync(async (req: Request & { files?: Express.Multer.File[] }, res: Response) => {
+//   try {
+//     const propertyData = {
+//       ...req.body,
+//       availableParking: req.body.availableParking === 'true',
+//       propertyLocation: JSON.parse(req.body.propertyLocation),
+//       propertyImages: Array.isArray(req.files)
+//         ? req.files.map((file: Express.Multer.File) => `/uploads/${file.filename}`)
+//         : [],
+//     };
+
+//     const result = await OwnerServices.createPropertiesDB(propertyData);
+
+//     sendResponse(res, {
+//       statusCode: httpStatus.OK,
+//       success: true,
+//       message: 'Property created successfully',
+//       data: result,
+//     });
+//   } catch (error) {
+//     console.error("Error:", error);
+//     res.status(500).json({ message: 'Internal server error' });
+//   }
+// });
 
 const getSingleOwnerAllProperties = catchAsync(async (req, res) => {
     const { id } = req.params;    
@@ -27,10 +104,8 @@ const getSingleOwnerAllProperties = catchAsync(async (req, res) => {
     });
   });
   
-const createUnits = catchAsync(async (req, res) => {
-    const { unitData } = req.body;
-    
-    const result = await OwnerServices.createUnitIntoDB(unitData);  
+const createUnits = catchAsync(async (req, res) => {    
+    const result = await OwnerServices.createUnitIntoDB(req.body);  
     sendResponse(res, {
       statusCode: httpStatus.OK,
       success: true,
@@ -62,8 +137,7 @@ const getSingleUnit = catchAsync(async (req, res) => {
   });
   
 const createTenant = catchAsync(async (req, res) => {
-    const { tenantData } = req.body;     
-    const result = await OwnerServices.createTenantIntoDB(tenantData);  
+    const result = await OwnerServices.createTenantIntoDB(req?.body);  
     sendResponse(res, {
       statusCode: httpStatus.OK,
       success: true,

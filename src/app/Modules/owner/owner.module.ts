@@ -63,7 +63,6 @@ const propertiesSchema = new Schema<TProperties>(
     },
     houseNumber : {
       type : String,
-      unique : true,
       required : [true, "House Number is required"]
     },
     totalRent : {

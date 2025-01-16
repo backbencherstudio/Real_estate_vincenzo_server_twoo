@@ -2,17 +2,17 @@ import express from 'express';
 import { Auth } from '../../middleware/auth';
 import { propertyController } from './owner.controller';
 import { User_Role } from '../User/user.constent';
+import { upload } from '../../middleware/upload';
 
 const router = express.Router();
-
 
 router.post(
     '/create-properties',
     Auth(User_Role.owner),
-    propertyController.createProperties,
-);
-
-
+    upload.array('propertyImages', 10), 
+    propertyController.createProperties
+  );
+  
 router.get(
     '/:id',
     Auth(User_Role.owner),
