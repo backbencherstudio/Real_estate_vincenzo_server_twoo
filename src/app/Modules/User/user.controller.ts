@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable no-undef */
 import sendResponse from '../../utils/sendResponse';
 import httpStatus from 'http-status';
 import { catchAsync } from '../../utils/catchAsync';
@@ -94,8 +96,17 @@ const loginUser = catchAsync(async (req, res) => {
   });
 });
 
-const updateUserData = catchAsync(async (req, res) => {
-  const result = await UserServices.updateUserDataIntoDB(req.params.userId , req?.body.updateData);
+const updateUserData = catchAsync(async (req, res) => {  
+
+  const files = req.files as Express.Multer.File[];
+  const profileImage = files?.map((file) => `/uploads/${file.filename}`);
+
+  const profileData = {
+    ...req.body,
+    profileImage : profileImage[0]
+  };
+  
+  const result = await UserServices.updateUserDataIntoDB(profileData);
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
@@ -103,6 +114,7 @@ const updateUserData = catchAsync(async (req, res) => {
     data: result,
   });
 });
+
 
 const getAllUser = catchAsync(async (req, res) => {
   const result = await UserServices.getAllUserFromDB(req?.query);
@@ -167,7 +179,7 @@ const refreshToken = catchAsync(async (req, res) => {
   });
 });
 
-// right now this api not work
+
 const userDelete = catchAsync(async (req, res) => {
   const { email } = req.body;
   const result = await UserServices.userDeleteIntoDB(email);
@@ -179,7 +191,7 @@ const userDelete = catchAsync(async (req, res) => {
   });
 });
 
-// right now this api not work
+
 const sendEmailToUser = catchAsync(async (req, res) => {
   const result = await UserServices.sendEmailToAllUser(req.body);
  

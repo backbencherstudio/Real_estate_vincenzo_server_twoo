@@ -2,6 +2,7 @@ import express from 'express';
 import { userController } from './user.controller';
 import { Auth } from '../../middleware/auth';
 import { User_Role } from './user.constent';
+import { upload } from '../../middleware/upload';
 
 const router = express.Router();
 
@@ -13,7 +14,7 @@ router.get(
 
 router.get(
   '/',
-  Auth(),
+  // Auth(),
   userController.getSingleUser,
 );
 
@@ -33,7 +34,8 @@ router.post(
 );
 
 router.patch(
-  '/:userId',
+  '/',
+  upload.array('profileImage', 1), 
   userController.updateUserData,
 );
 

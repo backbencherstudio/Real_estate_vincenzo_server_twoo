@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 /* eslint-disable prefer-const */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable no-unused-vars */
@@ -13,6 +14,8 @@ import { createToken, verifyToken } from "./user.utils";
 import { sendEmailToUser } from "../../utils/sendEmailToUser";
 import { filteredObject } from "../../utils/updateDataUtils";
 import QueryBuilder from "../../builder/QueryBuilder";
+import path from "path";
+import fs from "fs"
 
 
 const createUserIntoDB = async (payload: TUser) => {
@@ -34,6 +37,7 @@ const createUserIntoDB = async (payload: TUser) => {
   };
   
 };
+
 
 const verifyOTPintoDB = async (otp : string, sessionOtpData : {otp : string, password : string, createdAt : number} ) => {
   const { otp : sessionOTP, password, createdAt,  ...verifyData} = sessionOtpData;
@@ -84,23 +88,67 @@ const loginUserIntoDB = async ( paylod: TLoginUser) => {
   };
 };
 
-const updateUserDataIntoDB = async (id: string, payload: any) => {
-  
-  const result = await User.findByIdAndUpdate(
-    id,
-    {
-      $set: filteredObject(payload), 
-    },
-    {
-      new: true, 
-      runValidators: true,
-    }
-  );
-  return result;
+const getAbsoluteFilePath = (dbPath: string) => {
+  try {
+    const relativePath = dbPath
+      .replace(/^\//, '')
+      .replace(/^uploads\//, '');
+    const uploadsDir = path.join(__dirname, '..', '..', '..','..', '/uploads');    
+    return path.join(uploadsDir, relativePath);
+  } catch (error) {
+    console.error('Error constructing file path:', error);
+    return null;
+  }
 };
 
+
+const deleteFile = (filePath: string) => {
+  try {
+    if (!filePath) {
+      console.error('Error: File path is undefined or null.');
+      return false;
+    }
+    const normalizedPath = path.normalize(filePath);
+    if (fs.existsSync(normalizedPath)) {
+      fs.unlinkSync(normalizedPath);
+      return true;
+    } else {
+      console.warn(`File not: ${normalizedPath}`);
+      return false;
+    }
+  } catch (error) {
+    console.error(`Error deleting file: ${error}`);
+    return false;
+  }
+};
+
+
+const updateUserDataIntoDB = async (payload: any) => {  
+  try {
+    const userData = await User.findById(payload.userId).select("profileImage");
+
+    if (userData?.profileImage) {
+      const absoluteFilePath = getAbsoluteFilePath(userData.profileImage);
+
+      if (absoluteFilePath) {
+        deleteFile(absoluteFilePath);
+      }
+    }
+    const result = await User.findByIdAndUpdate(
+      payload.userId,
+      { $set: filteredObject(payload) },
+      { new: true, runValidators: true }
+    );
+
+    return result;
+  } catch (error) {
+    console.error(`Error updating user data:`, error);
+    throw new Error('Failed to update user data');
+  }
+};
+
+
 const getAllUserFromDB = async (query : Record< string, unknown >) => {
-  // const userQuery = new QueryBuilder(User.find({role : query.role}), query)
   const userQuery = new QueryBuilder(User.find(), query)
   .filter()
   const result = await userQuery.modelQuery;

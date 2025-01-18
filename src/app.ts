@@ -9,6 +9,8 @@ import globalErrorHandler from './app/middleware/globalErrorHandlear';
   
 const app: Application = express();
 
+app.use('/uploads', express.static('uploads'));  
+
 app.use(
   session({
     secret: "changeit",                
