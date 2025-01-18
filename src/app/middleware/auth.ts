@@ -21,6 +21,7 @@ export const Auth = (...requiredRole : TUserRole[]) => {
     } catch (err) {
       throw new AppError(httpStatus.UNAUTHORIZED, 'Unauthorized!');
     }
+    
     const { email, role } = decoded;
     const userData = await User.findOne({email});
 
