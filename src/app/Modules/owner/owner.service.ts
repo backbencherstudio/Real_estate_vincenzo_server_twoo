@@ -9,6 +9,7 @@ import httpStatus from "http-status";
 
 
 const createPropertiesDB = async (payload: TProperties) => {
+  
     const result = await Properties.create(payload);
     const userData = await User.findById({ _id: payload.ownerId });
     if (userData) {
@@ -86,8 +87,6 @@ const createUnitIntoDB = async (payload: TUnits) => {
   };
   
   
-
-
 const getSinglePropertiesAllUnitsFromDB = async(id : string ) =>{
     const property = await Properties.findById({_id : id});
     const allUnits = await Unit.find({propertyId : id });
@@ -176,8 +175,6 @@ const createTenantIntoDB = async (payload: any) => {
         throw new Error(error.message || "Error occurred during transaction");
     }
 };
-
-
 
 
 const getAllTenantsIntoDB = async (id : string) =>{   
