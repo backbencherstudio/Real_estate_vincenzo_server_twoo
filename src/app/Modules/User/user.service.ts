@@ -123,20 +123,46 @@ const deleteFile = (filePath: string) => {
 };
 
 
-const updateUserDataIntoDB = async (payload: any) => {  
+// const updateUserDataIntoDB = async (payload: Partial<TUser> ) => {
+  
+//   try {
+//     const userData = await User.findById(payload.userId).select("profileImage");
+
+//     if (userData?.profileImage) {
+//       const absoluteFilePath = getAbsoluteFilePath(userData.profileImage);
+
+//       if (absoluteFilePath) {
+//         deleteFile(absoluteFilePath);
+//       }
+//     }
+//     const result = await User.findByIdAndUpdate(
+//       payload.userId,
+//       { $set: filteredObject(payload) },
+//       { new: true, runValidators: true }
+//     );
+
+//     return result;
+//   } catch (error) {
+//     console.error(`Error updating user data:`, error);
+//     throw new Error('Failed to update user data');
+//   }
+// };
+
+const updateUserDataIntoDB = async (payload: Partial<TUser>) => {
   try {
     const userData = await User.findById(payload.userId).select("profileImage");
 
     if (userData?.profileImage) {
       const absoluteFilePath = getAbsoluteFilePath(userData.profileImage);
-
       if (absoluteFilePath) {
         deleteFile(absoluteFilePath);
       }
     }
+    const updatedPayload = filteredObject(payload);
+
     const result = await User.findByIdAndUpdate(
       payload.userId,
-      { $set: filteredObject(payload) },
+      { $set: updatedPayload },
       { new: true, runValidators: true }
     );
 
@@ -146,6 +172,7 @@ const updateUserDataIntoDB = async (payload: any) => {
     throw new Error('Failed to update user data');
   }
 };
+
 
 
 const getAllUserFromDB = async (query : Record< string, unknown >) => {

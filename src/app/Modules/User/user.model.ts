@@ -39,7 +39,7 @@ const userSchema = new Schema<TUser>(
   {
     name: {
       type: String,
-      required: [true, "Name is required"],
+      // required: [true, "Name is required"],
     },
     profileImage: {
       type: String,

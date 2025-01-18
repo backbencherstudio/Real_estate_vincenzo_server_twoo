@@ -20,6 +20,7 @@ export type TPermanentAddress = {
 }
 
 export interface TUser {
+  userId : string;
   personalInfo : TPersonalInfo;
   permanentAddress : TPermanentAddress;
   profileImage:string;
@@ -34,6 +35,7 @@ export interface TUser {
   totalRentAmount : number;
   bookedUnitNumber : number
 }
+
 
 // ======================================>>>>>>>> Login Interface
 export type TLoginUser = {
