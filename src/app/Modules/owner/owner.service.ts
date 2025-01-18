@@ -7,22 +7,6 @@ import bcrypt from 'bcrypt';
 import { AppError } from "../../errors/AppErrors";
 import httpStatus from "http-status";
 
-// const createPropertiesDB = async (payload: TProperties) => {
-//     const isExists = await Properties.findOne({ houseNumber : payload.houseNumber})
-//     if(isExists){
-//         throw new AppError(httpStatus.ALREADY_REPORTED, "Property already exixts")
-//     }    
-//     const result = await Properties.create(payload);
-//     const userData  = await User.findById({_id : payload.ownerId})
-
-//     if(userData){
-//         await User.findByIdAndUpdate(
-//              {_id : payload.ownerId},
-//              {numberOfProperty : userData?.numberOfProperty + 1, numberOfTotalUnits : userData.numberOfTotalUnits +  payload.numberOfUnits }
-//              )
-//     }
-//     return result;
-// };
 
 const createPropertiesDB = async (payload: TProperties) => {
     const result = await Properties.create(payload);
@@ -46,43 +30,6 @@ const getSingleOwnerAllPropertiesFromDB = async(id : string ) =>{
     return result    
 }
 
-
-// const createUnitIntoDB = async (payload : TUnits )=>{
-    
-//     const isExists = await Properties.findById(payload.propertyId);
-//     const isUserExists = await User.findById(payload.ownerId);
-//     if(!isExists){
-//         throw new AppError(httpStatus.NOT_FOUND, "Property not found")
-//     }
-//     if(!isUserExists){
-//         throw new AppError(httpStatus.NOT_FOUND, "User not found")
-//     }
-
-//     const numberOfTotalUnits = typeof isUserExists.numberOfTotalUnits === 'string' ? parseFloat(isUserExists.numberOfTotalUnits) : isUserExists.numberOfTotalUnits;
-//     const totalAmount = typeof isUserExists.totalAmount === 'string' ? parseFloat(isUserExists.totalAmount) : isUserExists.totalAmount;
-//     const rent = typeof payload?.rent === 'string' ? parseFloat(payload.rent) : payload.rent;
-//     const totalRent = typeof isExists.totalRent === 'string' ? parseFloat(isExists.totalRent) : isExists.totalRent;
-
-
-//     if(isUserExists){
-//                 await User.findByIdAndUpdate(
-//                      {_id : payload.ownerId},
-//                      {$set : { 
-//                         numberOfTotalUnits : (numberOfTotalUnits || 0 ) + 1,
-//                         totalAmount : ( totalAmount || 0) + rent
-//                     }}
-//                     )
-//             }
-
-//                 await Properties.findByIdAndUpdate({_id : payload.propertyId} , {
-//                     $set : {
-//                         totalRent : totalRent + rent,
-//                         numberOfUnits : isExists.numberOfUnits + 1,
-//                          }
-//                 }  )
-//      const result = await Unit.create(payload)
-//      return result;
-// }
 
 const createUnitIntoDB = async (payload: TUnits) => {
     const session = await mongoose.startSession();
@@ -165,7 +112,7 @@ const createTenantIntoDB = async (payload: any) => {
         throw new AppError(httpStatus.EXPECTATION_FAILED, "This unit already booked");
     }
     if(!isPropertiesExists){
-        throw new AppError(httpStatus.EXPECTATION_FAILED, "Properties not found");
+        throw new AppError(httpStatus.EXPECTATION_FAILED, "Properties not founddd");
     }
     const { name, email, role, password : pass , isDeleted, ...allIds } = payload; 
 
@@ -230,82 +177,6 @@ const createTenantIntoDB = async (payload: any) => {
     }
 };
 
-
-
-
-
-
-// const createTenantIntoDB = async (payload: any) => {
-//     const session = await mongoose.startSession();
-
-//     try {
-//         session.startTransaction();
-
-//         // Fetch Unit and Property details
-//         const [unit, property] = await Promise.all([
-//             Unit.findById(payload?.unitId).select("booked rent").session(session),
-//             Properties.findById(payload?.propertyId).session(session),
-//         ]);
-
-//         if (!property) throw new AppError(httpStatus.EXPECTATION_FAILED, "Property not found");
-//         if (unit?.booked) throw new AppError(httpStatus.EXPECTATION_FAILED, "This unit is already booked");
-
-//         // Hash password and prepare user data
-//         const password = await bcrypt.hash(payload.password, 8);
-//         const { name, email, role, isDeleted, ...allIds } = payload;
-//         const userData = { email, name, role, password, isDeleted };
-
-//         // Create user and tenant in one transaction
-//         const [user] = await User.create([userData], { session });
-//         const tenantData = { userId: user._id, ...allIds };
-//         const [tenant] = await Tenant.create([tenantData], { session });
-
-//         // Update Unit as booked
-//         await Unit.findByIdAndUpdate(payload.unitId, { booked: true }, { session });
-
-//         // Update owner's total rent and booked units
-//         const owner = await User.findById(payload.ownerId).session(session);
-//         if (owner && unit?.rent) {
-//             const totalRentAmount = (parseFloat(owner.totalRentAmount) || 0) + unit.rent;
-//             const bookedUnitNumber = (parseFloat(owner.bookedUnitNumber) || 0) + 1;
-//             await User.findByIdAndUpdate(
-//                 payload.ownerId,
-//                 { $set: { totalRentAmount, bookedUnitNumber } },
-//                 { session }
-//             );
-//         }
-
-//         // Update Property's booked rent and units
-//         if (unit?.rent) {
-//             const totalBookedRent = (parseFloat(property.totalBookedRent) || 0) + unit.rent;
-//             const numberOfBookedUnits = (parseFloat(property.numberOfBookedUnits) || 0) + 1;
-//             await Properties.findByIdAndUpdate(
-//                 payload.propertyId,
-//                 { $set: { totalBookedRent, numberOfBookedUnits } },
-//                 { session }
-//             );
-//         }
-
-//         // Populate tenant details for the response
-//         const populatedTenant = await Tenant.findById(tenant._id)
-//             .populate([
-//                 { path: "ownerId" },
-//                 { path: "propertyId" },
-//                 { path: "unitId" },
-//                 { path: "userId" },
-//             ])
-//             .session(session);
-
-//         await session.commitTransaction();
-//         return populatedTenant;
-
-//     } catch (error: any) {
-//         await session.abortTransaction();
-//         throw new Error(error.message || "Error occurred during transaction");
-//     } finally {
-//         session.endSession();
-//     }
-// };
 
 
 

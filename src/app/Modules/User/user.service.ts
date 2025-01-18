@@ -113,7 +113,7 @@ const deleteFile = (filePath: string) => {
       fs.unlinkSync(normalizedPath);
       return true;
     } else {
-      console.warn(`File not: ${normalizedPath}`);
+      console.warn(`File not found: ${normalizedPath}`);
       return false;
     }
   } catch (error) {
