@@ -23,7 +23,7 @@ const propertyLocationSchema = new Schema({
     type: Number,
     required: [true, "Zip code is required"],
   },
-}, {versionKey: false,});
+}, {versionKey: false});
 
 
 const propertiesSchema = new Schema<TProperties>(
