@@ -118,6 +118,18 @@ const getEachOwnerAllMaintenanceRequestData = catchAsync(async (req, res) => {
       data: result,  
     });
   });
+
+  
+const getSingleMaintenanceRequestData = catchAsync(async (req, res) => {
+    const { maintainId } = req.params;     
+    const result = await OwnerServices.getSingleMaintenanceRequestDataFromDB(maintainId);  
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'get single Maintenance Data successfully',
+      data: result,  
+    });
+  });
   
 
  export const propertyController  = {
@@ -129,5 +141,6 @@ const getEachOwnerAllMaintenanceRequestData = catchAsync(async (req, res) => {
     createTenant,
     getAllTenants,
     getSingleTenant,
-    getEachOwnerAllMaintenanceRequestData
+    getEachOwnerAllMaintenanceRequestData,
+    getSingleMaintenanceRequestData
  }

@@ -192,6 +192,11 @@ const getEachOwnerAllMaintenanceRequestFromDB = async (id : string)=>{
   return result
 }
 
+const getSingleMaintenanceRequestDataFromDB = async (id : string)=>{
+  const result = await Maintenance.findById({_id : id})
+  return result
+}
+
 export const OwnerServices = {
     createPropertiesDB ,
     getSingleOwnerAllPropertiesFromDB,
@@ -201,5 +206,6 @@ export const OwnerServices = {
     createTenantIntoDB,
     getAllTenantsIntoDB,
     getSingleTenantFormDB,
-    getEachOwnerAllMaintenanceRequestFromDB
+    getEachOwnerAllMaintenanceRequestFromDB,
+    getSingleMaintenanceRequestDataFromDB
   };
