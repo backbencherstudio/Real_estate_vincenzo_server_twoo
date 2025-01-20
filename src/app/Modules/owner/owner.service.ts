@@ -193,7 +193,7 @@ const getEachOwnerAllMaintenanceRequestFromDB = async (id : string)=>{
 }
 
 const getSingleMaintenanceRequestDataFromDB = async (id : string)=>{
-  const result = await Maintenance.findById({_id : id})
+  const result = await Maintenance.findById({_id : id}).populate("userId")
   return result
 }
 
