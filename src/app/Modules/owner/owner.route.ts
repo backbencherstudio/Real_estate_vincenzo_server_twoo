@@ -68,6 +68,12 @@ router.get(
     propertyController.getSingleMaintenanceRequestData,
 );
 
+router.patch(
+    '/singleMaintenanceData/:maintainId',
+    Auth(User_Role.owner),
+    propertyController.maintenanceStatusChenge,
+);
+
 
 
 export const OwnerRouter = router;

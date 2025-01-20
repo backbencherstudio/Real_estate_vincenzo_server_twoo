@@ -197,6 +197,12 @@ const getSingleMaintenanceRequestDataFromDB = async (id : string)=>{
   return result
 }
 
+const maintenanceStatusChengeIntoDB = async(id :string, status : string)=>{
+  const result = await Maintenance.findByIdAndUpdate({_id : id}, {status : status}, {new : true, runValidators : true} )
+  return result
+}
+
+
 export const OwnerServices = {
     createPropertiesDB ,
     getSingleOwnerAllPropertiesFromDB,
@@ -207,5 +213,6 @@ export const OwnerServices = {
     getAllTenantsIntoDB,
     getSingleTenantFormDB,
     getEachOwnerAllMaintenanceRequestFromDB,
-    getSingleMaintenanceRequestDataFromDB
+    getSingleMaintenanceRequestDataFromDB,
+    maintenanceStatusChengeIntoDB
   };
