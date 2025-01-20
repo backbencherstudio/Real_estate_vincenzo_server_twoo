@@ -26,12 +26,10 @@ const createPropertiesDB = async (payload: TProperties) => {
     return result;
 };
 
-
 const getSingleOwnerAllPropertiesFromDB = async(id : string ) =>{
     const result = await Properties.find({ownerId : id }).sort({createdAt : -1})    
     return result    
 }
-
 
 const createUnitIntoDB = async (payload: TUnits) => {
     const session = await mongoose.startSession();
@@ -86,8 +84,7 @@ const createUnitIntoDB = async (payload: TUnits) => {
       session.endSession();
     }
   };
-  
-  
+    
 const getSinglePropertiesAllUnitsFromDB = async(id : string ) =>{
     const property = await Properties.findById({_id : id});
     const allUnits = await Unit.find({propertyId : id });
