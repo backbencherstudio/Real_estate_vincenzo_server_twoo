@@ -56,6 +56,12 @@ router.get(
     propertyController.getSingleTenant,
 );
 
+router.get(
+    '/maintenanceData/:ownerId',
+    Auth(User_Role.owner),
+    propertyController.getEachOwnerAllMaintenanceRequestData,
+);
+
 
 
 export const OwnerRouter = router;

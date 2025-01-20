@@ -6,6 +6,7 @@ import { Properties, Tenant, Unit } from "./owner.module";
 import bcrypt from 'bcrypt'; 
 import { AppError } from "../../errors/AppErrors";
 import httpStatus from "http-status";
+import { Maintenance } from "../maintenance/maintenance.module";
 
 
 const createPropertiesDB = async (payload: TProperties) => {
@@ -176,7 +177,6 @@ const createTenantIntoDB = async (payload: any) => {
     }
 };
 
-
 const getAllTenantsIntoDB = async (id : string) =>{   
     const result = await Tenant.find({ownerId : id}).populate([ {path : "userId"}, {path : "propertyId"}, {path : "unitId"} ]);
     return result
@@ -187,6 +187,11 @@ const getSingleTenantFormDB = async (id : string)=>{
     return result
 }
 
+const getEachOwnerAllMaintenanceRequestFromDB = async (id : string)=>{
+  const result = await Maintenance.find({ownerId : id})
+  return result
+}
+
 export const OwnerServices = {
     createPropertiesDB ,
     getSingleOwnerAllPropertiesFromDB,
@@ -195,5 +200,6 @@ export const OwnerServices = {
     getSingleUnitFormDB,
     createTenantIntoDB,
     getAllTenantsIntoDB,
-    getSingleTenantFormDB
+    getSingleTenantFormDB,
+    getEachOwnerAllMaintenanceRequestFromDB
   };
