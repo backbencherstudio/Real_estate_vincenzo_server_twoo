@@ -12,7 +12,7 @@ doculmentController.createDocument);
 router.get("/:ownerId", Auth(User_Role.owner), doculmentController.getSingleOwnerAllDocuments)
 router.get("/singleDocument/:documentId", Auth(User_Role.owner), doculmentController.getSingleDocument)
 router.get("/singleUserAllDocuments/:userId", Auth(User_Role.tenant, User_Role.owner), doculmentController.getSingleUserAllDocuments)
-router.get("/findSingleTenentDocumentByOwner/:tenantId", Auth(User_Role.tenant, User_Role.owner), doculmentController.findSingleTenentDocumentByOwner)
+router.get("/findSingleTenentDocumentByOwner/:tenantId", Auth(User_Role.tenant, User_Role.owner, User_Role.admin), doculmentController.findSingleTenentDocumentByOwner)
 
 
 export const DocumentRoutes = router
