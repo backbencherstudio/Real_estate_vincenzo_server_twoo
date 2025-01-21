@@ -38,8 +38,14 @@ const getSingleOwnerAllDocumentsFromDB = async (id : string )=>{
     return result
 }
 
+
 const getSingleDocumentFromDB = async (id : string )=>{
     const result = await Document.findById({_id : id});
+    return result
+}
+
+const getSingleUserAllDocumentsFromDB = async (id : string )=>{
+    const result = await Document.find({userId : id});
     return result
 }
 
@@ -47,5 +53,6 @@ const getSingleDocumentFromDB = async (id : string )=>{
 export const DocumentService = {
     createDocumentIntoDB,
     getSingleOwnerAllDocumentsFromDB,
-    getSingleDocumentFromDB
+    getSingleDocumentFromDB,
+    getSingleUserAllDocumentsFromDB
 }

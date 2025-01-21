@@ -11,6 +11,7 @@ doculmentController.createDocument);
 
 router.get("/:ownerId", Auth(User_Role.owner), doculmentController.getSingleOwnerAllDocuments)
 router.get("/singleDocument/:documentId", Auth(User_Role.owner), doculmentController.getSingleDocument)
+router.get("/singleUserAllDocuments/:documentId", Auth(User_Role.tenant), doculmentController.getSingleUserAllDocuments)
 
 
 export const DocumentRoutes = router
