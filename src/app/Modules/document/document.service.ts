@@ -15,8 +15,9 @@ const createDocumentIntoDB = async (payload: TDocument) => {
     .exec()) as TPopulatedTenant | null;
     if(!userId){
         throw new AppError(httpStatus.NOT_FOUND, "User Not exists")
-    }
+    }    
     const documentData = {
+        tenantId : userId._id,
         userId: payload.userId,
         unitNumber : userId?.unitId?.unitNumber,
         unitId : userId?._id,
@@ -34,7 +35,7 @@ const createDocumentIntoDB = async (payload: TDocument) => {
 
 
 const getSingleOwnerAllDocumentsFromDB = async (id : string )=>{
-    const result = await Document.find({ownerId : id});
+    const result = await Document.find({ownerId : id}).sort({createdAt : -1})
     return result
 }
 
@@ -44,15 +45,24 @@ const getSingleDocumentFromDB = async (id : string )=>{
     return result
 }
 
-const getSingleUserAllDocumentsFromDB = async (id : string )=>{
-    const result = await Document.find({userId : id});
+
+const getSingleUserAllDocumentsFromDB = async (id : string )=>{     
+    const result = await Document.find({userId : id}).sort({createdAt : -1})
     return result
 }
+
+const findSingleTenentDocumentByOwnerFromDB = async (tenantId : string)=>{
+    const result = await Document.find({ tenantId}).sort({createdAt : -1})
+    return result
+}
+
+
 
 
 export const DocumentService = {
     createDocumentIntoDB,
     getSingleOwnerAllDocumentsFromDB,
     getSingleDocumentFromDB,
-    getSingleUserAllDocumentsFromDB
+    getSingleUserAllDocumentsFromDB,
+    findSingleTenentDocumentByOwnerFromDB
 }

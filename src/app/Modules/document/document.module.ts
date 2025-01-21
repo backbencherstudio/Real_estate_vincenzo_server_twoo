@@ -4,6 +4,11 @@ import { TDocument } from "./document.interface";
 
 const DocumentSchema: Schema = new Schema<TDocument>(
     {
+      tenantId: {
+        type: Schema.Types.ObjectId,
+        required: true,
+        ref: "Tenant", 
+      },
       userId: {
         type: Schema.Types.ObjectId,
         required: true,

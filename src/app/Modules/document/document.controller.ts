@@ -42,12 +42,23 @@ const getSingleDocument = catchAsync(async (req, res) => {
         data: result,
     })
 })
+
 const getSingleUserAllDocuments = catchAsync(async (req, res) => {
-    const result = await DocumentService.getSingleUserAllDocumentsFromDB(req.params.documentId);
+    const result = await DocumentService.getSingleUserAllDocumentsFromDB(req.params.userId);
     sendResponse(res, {
         statusCode: httpStatus.OK,
         success: true,
         message: "get document successfully",
+        data: result,
+    })
+})
+
+const findSingleTenentDocumentByOwner = catchAsync(async (req, res) => {
+    const result = await DocumentService.findSingleTenentDocumentByOwnerFromDB(req.params.tenantId);
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: "get single document successfully by owner",
         data: result,
     })
 })
@@ -60,5 +71,6 @@ export const doculmentController = {
     createDocument,
     getSingleOwnerAllDocuments,
     getSingleDocument,
-    getSingleUserAllDocuments
+    getSingleUserAllDocuments,
+    findSingleTenentDocumentByOwner
 }

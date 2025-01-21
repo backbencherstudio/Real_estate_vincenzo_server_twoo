@@ -1,6 +1,7 @@
 import { Schema } from "mongoose";
 
 export type TDocument = {
+    tenantId: Schema.Types.ObjectId; 
     userId: Schema.Types.ObjectId; 
     documentType: string; 
     description: string; 
