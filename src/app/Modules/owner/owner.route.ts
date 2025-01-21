@@ -64,7 +64,7 @@ router.get(
 
 router.get(
     '/singleMaintenanceData/:maintainId',
-    Auth(User_Role.owner),
+    Auth(User_Role.owner, User_Role.tenant),
     propertyController.getSingleMaintenanceRequestData,
 );
 

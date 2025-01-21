@@ -9,7 +9,7 @@ const createMaintenanceIntoDB =  async (payload : TMaintenance )=>{
 
 
 const getAllMaintenanceRequestFromDB = async (id : string)=>{
-    const result = await Maintenance.find({userId : id })
+    const result = await Maintenance.find({userId : id }).sort({createdAt : -1})
     return result
 }
 

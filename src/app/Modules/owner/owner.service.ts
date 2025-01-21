@@ -185,7 +185,7 @@ const getSingleTenantFormDB = async (id : string)=>{
 }
 
 const getEachOwnerAllMaintenanceRequestFromDB = async (id : string)=>{
-  const result = await Maintenance.find({ownerId : id})
+  const result = await Maintenance.find({ownerId : id}).sort({createdAt : -1})
   return result
 }
 

@@ -4,6 +4,7 @@ import { OwnerRouter } from '../Modules/owner/owner.route';
 import { AdminRouter } from '../Modules/admin/admin.route';
 import { TenantRouter } from '../Modules/tenant/tenant.route';
 import { MaintenanceRoutes } from '../Modules/maintenance/maintenance.route';
+import { DocumentRoutes } from '../Modules/document/document.route';
 const router = express.Router();
 
 const moduleRoutes = [
@@ -12,6 +13,7 @@ const moduleRoutes = [
   { path: '/owner', route: OwnerRouter },
   { path: '/tenant', route: TenantRouter },
   { path: '/maintenance', route: MaintenanceRoutes },
+  { path: '/document', route: DocumentRoutes },
 ];
 
 moduleRoutes.forEach((pathRouter) =>
