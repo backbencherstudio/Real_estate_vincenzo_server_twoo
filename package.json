@@ -5,6 +5,7 @@
   "scripts": {
     "start:prod": "node ./dist/server.js",
     "start:dev": "ts-node-dev --respawn --transpile-only ./src/server.ts",
+    "start:chat": "node chatServer.js",
     "build": "tsc",
     "lint": "eslint src --ignore-path .eslintignore --ext .ts",
     "lint:fix": "npx eslint src --fix",
@@ -30,6 +31,7 @@
     "node-fetch": "^3.3.2",
     "nodemailer": "^6.9.15",
     "paypal-rest-sdk": "^1.8.1",
+    "socket.io": "^4.8.1",
     "stripe": "^17.2.0",
     "zod": "^3.23.8"
   },
