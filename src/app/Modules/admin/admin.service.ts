@@ -162,7 +162,7 @@ const getAllDataOverviewByAdminFromDB = async (): Promise<OverviewData> => {
         const queries: { key: keyof Omit<OverviewData, 'monthlyProperties' | 'monthlyTenants'>; query: Query<number, any> }[] = [
             { key: "propertyLength", query: Properties.countDocuments() },
             { key: "tenantLength", query: Tenant.countDocuments() },
-            { key: "unitsLength", query: Unit.countDocuments() },
+            // { key: "unitsLength", query: Unit.countDocuments() },   // ==========================>>> if client need this data the we will show it
             { key: "ownersLength", query: User.countDocuments({ role: "owner" }) }
         ];
         const results = await Promise.all(queries.map(item => item.query));
