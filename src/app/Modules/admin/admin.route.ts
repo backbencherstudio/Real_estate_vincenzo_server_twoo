@@ -31,6 +31,12 @@ router.get(
     AdminController.getSingleOwnerAllPropertiesWithOwnerInfo,
 );
 
+router.get(
+    '/getAllDataOverviewByAdmin',
+    Auth(User_Role.admin),
+    AdminController.getAllDataOverviewByAdmin,
+);
+
 
 
 export const AdminRouter = router

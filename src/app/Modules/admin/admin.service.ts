@@ -1,5 +1,9 @@
+/* eslint-disable no-useless-catch */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { Query } from "mongoose";
 import { Properties, Tenant, Unit } from "../owner/owner.module"
 import { User } from "../User/user.model";
+import { OverviewData } from "./admin.interface";
 
 
 const getALlPropertiesFromDB = async () =>{
@@ -36,10 +40,32 @@ const getSingleOwnerAllPropertiesWithOwnerInfoFromDB = async(id : string ) =>{
     }
 }
 
+const getAllDataOverviewByAdminFromDB = async (): Promise<OverviewData> => {
+    try {
+        const queries: { key: keyof OverviewData; query: Query<number, any> }[] = [
+            { key: "propertyLength", query: Properties.countDocuments() },
+            { key: "tenantLength", query: Tenant.countDocuments() },
+            { key: "unitsLength", query: Unit.countDocuments() },
+            { key: "ownersLength", query: User.countDocuments({ role: "owner" }) }
+        ];
+        const results = await Promise.all(queries.map(item => item.query));
+        const overview = queries.reduce((acc, item, index) => {
+            acc[item.key] = results[index];
+            return acc;
+        }, {} as OverviewData);
+        return overview;
+    } catch (error) {
+        throw error;
+    }
+};
+
+
+
 export const AdminService = {
     getALlPropertiesFromDB,
     getSinglePropertiesAllUnitsFromDB,
     getALlTenantsFormDB,
     getSingleTenantDetailseFromDB,
-    getSingleOwnerAllPropertiesWithOwnerInfoFromDB
+    getSingleOwnerAllPropertiesWithOwnerInfoFromDB,
+    getAllDataOverviewByAdminFromDB
 }
