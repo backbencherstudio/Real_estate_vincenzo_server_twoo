@@ -74,6 +74,12 @@ router.patch(
     propertyController.maintenanceStatusChenge,
 );
 
+router.get(
+    '/getAllDataOverviewByOwner/:ownerId',
+    Auth(User_Role.owner),
+    propertyController.getAllDataOverviewByOwner,
+);
+
 
 
 export const OwnerRouter = router;

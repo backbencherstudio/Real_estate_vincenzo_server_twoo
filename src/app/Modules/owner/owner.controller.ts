@@ -142,6 +142,17 @@ const maintenanceStatusChenge = catchAsync(async (req, res) => {
       data: result,  
     });
   });
+
+const getAllDataOverviewByOwner = catchAsync(async (req, res) => {
+    const { ownerId } = req.params;
+    const result = await OwnerServices.getAllDataOverviewByOwnerFromDB(ownerId);  
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'get all overview data successfully',
+      data: result,  
+    });
+  });
   
 
  export const propertyController  = {
@@ -155,5 +166,6 @@ const maintenanceStatusChenge = catchAsync(async (req, res) => {
     getSingleTenant,
     getEachOwnerAllMaintenanceRequestData,
     getSingleMaintenanceRequestData,
-    maintenanceStatusChenge
+    maintenanceStatusChenge,
+    getAllDataOverviewByOwner
  }

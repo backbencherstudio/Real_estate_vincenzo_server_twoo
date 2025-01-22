@@ -40,24 +40,175 @@ const getSingleOwnerAllPropertiesWithOwnerInfoFromDB = async(id : string ) =>{
     }
 }
 
+// const getAllDataOverviewByAdminFromDB = async (): Promise<OverviewData> => {
+//     try {
+
+//         const queries: { key: keyof OverviewData; query: Query<number, any> }[] = [
+//             { key: "propertyLength", query: Properties.countDocuments() },
+//             { key: "tenantLength", query: Tenant.countDocuments() },
+//             { key: "unitsLength", query: Unit.countDocuments() },
+//             { key: "ownersLength", query: User.countDocuments({ role: "owner" }) }
+//         ];
+
+        
+
+
+//         const results = await Promise.all(queries.map(item => item.query));
+//         const overview = queries.reduce((acc, item, index) => {
+//             acc[item.key] = results[index];
+//             return acc;
+//         }, {} as OverviewData);
+//         return overview;
+//     } catch (error) {
+//         throw error;
+//     }
+// };
+
+
+// const getAllDataOverviewByAdminFromDB = async (): Promise<OverviewData> => {
+//     try {
+//         const queries: { key: keyof Omit<OverviewData, 'dailyProperties'>; query: Query<number, any> }[] = [
+//             { key: "propertyLength", query: Properties.countDocuments() },
+//             { key: "tenantLength", query: Tenant.countDocuments() },
+//             { key: "unitsLength", query: Unit.countDocuments() },
+//             { key: "ownersLength", query: User.countDocuments({ role: "owner" }) }
+//         ];
+
+//         const results = await Promise.all(queries.map(item => item.query));
+
+//         const dailyProperties = await Properties.aggregate([
+//             {
+//                 $group: {
+//                     _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } }, // Group by date
+//                     count: { $sum: 1 }
+//                 }
+//             },
+//             { $sort: { _id: 1 } } 
+//         ]);
+
+//         const dailyPropertiesData = dailyProperties.map(item => ({
+//             date: item._id,
+//             count: item.count
+//         }));
+
+//         const overview = queries.reduce((acc, item, index) => {
+//             acc[item.key] = results[index];
+//             return acc;
+//         }, {} as Omit<OverviewData, 'dailyProperties'>);
+
+//         return { ...overview, dailyProperties: dailyPropertiesData };
+//     } catch (error) {
+//         console.error("Error fetching data overview:", error);
+//         throw error;
+//     }
+// };
+
+
+
+// const getAllDataOverviewByAdminFromDB = async (): Promise<OverviewData> => {
+//     try {
+//         const queries: { key: keyof Omit<OverviewData, 'dailyProperties' | 'dailyTenants'>; query: Query<number, any> }[] = [
+//             { key: "propertyLength", query: Properties.countDocuments() },
+//             { key: "tenantLength", query: Tenant.countDocuments() },
+//             { key: "unitsLength", query: Unit.countDocuments() },
+//             { key: "ownersLength", query: User.countDocuments({ role: "owner" }) }
+//         ];
+//         const results = await Promise.all(queries.map(item => item.query));
+//         const dailyProperties = await Properties.aggregate([
+//             {
+//                 $group: {
+//                     _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+//                     count: { $sum: 1 }
+//                 }
+//             },
+//             { $sort: { _id: 1 } }
+//         ]);
+
+//         const dailyPropertiesData = dailyProperties.map(item => ({
+//             date: item._id,
+//             count: item.count
+//         }));
+
+//         const dailyTenants = await Tenant.aggregate([
+//             {
+//                 $group: {
+//                     _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+//                     count: { $sum: 1 }
+//                 }
+//             },
+//             { $sort: { _id: 1 } }
+//         ]);
+
+//         const dailyTenantsData = dailyTenants.map(item => ({
+//             date: item._id,
+//             count: item.count
+//         }));
+//         const overview = queries.reduce((acc, item, index) => {
+//             acc[item.key] = results[index];
+//             return acc;
+//         }, {} as Omit<OverviewData, 'dailyProperties' | 'dailyTenants'>);
+
+//         return { ...overview, dailyProperties: dailyPropertiesData, dailyTenants: dailyTenantsData };
+//     } catch (error) {
+//         console.error("Error fetching data overview:", error);
+//         throw error;
+//     }
+// };
+
+
+
 const getAllDataOverviewByAdminFromDB = async (): Promise<OverviewData> => {
     try {
-        const queries: { key: keyof OverviewData; query: Query<number, any> }[] = [
+        const queries: { key: keyof Omit<OverviewData, 'monthlyProperties' | 'monthlyTenants'>; query: Query<number, any> }[] = [
             { key: "propertyLength", query: Properties.countDocuments() },
             { key: "tenantLength", query: Tenant.countDocuments() },
             { key: "unitsLength", query: Unit.countDocuments() },
             { key: "ownersLength", query: User.countDocuments({ role: "owner" }) }
         ];
         const results = await Promise.all(queries.map(item => item.query));
+
+        const monthlyProperties = await Properties.aggregate([
+            {
+                $group: {
+                    _id: { $dateToString: { format: "%Y-%m", date: "$createdAt" } },
+                    count: { $sum: 1 }
+                }
+            },
+            { $sort: { _id: 1 } }
+        ]);
+
+        const monthlyPropertiesData = monthlyProperties.map(item => ({
+            date: item._id, 
+            count: item.count
+        }));
+
+        const monthlyTenants = await Tenant.aggregate([
+            {
+                $group: {
+                    _id: { $dateToString: { format: "%Y-%m", date: "$createdAt" } },
+                    count: { $sum: 1 }
+                }
+            },
+            { $sort: { _id: 1 } }
+        ]);
+
+        const monthlyTenantsData = monthlyTenants.map(item => ({
+            date: item._id, 
+            count: item.count
+        }));
+
         const overview = queries.reduce((acc, item, index) => {
             acc[item.key] = results[index];
             return acc;
-        }, {} as OverviewData);
-        return overview;
+        }, {} as Omit<OverviewData, 'monthlyProperties' | 'monthlyTenants'>);
+
+        return { ...overview, monthlyProperties: monthlyPropertiesData, monthlyTenants: monthlyTenantsData };
     } catch (error) {
+        console.error("Error fetching data overview:", error);
         throw error;
     }
 };
+
 
 
 
