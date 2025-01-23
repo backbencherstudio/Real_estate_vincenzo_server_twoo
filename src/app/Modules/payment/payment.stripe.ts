@@ -76,278 +76,458 @@ const stripePayment = async (
 };
 
 
-const Webhook = async (req: Request, res: Response) => {
-    const webhookSecret =
-        "whsec_8ab581e0ee7aa6de572d6db241f16b3c253172564e802c2a15e5f6a741fcf397";
+
+// const Webhook = async (req: Request, res: Response) => {
+//     const webhookSecret =
+//         "whsec_8ab581e0ee7aa6de572d6db241f16b3c253172564e802c2a15e5f6a741fcf397";
+//     const signature = req.headers["stripe-signature"];
+//     let event: Stripe.Event;
+//     try {
+//         event = stripe.webhooks.constructEvent(req.body, signature!, webhookSecret);
+//     } catch (err: any) {
+//         return res.status(400).send(`Webhook error: ${err.message}`);
+//     }    
+
+//     switch (event.type) {
+        
+//         case "invoice.upcoming": {
+//             const invoice = event.data.object as Stripe.Invoice;
+//             const email = invoice.customer_email;
+//             const amountDue = invoice.amount_due / 100;
+//             if (email) {
+//                 await transporter.sendMail({
+//                     from: config.sender_email,
+//                     to: email,
+//                     subject: "Upcoming Subscription Payment",
+//                     text: `Your subscription renewal is coming up in 2 days. The amount of $${amountDue} will be charged to your account.`,
+//                 });
+//             }
+//             break;
+//         }
+
+//         case "invoice.payment_failed": {
+//             const failedInvoice = event.data.object as Stripe.Invoice;
+//             const failedEmail = failedInvoice.customer_email;
+//             if (failedEmail) {
+//                 await transporter.sendMail({
+//                     from: config.sender_email,
+//                     to: failedEmail,
+//                     subject: "Payment Failed",
+//                     text: `Your payment of $${failedInvoice.amount_due / 100} for your subscription has failed. Please update your payment method.`,
+//                 });
+//             }
+//             break;
+//         }
+
+//         case "customer.subscription.updated": {
+//             const subscription = event.data.object as Stripe.Subscription;
+
+//             const status = subscription.status; // e.g., "active", "canceled", "incomplete"
+//             const customerId = subscription.customer as string; // Stripe customer ID
+
+//             if (typeof subscription.customer === "string") {
+//                 const customer = await stripe.customers.retrieve(subscription.customer);
+
+//                 if (customer) {
+//                     await User.findOneAndUpdate(
+//                         { customerId },
+//                         { $set: { customerId, subscriptionStatus: status } },
+//                         { new: true, runValidators: true }
+//                     );
+//                 }
+
+
+//                 if (!customer.deleted) {
+//                     const updatedEmail = customer.email;
+
+//                     await User.findOneAndUpdate(
+//                         { email: updatedEmail },
+//                         { $set: { customerId, subscriptionStatus: status } },
+//                         { new: true, runValidators: true })
+
+//                     if (updatedEmail) {
+//                         await transporter.sendMail({
+//                             from: config.sender_email,
+//                             to: updatedEmail,
+//                             subject: "Subscription Updated",
+//                             text: `Your subscription has been updated. Please review the changes.`,
+//                         });
+//                         console.log(`Subscription update notification sent to ${updatedEmail}`);
+//                     } else {
+//                         console.log("No email found on the Customer object.");
+//                     }
+//                 } else {
+//                     console.log("Customer is deleted; no email available.");
+//                 }
+//             } else {
+//                 const customerObj = subscription.customer as Stripe.Customer;
+//                 const expandedEmail = customerObj.email;
+
+
+
+//                 if (expandedEmail) {
+//                     await User.findOneAndUpdate(
+//                         { email: expandedEmail },
+//                         { $set: { customerId, subscriptionStatus: status } },
+//                         { new: true, runValidators: true })
+
+//                     await transporter.sendMail({
+//                         from: config.sender_email,
+//                         to: expandedEmail,
+//                         subject: "Subscription Updated",
+//                         text: `Your subscription has been updated. Please review the changes.`,
+//                     });
+//                     console.log(`Subscription update notification sent to ${expandedEmail}`);
+//                 } else {
+//                     console.log("No email found in the expanded customer object.");
+//                 }
+//             }
+//             break;
+//         }
+
+//         case "subscription_schedule.canceled": {
+//             const schedule = event.data.object as Stripe.SubscriptionSchedule;
+//             const status = schedule.status
+//             if (typeof schedule.customer === "string") {
+//                 const customer = await stripe.customers.retrieve(schedule.customer);
+//                 if (!customer.deleted) {
+//                     const customerEmail = customer.email;
+//                     if (customerEmail) {
+
+//                         await User.findOneAndUpdate(
+//                             { email: customerEmail },
+//                             { $set: { subscriptionStatus: status } },
+//                             { new: true, runValidators: true });
+
+
+//                         await transporter.sendMail({
+//                             from: config.sender_email,
+//                             to: customerEmail,
+//                             subject: "Subscription Canceled",
+//                             text: `Hello,
+          
+//           Your subscription has been canceled successfully. If you have any questions or would like to subscribe again in the future, please let us know.
+          
+//           Thank you,
+//           The Team`,
+//                         });
+//                         console.log(`Subscription canceled email sent to ${customerEmail}`);
+//                     } else {
+//                         console.log(`No email found for customer ${schedule.customer}.`);
+//                     }
+//                 } else {
+//                     console.log(`Customer ${schedule.customer} is deleted; no email available.`);
+//                 }
+//             } else {
+//                 const customerObj = schedule.customer as Stripe.Customer;
+//                 const customerEmail = customerObj.email;
+//                 if (customerEmail) {
+
+//                     await User.findOneAndUpdate(
+//                         { email: customerEmail },
+//                         { $set: { subscriptionStatus: status } },
+//                         { new: true, runValidators: true });
+
+
+//                     await transporter.sendMail({
+//                         from: config.sender_email,
+//                         to: customerEmail,
+//                         subject: "Subscription Canceled",
+//                         text: `Hello,
+          
+//           Your subscription has been canceled successfully. If you have any questions or would like to subscribe again in the future, please let us know.
+          
+//           Thank you,
+//           The Team`,
+//                     });
+//                     console.log(`Subscription canceled email sent to ${customerEmail}`);
+//                 } else {
+//                     console.log(`No email found in expanded customer object.`);
+//                 }
+//             }
+//             break;
+//         }
+
+//         case "invoice.finalized": {
+//             const finalizedInvoice = event.data.object as Stripe.Invoice;
+//             const finalizedEmail = finalizedInvoice.customer_email;
+//             const pdfUrl = finalizedInvoice.invoice_pdf;
+//             const total = (finalizedInvoice.amount_due ?? 0) / 100;
+//             const customerId = finalizedInvoice.customer as string;
+
+//             // await User.findOneAndUpdate({ email: finalizedEmail }, { customerId, subscriptionStatus: "active" }, {new : true, runValidators : true})
+//             await User.findOneAndUpdate(
+//                 { email: finalizedEmail },
+//                 { $set: { customerId, subscriptionStatus: "active" } },
+//                 { new: true, runValidators: true }
+//             );
+
+
+//             if (finalizedEmail) {
+//                 await transporter.sendMail({
+//                     from: config.sender_email,
+//                     to: finalizedEmail,
+//                     subject: "Your Invoice is Finalized",
+//                     text: `Hello,
+  
+//   Your invoice (ID: ${finalizedInvoice.id}) for $${total.toFixed(
+//                         2
+//                     )} is finalized. 
+//   You can view or download it here: ${pdfUrl}
+  
+//   Thank you!`,
+
+//                     html: `
+//         <div style="
+//           font-family: Arial, sans-serif;
+//           max-width: 600px;
+//           margin: 0 auto;
+//           padding: 20px;
+//           background-color: #fafafa;
+//           border: 1px solid #ddd;
+//           border-radius: 8px;
+//         ">
+//           <h2 style="color: #333; margin-bottom: 16px;">Invoice Finalized</h2>
+//           <p style="color: #555; font-size: 15px; line-height: 1.5;">
+//             Hello,<br><br>
+//             Your invoice 
+//             <strong>(ID: ${finalizedInvoice.id})</strong>
+//             for 
+//             <strong style="font-size: 16px; color: #000;">
+//               $${total.toFixed(2)}
+//             </strong> 
+//             is now finalized.
+//           </p>
+//           <p style="color: #555; font-size: 15px; line-height: 1.5;">
+//             You can view or download a PDF of your invoice by clicking the button below:
+//           </p>
+//           <a
+//             href="${pdfUrl}"
+//             style="
+//               display: inline-block;
+//               margin-top: 10px;
+//               padding: 10px 20px;
+//               background-color: #0d6efd;
+//               color: #fff;
+//               text-decoration: none;
+//               border-radius: 4px;
+//               font-weight: bold;
+//             "
+//           >
+//             Download Invoice PDF
+//           </a>
+//           <p style="color: #555; font-size: 15px; margin-top: 20px; line-height: 1.5;">
+//             Thank you!<br>
+//             <em>The Team</em>
+//           </p>
+//         </div>
+//         `,
+//                 });
+
+//                 console.log(`Finalized invoice email sent to ${finalizedEmail}`);
+//             }
+//             break;
+//         }
+
+//         case "customer.subscription.deleted": {
+//             const subscription = event.data.object as Stripe.Subscription;
+//             const customerId = subscription.customer as string;
+
+//             await User.findOneAndUpdate(
+//                 { customerId },
+//                 { $set: { subscriptionStatus: "canceled" } },
+//                 { new: true, runValidators: true });
+
+//             console.log(`No user found with Stripe customer ID: ${customerId}`);
+//             break;
+//         }
+
+
+//         default:
+//             console.log(`Unhandled event type: ${event.type}`);
+//     }
+
+//     res.status(200).send({ received: true });
+// };
+
+
+const sendEmail = async (to: string, subject: string, text: string, html?: string) => {
+    try {
+      await transporter.sendMail({
+        from: config.sender_email,
+        to,
+        subject,
+        text,
+        html,
+      });
+      console.log(`Email sent to ${to} with subject "${subject}"`);
+    } catch (error) {
+      console.error(`Failed to send email to ${to}:`, error);
+    }
+  };
+
+
+const updateUserInDB = async (filter: object, update: object) => {
+    try {
+      await User.findOneAndUpdate(filter, { $set: update }, { new: true, runValidators: true });
+      console.log(`Database updated for filter: ${JSON.stringify(filter)}`);
+    } catch (error) {
+      console.error(`Database update failed:`, error);
+    }
+  };
+
+
+  const Webhook = async (req: Request, res: Response) => {
+    const webhookSecret = "whsec_8ab581e0ee7aa6de572d6db241f16b3c253172564e802c2a15e5f6a741fcf397"; 
     const signature = req.headers["stripe-signature"];
     let event: Stripe.Event;
+  
     try {
-        event = stripe.webhooks.constructEvent(req.body, signature!, webhookSecret);
-    } catch (err: any) {
-        return res.status(400).send(`Webhook error: ${err.message}`);
-    }    
-
-    switch (event.type) {
-        
-        case "invoice.upcoming": {
-            const invoice = event.data.object as Stripe.Invoice;
-            const email = invoice.customer_email;
-            const amountDue = invoice.amount_due / 100;
-            if (email) {
-                await transporter.sendMail({
-                    from: config.sender_email,
-                    to: email,
-                    subject: "Upcoming Subscription Payment",
-                    text: `Your subscription renewal is coming up in 2 days. The amount of $${amountDue} will be charged to your account.`,
-                });
-            }
-            break;
-        }
-
-        case "invoice.payment_failed": {
-            const failedInvoice = event.data.object as Stripe.Invoice;
-            const failedEmail = failedInvoice.customer_email;
-            if (failedEmail) {
-                await transporter.sendMail({
-                    from: config.sender_email,
-                    to: failedEmail,
-                    subject: "Payment Failed",
-                    text: `Your payment of $${failedInvoice.amount_due / 100} for your subscription has failed. Please update your payment method.`,
-                });
-            }
-            break;
-        }
-
-        case "customer.subscription.updated": {
-            const subscription = event.data.object as Stripe.Subscription;
-
-            const status = subscription.status; // e.g., "active", "canceled", "incomplete"
-            const customerId = subscription.customer as string; // Stripe customer ID
-
-            if (typeof subscription.customer === "string") {
-                const customer = await stripe.customers.retrieve(subscription.customer);
-
-                if (customer) {
-                    await User.findOneAndUpdate(
-                        { customerId },
-                        { $set: { customerId, subscriptionStatus: status } },
-                        { new: true, runValidators: true }
-                    );
-                }
-
-
-                if (!customer.deleted) {
-                    const updatedEmail = customer.email;
-
-                    await User.findOneAndUpdate(
-                        { email: updatedEmail },
-                        { $set: { customerId, subscriptionStatus: status } },
-                        { new: true, runValidators: true })
-
-                    if (updatedEmail) {
-                        await transporter.sendMail({
-                            from: config.sender_email,
-                            to: updatedEmail,
-                            subject: "Subscription Updated",
-                            text: `Your subscription has been updated. Please review the changes.`,
-                        });
-                        console.log(`Subscription update notification sent to ${updatedEmail}`);
-                    } else {
-                        console.log("No email found on the Customer object.");
-                    }
-                } else {
-                    console.log("Customer is deleted; no email available.");
-                }
-            } else {
-                const customerObj = subscription.customer as Stripe.Customer;
-                const expandedEmail = customerObj.email;
-
-
-
-                if (expandedEmail) {
-                    await User.findOneAndUpdate(
-                        { email: expandedEmail },
-                        { $set: { customerId, subscriptionStatus: status } },
-                        { new: true, runValidators: true })
-
-                    await transporter.sendMail({
-                        from: config.sender_email,
-                        to: expandedEmail,
-                        subject: "Subscription Updated",
-                        text: `Your subscription has been updated. Please review the changes.`,
-                    });
-                    console.log(`Subscription update notification sent to ${expandedEmail}`);
-                } else {
-                    console.log("No email found in the expanded customer object.");
-                }
-            }
-            break;
-        }
-
-        case "subscription_schedule.canceled": {
-            const schedule = event.data.object as Stripe.SubscriptionSchedule;
-            const status = schedule.status
-            if (typeof schedule.customer === "string") {
-                const customer = await stripe.customers.retrieve(schedule.customer);
-                if (!customer.deleted) {
-                    const customerEmail = customer.email;
-                    if (customerEmail) {
-
-                        await User.findOneAndUpdate(
-                            { email: customerEmail },
-                            { $set: { subscriptionStatus: status } },
-                            { new: true, runValidators: true });
-
-
-                        await transporter.sendMail({
-                            from: config.sender_email,
-                            to: customerEmail,
-                            subject: "Subscription Canceled",
-                            text: `Hello,
-          
-          Your subscription has been canceled successfully. If you have any questions or would like to subscribe again in the future, please let us know.
-          
-          Thank you,
-          The Team`,
-                        });
-                        console.log(`Subscription canceled email sent to ${customerEmail}`);
-                    } else {
-                        console.log(`No email found for customer ${schedule.customer}.`);
-                    }
-                } else {
-                    console.log(`Customer ${schedule.customer} is deleted; no email available.`);
-                }
-            } else {
-                const customerObj = schedule.customer as Stripe.Customer;
-                const customerEmail = customerObj.email;
-                if (customerEmail) {
-
-                    await User.findOneAndUpdate(
-                        { email: customerEmail },
-                        { $set: { subscriptionStatus: status } },
-                        { new: true, runValidators: true });
-
-
-                    await transporter.sendMail({
-                        from: config.sender_email,
-                        to: customerEmail,
-                        subject: "Subscription Canceled",
-                        text: `Hello,
-          
-          Your subscription has been canceled successfully. If you have any questions or would like to subscribe again in the future, please let us know.
-          
-          Thank you,
-          The Team`,
-                    });
-                    console.log(`Subscription canceled email sent to ${customerEmail}`);
-                } else {
-                    console.log(`No email found in expanded customer object.`);
-                }
-            }
-            break;
-        }
-
-        case "invoice.finalized": {
-            const finalizedInvoice = event.data.object as Stripe.Invoice;
-            const finalizedEmail = finalizedInvoice.customer_email;
-            const pdfUrl = finalizedInvoice.invoice_pdf;
-            const total = (finalizedInvoice.amount_due ?? 0) / 100;
-            const customerId = finalizedInvoice.customer as string;
-
-            // await User.findOneAndUpdate({ email: finalizedEmail }, { customerId, subscriptionStatus: "active" }, {new : true, runValidators : true})
-            await User.findOneAndUpdate(
-                { email: finalizedEmail },
-                { $set: { customerId, subscriptionStatus: "active" } },
-                { new: true, runValidators: true }
-            );
-
-
-            if (finalizedEmail) {
-                await transporter.sendMail({
-                    from: config.sender_email,
-                    to: finalizedEmail,
-                    subject: "Your Invoice is Finalized",
-                    text: `Hello,
+      event = stripe.webhooks.constructEvent(req.body, signature!, webhookSecret);
+    } catch (err) {
+      console.error(`Webhook signature verification failed: ${err}`);
+      return res.status(400).send(`Webhook signature verification failed.`);
+    }
   
-  Your invoice (ID: ${finalizedInvoice.id}) for $${total.toFixed(
-                        2
-                    )} is finalized. 
-  You can view or download it here: ${pdfUrl}
+    // Event handler mapping
+    const eventHandlers: { [key: string]: (data: any) => Promise<void> } = {
+      "invoice.upcoming": handleInvoiceUpcoming,
+      "invoice.payment_failed": handlePaymentFailed,
+      "customer.subscription.updated": handleSubscriptionUpdated,
+      "subscription_schedule.canceled": handleSubscriptionCanceled,
+      "invoice.finalized": handleInvoiceFinalized,
+      "customer.subscription.deleted": handleSubscriptionDeleted,
+    };
   
-  Thank you!`,
-
-                    html: `
-        <div style="
-          font-family: Arial, sans-serif;
-          max-width: 600px;
-          margin: 0 auto;
-          padding: 20px;
-          background-color: #fafafa;
-          border: 1px solid #ddd;
-          border-radius: 8px;
-        ">
+    const handler = eventHandlers[event.type];
+    if (handler) {
+      try {
+        await handler(event.data.object);
+      } catch (err) {
+        console.error(`Error handling event ${event.type}:`, err);
+        return res.status(500).send(`Error handling event.`);
+      }
+    } else {
+      console.log(`Unhandled event type: ${event.type}`);
+    }
+  
+    res.status(200).send({ received: true });
+  };
+  
+  // Handlers for specific events
+  
+  const handleInvoiceUpcoming = async (invoice: Stripe.Invoice) => {
+    const email = invoice.customer_email;
+    const amountDue = invoice.amount_due / 100;
+    if (email) {
+      await sendEmail(
+        email,
+        "Upcoming Subscription Payment",
+        `Your subscription renewal is coming up. The amount of $${amountDue} will be charged soon.`
+      );
+    }
+  };
+  
+  const handlePaymentFailed = async (invoice: Stripe.Invoice) => {
+    const email = invoice.customer_email;
+    if (email) {
+      await sendEmail(
+        email,
+        "Payment Failed",
+        `Your payment of $${(invoice.amount_due / 100).toFixed(2)} for your subscription has failed. Please update your payment method.`
+      );
+    }
+  };
+  
+  const handleSubscriptionUpdated = async (subscription: Stripe.Subscription) => {
+    const status = subscription.status;
+    const customerId = subscription.customer as string;
+  
+    const customer = await stripe.customers.retrieve(customerId);
+    if (!customer.deleted) {
+      const email = (customer as Stripe.Customer).email;
+      await updateUserInDB({ customerId }, { subscriptionStatus: status });
+      if (email) {
+        await sendEmail(email, "Subscription Updated", `Your subscription has been updated to status: ${status}.`);
+      }
+    }
+  };
+  
+  const handleSubscriptionCanceled = async (schedule: Stripe.SubscriptionSchedule) => {
+    const status = schedule.status;
+    const customerId = schedule.customer as string;  
+    const customer = await stripe.customers.retrieve(customerId);    
+    if (!customer.deleted) {
+      const email = (customer as Stripe.Customer).email;
+      await updateUserInDB({ customerId }, { subscriptionStatus: status });
+      if (email) {
+        await sendEmail(
+          email,
+          "Subscription Canceled",
+          `Your subscription has been canceled. If you wish to subscribe again, please contact us.`
+        );
+      }
+    }
+  };
+  
+  const handleInvoiceFinalized = async (invoice: Stripe.Invoice) => {
+    const email = invoice.customer_email;
+    const pdfUrl = invoice.invoice_pdf;
+    const total = invoice.amount_due / 100;
+    const customerId = invoice.customer as string;
+  
+    await updateUserInDB({ email }, { customerId, subscriptionStatus: "active" });
+  
+    if (email) {
+      const htmlContent = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #fafafa; border: 1px solid #ddd;">
           <h2 style="color: #333; margin-bottom: 16px;">Invoice Finalized</h2>
           <p style="color: #555; font-size: 15px; line-height: 1.5;">
             Hello,<br><br>
-            Your invoice 
-            <strong>(ID: ${finalizedInvoice.id})</strong>
-            for 
+            Your invoice is finalized. The total amount is 
             <strong style="font-size: 16px; color: #000;">
               $${total.toFixed(2)}
-            </strong> 
-            is now finalized.
+            </strong>.
           </p>
           <p style="color: #555; font-size: 15px; line-height: 1.5;">
-            You can view or download a PDF of your invoice by clicking the button below:
+            You can view or download your invoice using the link below:
           </p>
-          <a
-            href="${pdfUrl}"
-            style="
-              display: inline-block;
-              margin-top: 10px;
-              padding: 10px 20px;
-              background-color: #0d6efd;
-              color: #fff;
-              text-decoration: none;
-              border-radius: 4px;
-              font-weight: bold;
-            "
-          >
-            Download Invoice PDF
-          </a>
+          <p>
+            <a href="${pdfUrl}" style="display: inline-block; margin-top: 10px; padding: 10px 20px; background-color: #0d6efd; color: #fff; text-decoration: none; border-radius: 4px; font-weight: bold;">
+              Download Invoice PDF
+            </a>
+          </p>
           <p style="color: #555; font-size: 15px; margin-top: 20px; line-height: 1.5;">
             Thank you!<br>
             <em>The Team</em>
           </p>
         </div>
-        `,
-                });
-
-                console.log(`Finalized invoice email sent to ${finalizedEmail}`);
-            }
-            break;
-        }
-
-        case "customer.subscription.deleted": {
-            const subscription = event.data.object as Stripe.Subscription;
-            const customerId = subscription.customer as string;
-
-            await User.findOneAndUpdate(
-                { customerId },
-                { $set: { subscriptionStatus: "canceled" } },
-                { new: true, runValidators: true });
-
-            console.log(`No user found with Stripe customer ID: ${customerId}`);
-            break;
-        }
-
-
-        default:
-            console.log(`Unhandled event type: ${event.type}`);
+      `;
+  
+      try {
+        await sendEmail(
+          email,
+          "Your Invoice is Finalized",
+          `Hello, Your invoice for $${total.toFixed(2)} is finalized. Download your invoice here: ${pdfUrl}`, // Fallback plain-text version
+          htmlContent
+        );
+        console.log(`Finalized invoice email sent to ${email}`);
+      } catch (error) {
+        console.error(`Failed to send finalized invoice email to ${email}:`, error);
+      }
     }
+  };
+  
+  
+  const handleSubscriptionDeleted = async (subscription: Stripe.Subscription) => {
+    const customerId = subscription.customer as string;
+  
+    await updateUserInDB({ customerId }, { subscriptionStatus: "canceled" });
+    console.log(`Subscription deleted for customerId: ${customerId}`);
+  };
 
-    res.status(200).send({ received: true });
-};
+
+
 
 
 export const stripePaymentService = {
