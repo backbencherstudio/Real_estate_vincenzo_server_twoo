@@ -7,6 +7,7 @@ import Stripe from "stripe";
 import nodemailer from "nodemailer";
 import { Request, Response } from "express";
 import config from "../../config";
+import { User } from "../User/user.model";
 
 // const stripe = new Stripe("sk_test_51Qj3DaLdWMYlebBQ7wPB3nTL52fvHLvxAeoagjEusGM5VuagX3FwNb0u7hl6A3xvJ5mvCuBZRlTq96BZXOl0N0WD00aH9Axh4r"); // client
 const stripe = new Stripe("sk_test_51NFvq6ArRmO7hNaVBU6gVxCbaksurKb6Sspg6o8HePfktRB4OQY6kX5qqcQgfxnLnJ3w9k2EA0T569uYp8DEcfeq00KXKRmLUw"); //my 
@@ -51,16 +52,22 @@ const stripePayment = async (
         });
 
         const latestInvoice = subscription.latest_invoice as Stripe.Invoice | null;
-        const invoicePdf = latestInvoice?.invoice_pdf || null;
-        const hostedInvoiceUrl = latestInvoice?.hosted_invoice_url || null;
         const customerId = subscription.customer as string;
+
+
+        // const invoice = event.data.object as Stripe.Invoice;
+        // const email = invoice.customer_email;
+
+        await User.findOneAndUpdate(
+            { email },
+            { $set: { customerId, subscriptionStatus: "active" } },
+            { new: true, runValidators: true }
+        );
 
         res.status(200).send({
             subscriptionId: subscription.id,
             clientSecret: (latestInvoice?.payment_intent as Stripe.PaymentIntent)?.client_secret || null,
             customer_id: customerId,
-            invoicePdf,
-            hostedInvoiceUrl,
         });
     } catch (error: any) {
         console.error("Error creating subscription:", error);
@@ -72,16 +79,16 @@ const stripePayment = async (
 const Webhook = async (req: Request, res: Response) => {
     const webhookSecret =
         "whsec_8ab581e0ee7aa6de572d6db241f16b3c253172564e802c2a15e5f6a741fcf397";
-        // "whsec_8ab581e0ee7aa6de572d6db241f16b3c253172564e802c2a15e5f6a741fcf397";
     const signature = req.headers["stripe-signature"];
     let event: Stripe.Event;
     try {
         event = stripe.webhooks.constructEvent(req.body, signature!, webhookSecret);
     } catch (err: any) {
         return res.status(400).send(`Webhook error: ${err.message}`);
-    }   
+    }    
 
     switch (event.type) {
+        
         case "invoice.upcoming": {
             const invoice = event.data.object as Stripe.Invoice;
             const email = invoice.customer_email;
@@ -111,13 +118,31 @@ const Webhook = async (req: Request, res: Response) => {
             break;
         }
 
-
         case "customer.subscription.updated": {
             const subscription = event.data.object as Stripe.Subscription;
+
+            const status = subscription.status; // e.g., "active", "canceled", "incomplete"
+            const customerId = subscription.customer as string; // Stripe customer ID
+
             if (typeof subscription.customer === "string") {
                 const customer = await stripe.customers.retrieve(subscription.customer);
+
+                if (customer) {
+                    await User.findOneAndUpdate(
+                        { customerId },
+                        { $set: { customerId, subscriptionStatus: status } },
+                        { new: true, runValidators: true }
+                    );
+                }
+
+
                 if (!customer.deleted) {
                     const updatedEmail = customer.email;
+
+                    await User.findOneAndUpdate(
+                        { email: updatedEmail },
+                        { $set: { customerId, subscriptionStatus: status } },
+                        { new: true, runValidators: true })
 
                     if (updatedEmail) {
                         await transporter.sendMail({
@@ -137,7 +162,14 @@ const Webhook = async (req: Request, res: Response) => {
                 const customerObj = subscription.customer as Stripe.Customer;
                 const expandedEmail = customerObj.email;
 
+
+
                 if (expandedEmail) {
+                    await User.findOneAndUpdate(
+                        { email: expandedEmail },
+                        { $set: { customerId, subscriptionStatus: status } },
+                        { new: true, runValidators: true })
+
                     await transporter.sendMail({
                         from: config.sender_email,
                         to: expandedEmail,
@@ -152,15 +184,21 @@ const Webhook = async (req: Request, res: Response) => {
             break;
         }
 
-
-
         case "subscription_schedule.canceled": {
             const schedule = event.data.object as Stripe.SubscriptionSchedule;
+            const status = schedule.status
             if (typeof schedule.customer === "string") {
                 const customer = await stripe.customers.retrieve(schedule.customer);
                 if (!customer.deleted) {
                     const customerEmail = customer.email;
                     if (customerEmail) {
+
+                        await User.findOneAndUpdate(
+                            { email: customerEmail },
+                            { $set: { subscriptionStatus: status } },
+                            { new: true, runValidators: true });
+
+
                         await transporter.sendMail({
                             from: config.sender_email,
                             to: customerEmail,
@@ -183,6 +221,13 @@ const Webhook = async (req: Request, res: Response) => {
                 const customerObj = schedule.customer as Stripe.Customer;
                 const customerEmail = customerObj.email;
                 if (customerEmail) {
+
+                    await User.findOneAndUpdate(
+                        { email: customerEmail },
+                        { $set: { subscriptionStatus: status } },
+                        { new: true, runValidators: true });
+
+
                     await transporter.sendMail({
                         from: config.sender_email,
                         to: customerEmail,
@@ -207,6 +252,16 @@ const Webhook = async (req: Request, res: Response) => {
             const finalizedEmail = finalizedInvoice.customer_email;
             const pdfUrl = finalizedInvoice.invoice_pdf;
             const total = (finalizedInvoice.amount_due ?? 0) / 100;
+            const customerId = finalizedInvoice.customer as string;
+
+            // await User.findOneAndUpdate({ email: finalizedEmail }, { customerId, subscriptionStatus: "active" }, {new : true, runValidators : true})
+            await User.findOneAndUpdate(
+                { email: finalizedEmail },
+                { $set: { customerId, subscriptionStatus: "active" } },
+                { new: true, runValidators: true }
+            );
+
+
             if (finalizedEmail) {
                 await transporter.sendMail({
                     from: config.sender_email,
@@ -270,6 +325,19 @@ const Webhook = async (req: Request, res: Response) => {
 
                 console.log(`Finalized invoice email sent to ${finalizedEmail}`);
             }
+            break;
+        }
+
+        case "customer.subscription.deleted": {
+            const subscription = event.data.object as Stripe.Subscription;
+            const customerId = subscription.customer as string;
+
+            await User.findOneAndUpdate(
+                { customerId },
+                { $set: { subscriptionStatus: "canceled" } },
+                { new: true, runValidators: true });
+
+            console.log(`No user found with Stripe customer ID: ${customerId}`);
             break;
         }
 
