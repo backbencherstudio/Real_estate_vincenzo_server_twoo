@@ -95,6 +95,7 @@ const Webhook = async (req: Request, res: Response) => {
             }
             break;
         }
+
         case "invoice.payment_failed": {
             const failedInvoice = event.data.object as Stripe.Invoice;
             const failedEmail = failedInvoice.customer_email;
@@ -109,19 +110,49 @@ const Webhook = async (req: Request, res: Response) => {
             break;
         }
 
+
         case "customer.subscription.updated": {
             const subscription = event.data.object as Stripe.Subscription;
-            const updatedEmail = subscription?.customer_email as string;
-            if (updatedEmail) {
-                await transporter.sendMail({
-                    from: config.sender_email,
-                    to: updatedEmail,
-                    subject: "Subscription Updated",
-                    text: `Your subscription has been updated. Please review the changes.`,
-                });
+            if (typeof subscription.customer === "string") {
+                const customer = await stripe.customers.retrieve(subscription.customer);
+                if (!customer.deleted) {
+                    const updatedEmail = customer.email;
+
+                    if (updatedEmail) {
+                        await transporter.sendMail({
+                            from: config.sender_email,
+                            to: updatedEmail,
+                            subject: "Subscription Updated",
+                            text: `Your subscription has been updated. Please review the changes.`,
+                        });
+                        console.log(`Subscription update notification sent to ${updatedEmail}`);
+                    } else {
+                        console.log("No email found on the Customer object.");
+                    }
+                } else {
+                    console.log("Customer is deleted; no email available.");
+                }
+            } else {
+                const customerObj = subscription.customer as Stripe.Customer;
+                const expandedEmail = customerObj.email;
+
+                if (expandedEmail) {
+                    await transporter.sendMail({
+                        from: config.sender_email,
+                        to: expandedEmail,
+                        subject: "Subscription Updated",
+                        text: `Your subscription has been updated. Please review the changes.`,
+                    });
+                    console.log(`Subscription update notification sent to ${expandedEmail}`);
+                } else {
+                    console.log("No email found in the expanded customer object.");
+                }
             }
             break;
         }
+
+
+
         case "subscription_schedule.canceled": {
             const schedule = event.data.object as Stripe.SubscriptionSchedule;
             if (typeof schedule.customer === "string") {
