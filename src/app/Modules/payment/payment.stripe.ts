@@ -72,13 +72,14 @@ const stripePayment = async (
 const Webhook = async (req: Request, res: Response) => {
     const webhookSecret =
         "whsec_8ab581e0ee7aa6de572d6db241f16b3c253172564e802c2a15e5f6a741fcf397";
+        // "whsec_8ab581e0ee7aa6de572d6db241f16b3c253172564e802c2a15e5f6a741fcf397";
     const signature = req.headers["stripe-signature"];
     let event: Stripe.Event;
     try {
         event = stripe.webhooks.constructEvent(req.body, signature!, webhookSecret);
     } catch (err: any) {
         return res.status(400).send(`Webhook error: ${err.message}`);
-    }
+    }   
 
     switch (event.type) {
         case "invoice.upcoming": {
