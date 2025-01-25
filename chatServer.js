@@ -20,6 +20,7 @@ const users = {};
 
 // Middleware
 app.use(cors());
+app.use(express.json());
 
 // Connect to MongoDB
 client
@@ -64,30 +65,20 @@ io.on('connection', (socket) => {
   });
 
   // Handle incoming messages
-  socket.on('message', async ({ recipient, message, sender }) => {
+  socket.on('message', async ({ recipient, content, sender, timestamp }) => {
     const chatMessage = {
-      sender: sender,
-      recipient: recipient,
-      content: message,
-      timestamp: new Date(),
+      sender,
+      recipient,
+      content,
+      timestamp,
+      read: false,
     };
-    console.log(chatMessage);
 
     try {
       const db = client.db(dbName);
       const messagesCollection = db.collection('chats');
-      await messagesCollection.insertOne(chatMessage); // Save message to MongoDB
-
-      // Emit the message to all clients
-      io.emit('message', chatMessage); // Send the message to all clients
-
-      // Optionally, send to specific recipient
-      const recipientSocketId = Object.keys(users).find(
-        (key) => users[key] === recipient,
-      );
-      if (recipientSocketId) {
-        io.to(recipientSocketId).emit('message', chatMessage);
-      }
+      await messagesCollection.insertOne(chatMessage);
+      io.emit('message', chatMessage);
     } catch (err) {
       console.error('Error saving message:', err);
     }
@@ -133,6 +124,71 @@ app.get('/chats', async (req, res) => {
     res.json(chats);
   } catch (err) {
     res.status(500).json({ error: 'Error fetching messages' });
+  }
+});
+
+// Update the mark-read endpoint
+app.post('/messages/mark-read', async (req, res) => {
+  try {
+    const { sender, recipient } = req.body;
+
+    const db = client.db(dbName);
+    const chatsCollection = db.collection('chats');
+
+    const result = await chatsCollection.updateMany(
+      {
+        sender: sender,
+        recipient: recipient,
+        read: false,
+      },
+      {
+        $set: { read: true },
+      },
+    );
+
+    if (result.modifiedCount > 0) {
+      // Notify clients about the updated read status
+      io.emit('messages_read', { sender, recipient });
+    }
+
+    res.json({
+      success: true,
+      modifiedCount: result.modifiedCount,
+    });
+  } catch (err) {
+    console.error('Error marking messages as read:', err);
+    res.status(500).json({ error: 'Error marking messages as read' });
+  }
+});
+
+// Update the unread messages endpoint
+app.get('/messages/unread/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    const db = client.db(dbName);
+    const chatsCollection = db.collection('chats');
+
+    // Only get messages where read is explicitly false
+    const unreadMessages = await chatsCollection
+      .find({
+        recipient: userId,
+        read: false,
+      })
+      .toArray();
+
+    const unreadCounts = {};
+    unreadMessages.forEach((msg) => {
+      if (!msg.read) {
+        // Double-check the read status
+        unreadCounts[msg.sender] = (unreadCounts[msg.sender] || 0) + 1;
+      }
+    });
+
+    res.json(unreadCounts);
+  } catch (err) {
+    console.error('Error fetching unread messages:', err);
+    res.status(500).json({ error: 'Error fetching unread messages' });
   }
 });
 
