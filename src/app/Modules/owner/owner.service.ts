@@ -229,8 +229,6 @@ const getAllDataOverviewByOwnerFromDB = async (ownerId: string): Promise<Overvie
       count: item.count
     }));
 
-
-
     const monthlyTenants = await Tenant.aggregate([
       {
         $match: {

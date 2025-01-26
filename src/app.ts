@@ -30,8 +30,19 @@ app.use(
   })
 );
 
-app.use(express.json());
+// app.use(express.json());
 app.use(cookieParser());
+
+app.use((req, res, next) => {
+  if (req.originalUrl === '/api/v1/payment/webhook') {
+    next(); 
+  } else {
+    express.json()(req, res, next);
+  }
+});
+
+
+
 app.use(
   cors({
     origin: ['http://localhost:5173'],  

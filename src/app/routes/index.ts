@@ -5,6 +5,7 @@ import { AdminRouter } from '../Modules/admin/admin.route';
 import { TenantRouter } from '../Modules/tenant/tenant.route';
 import { MaintenanceRoutes } from '../Modules/maintenance/maintenance.route';
 import { DocumentRoutes } from '../Modules/document/document.route';
+import { StripePaymentRoutes } from '../Modules/payment/payment.route';
 const router = express.Router();
 
 const moduleRoutes = [
@@ -14,6 +15,8 @@ const moduleRoutes = [
   { path: '/tenant', route: TenantRouter },
   { path: '/maintenance', route: MaintenanceRoutes },
   { path: '/document', route: DocumentRoutes },
+  { path: '/payment', route: StripePaymentRoutes},
+
 ];
 
 moduleRoutes.forEach((pathRouter) =>

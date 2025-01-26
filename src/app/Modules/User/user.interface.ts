@@ -33,7 +33,9 @@ export interface TUser {
   numberOfTotalUnits : number;
   totalAmount : number;
   totalRentAmount : number;
-  bookedUnitNumber : number
+  bookedUnitNumber : number;
+  customerId : string;
+  subscriptionStatus:string
 }
 
 
