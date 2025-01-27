@@ -22,7 +22,6 @@ const createDocument = catchAsync(async (req, res) => {
     })
 })
 
-
 const getSingleOwnerAllDocuments = catchAsync(async (req, res) => {
     const result = await DocumentService.getSingleOwnerAllDocumentsFromDB(req.params.ownerId);
     sendResponse(res, {

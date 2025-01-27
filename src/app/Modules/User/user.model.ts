@@ -1,6 +1,6 @@
 import { model, Schema } from "mongoose";
 import bcrypt from 'bcrypt';
-import {  TUser } from "./user.interface";
+import { TUser } from "./user.interface";
 
 // const presentAddressSchema = new Schema
 
@@ -55,22 +55,22 @@ const userSchema = new Schema<TUser>(
     role: {
       type: String,
       enum: ["admin", "owner", "tenant"],
-      default : "owner"
+      default: "owner"
     },
-    numberOfProperty : {
-      type : Number,
+    numberOfProperty: {
+      type: Number,
     },
-    numberOfTotalUnits : {
-      type : Number,
+    numberOfTotalUnits: {
+      type: Number,
     },
-    totalAmount : {
-      type : Number,
+    totalAmount: {
+      type: Number,
     },
-    totalRentAmount : {
-      type : Number,
+    totalRentAmount: {
+      type: Number,
     },
-    bookedUnitNumber : {
-      type : Number,
+    bookedUnitNumber: {
+      type: Number,
     },
     isDeleted: {
       type: Boolean,
@@ -106,6 +106,12 @@ const userSchema = new Schema<TUser>(
       country: {
         type: String,
       },
+    },
+    customerId: {
+      type: String,
+    },
+    subscriptionStatus: {
+      type: String,
     },
   },
   {
