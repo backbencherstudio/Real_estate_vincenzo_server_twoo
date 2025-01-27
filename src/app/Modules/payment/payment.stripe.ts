@@ -177,6 +177,10 @@ const Webhook = async (req: Request, res: Response) => {
     "invoice.payment_succeeded": handleInvoicePaymentSucceeded,
   };
 
+//   payment_intent.succeeded
+// payment_intent.payment_failed
+
+
   const handler = eventHandlers[event.type];
   if (handler) {
     try {
@@ -206,18 +210,62 @@ const handleInvoiceUpcoming = async (invoice: Stripe.Invoice) => {
   }
 };
 
+// const handlePaymentFailed = async (invoice: Stripe.Invoice) => {
+//   const email = invoice.customer_email;
+
+//   await updateUserInDB(
+//     { email },
+//     { subscriptionStatus: "canceled" }
+//   );
+
+
+//   if (email) {
+//     await sendEmail(
+//       email,
+//       "Payment Failed",
+//       `Your payment of $${(invoice.amount_due / 100).toFixed(
+//         2
+//       )} for your subscription has failed. Please update your payment method.`
+//     );
+//   }
+// };
+
+
 const handlePaymentFailed = async (invoice: Stripe.Invoice) => {
   const email = invoice.customer_email;
+  const subscriptionId = invoice.subscription as string | null;
+  let subscriptionStatus = "canceled";
+  if (subscriptionId) {
+    try {
+      const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+      subscriptionStatus = subscription.status; 
+    } catch (error) {
+      console.error(
+        `Error retrieving subscription status for subscription ID: ${subscriptionId}`,
+        error
+      );
+    }
+  }
+  try {
+    await updateUserInDB({ email }, { subscriptionStatus });
+  } catch (error) {
+    console.error(`Error updating user in database for email: ${email}`, error);
+  }
   if (email) {
-    await sendEmail(
-      email,
-      "Payment Failed",
-      `Your payment of $${(invoice.amount_due / 100).toFixed(
-        2
-      )} for your subscription has failed. Please update your payment method.`
-    );
+    const amountDue = (invoice.amount_due / 100).toFixed(2);
+    try {
+      await sendEmail(
+        email,
+        "Payment Failed",
+        `Your payment of $${amountDue} for your subscription has failed. Please update your payment method.`
+      );
+      console.log(`Payment failed email sent to ${email}`);
+    } catch (error) {
+      console.error(`Error sending email to ${email}`, error);
+    }
   }
 };
+
 
 const handleSubscriptionUpdated = async (subscription: Stripe.Subscription) => {
   const status = subscription.status;
