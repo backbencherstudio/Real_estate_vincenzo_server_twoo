@@ -55,7 +55,8 @@ const verifyOTPintoDB = async (otp : string, sessionOtpData : {otp : string, pas
     return result
 };
 
-const loginUserIntoDB = async ( paylod: TLoginUser) => {  
+const loginUserIntoDB = async ( paylod: TLoginUser) => {
+  
   const userData = await User.findOne({email : paylod.email});
   if (!userData) {
     throw new AppError(httpStatus.NOT_FOUND, 'User is not found');
@@ -67,10 +68,10 @@ const loginUserIntoDB = async ( paylod: TLoginUser) => {
 
   const jwtPayload = {
     email: userData.email,
-    name: userData.name ,
     role : userData.role,
     userId : userData._id,
-    customerId : userData?.customerId && userData?.customerId
+    customerId : userData?.customerId && userData?.customerId,
+    subscriptionStatus : userData.subscriptionStatus
   };
   
   const accessToken = createToken(
@@ -147,10 +148,10 @@ const updateUserDataIntoDB = async (payload: Partial<TUser>) => {
   }
 };
 
-const getAllUserFromDB = async (query : Record< string, unknown >) => {
+const getAllUserFromDB = async (query : Record< string, unknown >) => {  
   const userQuery = new QueryBuilder(User.find(), query)
   .filter()
-  const result = await userQuery.modelQuery;
+  const result = await userQuery.modelQuery;  
   return result;
 };
 
@@ -223,6 +224,7 @@ const refreshToken = async (token: string) => {
     accessToken,
   };
 };
+
 
 const sendEmailToAllUser = async (payload : any) =>{
   const { email, subject, value, filePath } = payload;

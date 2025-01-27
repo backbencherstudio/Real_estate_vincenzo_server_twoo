@@ -34,16 +34,16 @@ class QueryBuilder<T> {
   // }
 
   filter() {
-    const queryObj = { ...this.query }; 
+    const queryObj = { ...this.query };
     const excluedeFields = ['searchTerm', 'sort', 'limit', 'page', 'fields'];
     excluedeFields.forEach((el) => delete queryObj[el]);
     if (queryObj.role && queryObj.role !== 'all') {
-        this.modelQuery = this.modelQuery.find({ role: queryObj.role } as FilterQuery<T>);
+      this.modelQuery = this.modelQuery.find({ role: queryObj.role, subscriptionStatus: queryObj.subscriptionStatus } as FilterQuery<T>);
     } else {
-        this.modelQuery = this.modelQuery.find();
+      this.modelQuery = this.modelQuery.find();
     }
     return this;
-}
+  }
 
 
   sort() {
@@ -69,7 +69,6 @@ class QueryBuilder<T> {
   }
 
   async countTotal() {
-    // (getFilter) এর সাহায্যে আমরা সকল প্রকার query পাউয়া যাবে(vdo:6.10 M20.11)
     const TotalQuery = this.modelQuery.getFilter();
     const total = await this.modelQuery.model.countDocuments(TotalQuery);
     const page = Number(this?.query?.page) || 1;

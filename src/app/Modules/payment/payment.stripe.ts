@@ -192,7 +192,6 @@ const Webhook = async (req: Request, res: Response) => {
   } else {
     console.log(`Unhandled event type: ${event.type}`);
   }
-
   res.status(200).send({ received: true });
 };
 
@@ -209,26 +208,6 @@ const handleInvoiceUpcoming = async (invoice: Stripe.Invoice) => {
     );
   }
 };
-
-// const handlePaymentFailed = async (invoice: Stripe.Invoice) => {
-//   const email = invoice.customer_email;
-
-//   await updateUserInDB(
-//     { email },
-//     { subscriptionStatus: "canceled" }
-//   );
-
-
-//   if (email) {
-//     await sendEmail(
-//       email,
-//       "Payment Failed",
-//       `Your payment of $${(invoice.amount_due / 100).toFixed(
-//         2
-//       )} for your subscription has failed. Please update your payment method.`
-//     );
-//   }
-// };
 
 
 const handlePaymentFailed = async (invoice: Stripe.Invoice) => {
@@ -362,61 +341,62 @@ const handleInvoiceFinalized = async (invoice: Stripe.Invoice) => {
     { customerId, invoice_pdf: pdfUrl, subscriptionStatus: "active" }
   );
 
-  if (email) {
-    const htmlContent = `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 20px auto; padding: 20px; background-color: #ffffff; border: 1px solid #e0e0e0; border-radius: 8px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);">
-  <!-- Header Section -->
-  <div style="background-color: #0d6efd; color: #ffffff; padding: 20px; border-radius: 8px 8px 0 0; text-align: center;">
-    <h1 style="margin: 0; font-size: 24px; font-weight: bold;">Invoice Finalized</h1>
-  </div>
+//   if (email) {
+//     const htmlContent = `
+//       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 20px auto; padding: 20px; background-color: #ffffff; border: 1px solid #e0e0e0; border-radius: 8px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);">
+//   <!-- Header Section -->
+//   <div style="background-color: #0d6efd; color: #ffffff; padding: 20px; border-radius: 8px 8px 0 0; text-align: center;">
+//     <h1 style="margin: 0; font-size: 24px; font-weight: bold;">Invoice Finalized</h1>
+//   </div>
 
-  <!-- Body Content -->
-  <div style="padding: 20px;">
-    <p style="color: #333333; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
-      Hello,
-    </p>
-    <p style="color: #333333; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
-      We’re pleased to inform you that your invoice has been finalized. The total amount is:
-    </p>
-    <p style="font-size: 20px; color: #0d6efd; font-weight: bold; text-align: center; margin: 20px 0;">
-      $${total.toFixed(2)}
-    </p>
-    <p style="color: #333333; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
-      You can view or download your invoice using the button below:
-    </p>
-    <div style="text-align: center; margin-bottom: 30px;">
-      <a href="${pdfUrl}" style="display: inline-block; padding: 12px 24px; background-color: #0d6efd; color: #ffffff; text-decoration: none; font-size: 16px; font-weight: bold; border-radius: 6px;">
-        Download Invoice PDF
-      </a>
-    </div>
-    <p style="color: #333333; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
-      Thank you for your continued support and being a valued subscriber.
-    </p>
-  </div>
+//   <!-- Body Content -->
+//   <div style="padding: 20px;">
+//     <p style="color: #333333; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
+//       Hello,
+//     </p>
+//     <p style="color: #333333; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
+//       We’re pleased to inform you that your invoice has been finalized. The total amount is:
+//     </p>
+//     <p style="font-size: 20px; color: #0d6efd; font-weight: bold; text-align: center; margin: 20px 0;">
+//       $${total.toFixed(2)}
+//     </p>
+//     <p style="color: #333333; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
+//       You can view or download your invoice using the button below:
+//     </p>
+//     <div style="text-align: center; margin-bottom: 30px;">
+//       <a href="${pdfUrl}" style="display: inline-block; padding: 12px 24px; background-color: #0d6efd; color: #ffffff; text-decoration: none; font-size: 16px; font-weight: bold; border-radius: 6px;">
+//         Download Invoice PDF
+//       </a>
+//     </div>
+//     <p style="color: #333333; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
+//       Thank you for your continued support and being a valued subscriber.
+//     </p>
+//   </div>
 
-  <!-- Footer Section -->
-  <div style="background-color: #f8f9fa; padding: 15px; text-align: center; border-radius: 0 0 8px 8px; font-size: 14px; color: #888888;">
-    <p style="margin: 0;">
-      If you have any questions, feel free to <a href="mailto:support@example.com" style="color: #0d6efd; text-decoration: none;">contact us</a>.
-    </p>
-    <p style="margin: 10px 0 0;">&copy; ${new Date().getFullYear()} The Team. All rights reserved.</p>
-  </div>
-</div>
+//   <!-- Footer Section -->
+//   <div style="background-color: #f8f9fa; padding: 15px; text-align: center; border-radius: 0 0 8px 8px; font-size: 14px; color: #888888;">
+//     <p style="margin: 0;">
+//       If you have any questions, feel free to <a href="mailto:support@example.com" style="color: #0d6efd; text-decoration: none;">contact us</a>.
+//     </p>
+//     <p style="margin: 10px 0 0;">&copy; ${new Date().getFullYear()} The Team. All rights reserved.</p>
+//   </div>
+// </div>
 
-    `;
+//     `;
 
-    try {
-      await sendEmail(
-        email,
-        "Your Invoice is Finalized",
-        `Hello, Your invoice for $${total.toFixed(2)} is finalized. Download your invoice here: ${pdfUrl}`, // Plain-text fallback
-        htmlContent
-      );
-      console.log(`Finalized invoice email sent to ${email}`);
-    } catch (error) {
-      console.error(`Failed to send finalized invoice email to ${email}:`, error);
-    }
-  }
+//     try {
+//       await sendEmail(
+//         email,
+//         "Your Invoice is Finalized",
+//         `Hello, Your invoice for $${total.toFixed(2)} is finalized. Download your invoice here: ${pdfUrl}`, // Plain-text fallback
+//         htmlContent
+//       );
+//       console.log(`Finalized invoice email sent to ${email}`);
+//     } catch (error) {
+//       console.error(`Failed to send finalized invoice email to ${email}:`, error);
+//     }
+//   }
+
 };
 
 const handleSubscriptionDeleted = async (subscription: Stripe.Subscription) => {
@@ -456,24 +436,46 @@ Thank you for being a valued subscriber!
 `;
 
       const htmlContent = `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <h2 style="color: #333;">Subscription Payment Successful</h2>
-        <p style="color: #555; font-size: 15px; line-height: 1.5;">
-          Hello,<br><br>
-          We have successfully processed your monthly subscription payment of
-          <strong>$${amountPaid.toFixed(2)}</strong>.<br><br>
-          <strong>Invoice ID:</strong> ${invoiceId}<br>
-          ${pdfUrl
-          ? `<strong>Download PDF:</strong> <a href="${pdfUrl}" target="_blank">View Invoice</a><br>`
-          : ""
-        }
-        </p>
-        <p style="color: #555; font-size: 15px; margin-top: 20px;">
-          Thank you for being a valued subscriber!<br>
-          – The Team
-        </p>
-      </div>
-      `;
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 20px auto; padding: 20px; background-color: #ffffff; border: 1px solid #e0e0e0; border-radius: 8px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);">
+  <!-- Header Section -->
+  <div style="background-color: #0d6efd; color: #ffffff; padding: 20px; border-radius: 8px 8px 0 0; text-align: center;">
+    <h1 style="margin: 0; font-size: 24px; font-weight: bold;">Invoice Finalized</h1>
+  </div>
+
+  <!-- Body Content -->
+  <div style="padding: 20px;">
+    <p style="color: #333333; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
+      Hello,
+    </p>
+    <p style="color: #333333; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
+      We’re pleased to inform you that your invoice has been finalized. The total amount is:
+    </p>
+    <p style="font-size: 20px; color: #0d6efd; font-weight: bold; text-align: center; margin: 20px 0;">
+      $${amountPaid.toFixed(2)}
+    </p>
+    <p style="color: #333333; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
+      You can view or download your invoice using the button below:
+    </p>
+    <div style="text-align: center; margin-bottom: 30px;">
+      <a href="${pdfUrl}" style="display: inline-block; padding: 12px 24px; background-color: #0d6efd; color: #ffffff; text-decoration: none; font-size: 16px; font-weight: bold; border-radius: 6px;">
+        Download Invoice PDF
+      </a>
+    </div>
+    <p style="color: #333333; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
+      Thank you for your continued support and being a valued subscriber.
+    </p>
+  </div>
+
+  <!-- Footer Section -->
+  <div style="background-color: #f8f9fa; padding: 15px; text-align: center; border-radius: 0 0 8px 8px; font-size: 14px; color: #888888;">
+    <p style="margin: 0;">
+      If you have any questions, feel free to <a href="mailto:support@example.com" style="color: #0d6efd; text-decoration: none;">contact us</a>.
+    </p>
+    <p style="margin: 10px 0 0;">&copy; ${new Date().getFullYear()} The Team. All rights reserved.</p>
+  </div>
+</div>
+
+    `;
 
       await sendEmail(
         email,
@@ -488,6 +490,7 @@ Thank you for being a valued subscriber!
   } else {
     console.log("No email on invoice; consider retrieving customer to get their email.");
   }
+  
 };
 
 export const stripePaymentService = {
