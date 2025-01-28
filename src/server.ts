@@ -27,8 +27,6 @@ if (cluster.isPrimary) {
       const messageService = new MessageService(io, MessageModel);
 
       io.on('connection', (socket) => {
-        console.log('A user connected: ' + socket.id);
-
         socket.on('join', (username) => messageService.handleJoin(socket, username));
         socket.on('message', (messageData) => messageService.handleMessage(messageData));
         socket.on('delete_message', (messageId) => messageService.handleDeleteMessage(messageId));
