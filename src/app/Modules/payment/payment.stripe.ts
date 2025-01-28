@@ -21,6 +21,111 @@ const transporter = nodemailer.createTransport({
   },
 });
 
+// const stripePayment = async (
+//   req: { body: { email: string; amount: number; paymentMethodId: string } },
+//   res: any
+// ) => {
+//   const { email, amount, paymentMethodId } = req.body;
+
+//   if (!email || !amount || !paymentMethodId) {
+//     return res
+//       .status(400)
+//       .send({ error: "Email, amount, and payment method are required." });
+//   }
+
+//   try {
+//     let customer;
+//     try {
+//       customer = await stripe.customers.create({
+//         email,
+//         payment_method: paymentMethodId,
+//         invoice_settings: {
+//           default_payment_method: paymentMethodId,
+//         },
+//       });
+//     } catch (error: any) {
+//       console.error("Error creating customer:", error);
+//       return res.status(500).send({ error: "Failed to create customer." });
+//     }
+
+//     let product;
+//     try {
+//       product = await stripe.products.create({
+//         name: `Subscription for ${email}`,
+//       });
+//     } catch (error: any) {
+//       console.error("Error creating product:", error);
+//       return res.status(500).send({ error: "Failed to create product." });
+//     }
+
+//     let price;
+//     try {
+//       price = await stripe.prices.create({
+//         unit_amount: amount * 100,
+//         currency: "usd",
+//         recurring: { interval: "day" },
+//         // recurring: { interval: "month" },
+//         product: product.id,
+//       });
+//     } catch (error: any) {
+//       console.error("Error creating price:", error);
+//       return res.status(500).send({ error: "Failed to create price." });
+//     }
+
+//     let subscription;
+//     try {
+//       subscription = await stripe.subscriptions.create({
+//         customer: customer.id,
+//         items: [{ price: price.id }],
+//         expand: ["latest_invoice.payment_intent"],
+//       });
+//     } catch (error: any) {
+//       console.error("Error creating subscription:", error);
+//       return res.status(500).send({ error: "Failed to create subscription." });
+//     }
+
+//     const latestInvoice = subscription.latest_invoice as Stripe.Invoice | null;
+//     let invoice_pdf: string | undefined | null;
+//     if (latestInvoice && typeof latestInvoice !== "string") {
+//       invoice_pdf = latestInvoice.invoice_pdf;
+//     } else if (typeof latestInvoice === "string") {
+//       try {
+//         const fetchedInvoice = await stripe.invoices.retrieve(latestInvoice);
+//         invoice_pdf = fetchedInvoice.invoice_pdf ?? undefined;
+//       } catch (error: any) {
+//         console.error("Error retrieving invoice:", error);
+//         invoice_pdf = undefined;
+//       }
+//     }
+
+//     try {
+//       const customerId = subscription.customer as string;
+//       await User.findOneAndUpdate(
+//         { email },
+//         { $set: { customerId, invoice_pdf, subscriptionStatus: "active" } },
+//         { new: true, runValidators: true }
+//       );
+//     } catch (error: any) {
+//       console.error("Error updating user in database:", error);
+//       return res
+//         .status(500)
+//         .send({ error: "Failed to update user in the database." });
+//     }
+
+//     res.status(200).send({
+//       subscriptionId: subscription.id,
+//       clientSecret: (latestInvoice?.payment_intent as Stripe.PaymentIntent)
+//         ?.client_secret || null,
+//       customer_id: subscription.customer as string,
+//       invoice_pdf,
+//     });
+//   } catch (error: any) {
+//     console.error("Unexpected error:", error);
+//     res.status(500).send({ error: "An unexpected error occurred." });
+//   }
+// };
+
+
 const stripePayment = async (
   req: { body: { email: string; amount: number; paymentMethodId: string } },
   res: any
@@ -28,102 +133,93 @@ const stripePayment = async (
   const { email, amount, paymentMethodId } = req.body;
 
   if (!email || !amount || !paymentMethodId) {
-    return res
-      .status(400)
-      .send({ error: "Email, amount, and payment method are required." });
+    return res.status(400).send({
+      error: "Email, amount, and payment method are required.",
+    });
   }
 
   try {
-    let customer;
-    try {
-      customer = await stripe.customers.create({
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).send({ error: "User not found." });
+    }
+
+    if (user.customerId) {
+      const subscriptions = await stripe.subscriptions.list({
+        customer: user.customerId,
+        status: "active",
+      });
+
+      for (const subscription of subscriptions.data) {
+        await stripe.subscriptions.update(subscription.id, {
+          cancel_at_period_end: true,
+        });
+        console.log(`Marked subscription ${subscription.id} for cancellation at period end for user ${email}`);
+      }
+    }
+
+    let customerId = user.customerId;
+    if (!customerId) {
+      const customer = await stripe.customers.create({
         email,
         payment_method: paymentMethodId,
         invoice_settings: {
           default_payment_method: paymentMethodId,
         },
       });
-    } catch (error: any) {
-      console.error("Error creating customer:", error);
-      return res.status(500).send({ error: "Failed to create customer." });
+      customerId = customer.id;
     }
 
-    let product;
-    try {
-      product = await stripe.products.create({
-        name: `Subscription for ${email}`,
-      });
-    } catch (error: any) {
-      console.error("Error creating product:", error);
-      return res.status(500).send({ error: "Failed to create product." });
-    }
+    const product = await stripe.products.create({
+      name: `Subscription for ${email}`,
+    });
 
-    let price;
-    try {
-      price = await stripe.prices.create({
-        unit_amount: amount * 100,
-        currency: "usd",
-        recurring: { interval: "day" },
-        // recurring: { interval: "month" },
-        product: product.id,
-      });
-    } catch (error: any) {
-      console.error("Error creating price:", error);
-      return res.status(500).send({ error: "Failed to create price." });
-    }
+    const price = await stripe.prices.create({
+      unit_amount: amount * 100,
+      currency: "usd",
+      recurring: { interval: "month" },
+      product: product.id,
+    });
 
-    let subscription;
-    try {
-      subscription = await stripe.subscriptions.create({
-        customer: customer.id,
-        items: [{ price: price.id }],
-        expand: ["latest_invoice.payment_intent"],
-      });
-    } catch (error: any) {
-      console.error("Error creating subscription:", error);
-      return res.status(500).send({ error: "Failed to create subscription." });
-    }
+    const subscription = await stripe.subscriptions.create({
+      customer: customerId,
+      items: [{ price: price.id }],
+      expand: ["latest_invoice.payment_intent"],
+    });
 
     const latestInvoice = subscription.latest_invoice as Stripe.Invoice | null;
-    let invoice_pdf: string | undefined | null;
-    if (latestInvoice && typeof latestInvoice !== "string") {
-      invoice_pdf = latestInvoice.invoice_pdf;
-    } else if (typeof latestInvoice === "string") {
-      try {
-        const fetchedInvoice = await stripe.invoices.retrieve(latestInvoice);
-        invoice_pdf = fetchedInvoice.invoice_pdf ?? undefined;
-      } catch (error: any) {
-        console.error("Error retrieving invoice:", error);
-        invoice_pdf = undefined;
-      }
-    }
+    const invoicePdf =
+      latestInvoice && typeof latestInvoice !== "string"
+        ? latestInvoice.invoice_pdf
+        : null;
 
-    try {
-      const customerId = subscription.customer as string;
-      await User.findOneAndUpdate(
-        { email },
-        { $set: { customerId, invoice_pdf, subscriptionStatus: "active" } },
-        { new: true, runValidators: true }
-      );
-    } catch (error: any) {
-      console.error("Error updating user in database:", error);
-      return res
-        .status(500)
-        .send({ error: "Failed to update user in the database." });
-    }
+    await User.findOneAndUpdate(
+      { email },
+      {
+        $set: {
+          customerId,
+          subscriptionId: subscription.id,
+          subscriptionStatus: subscription.status,
+          invoice_pdf: invoicePdf,
+        },
+      },
+      { new: true, runValidators: true }
+    );
 
     res.status(200).send({
       subscriptionId: subscription.id,
-      clientSecret: (latestInvoice?.payment_intent as Stripe.PaymentIntent)
-        ?.client_secret || null,
-      customer_id: subscription.customer as string,
-      invoice_pdf,
+      clientSecret: (latestInvoice?.payment_intent as Stripe.PaymentIntent)?.client_secret || null,
+      customer_id: customerId,
+      invoicePdf,
     });
   } catch (error: any) {
-    console.error("Unexpected error:", error);
-    res.status(500).send({ error: "An unexpected error occurred." });
+    console.error("Error creating subscription:", error);
+    res.status(500).send({ error: "Failed to create subscription." });
   }
 };
+
+
+
 
 const sendEmail = async (
   to: string,
@@ -155,6 +251,89 @@ const updateUserInDB = async (filter: object, update: object) => {
 };
 
 
+const cancelSubscription = async (req: Request, res: Response) => {
+  const { customerId } = req.params;
+
+  try {
+    const user = await User.findOne({ customerId });
+    if (!user || !user.customerId) {
+      return res.status(404).json({ error: "User or subscription not found." });
+    }
+
+    const subscriptions = await stripe.subscriptions.list({
+      customer: user.customerId,
+      status: "active",
+    });
+
+    if (subscriptions.data.length === 0) {
+      return res.status(404).json({ error: "No active subscription found." });
+    }
+
+    const subscriptionId = subscriptions.data[0].id;
+
+    const canceledSubscription = await stripe.subscriptions.update(subscriptionId, {
+      cancel_at_period_end: true,
+    });
+
+    const textContent = `
+      Hello,
+
+      Your subscription has been successfully set to cancel at the end of the current billing period. If you have any questions or wish to resubscribe, please feel free to contact us.
+
+      Thank you for being with us,
+      – The Team
+    `;
+
+    const htmlContent = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 20px auto; padding: 20px; background-color: #ffffff; border: 1px solid #e0e0e0; border-radius: 8px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);">
+        <div style="background-color: #f44336; color: #ffffff; padding: 20px; border-radius: 8px 8px 0 0; text-align: center;">
+          <h1 style="margin: 0; font-size: 24px; font-weight: bold;">Subscription Set to Cancel</h1>
+        </div>
+        <div style="padding: 20px;">
+          <p style="color: #333333; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
+            Hello,
+          </p>
+          <p style="color: #333333; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
+            Your subscription has been successfully set to <strong>cancel</strong> at the end of the current billing period.
+          </p>
+          <p style="color: #333333; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
+            If you have any questions or wish to resubscribe in the future, please feel free to contact us at any time.
+          </p>
+          <p style="color: #333333; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
+            Thank you for being with us,
+          </p>
+          <p style="color: #333333; font-size: 16px; line-height: 1.6; margin-bottom: 20px; font-weight: bold;">
+            – The Team
+          </p>
+        </div>
+        <div style="background-color: #f8f9fa; padding: 15px; text-align: center; border-radius: 0 0 8px 8px; font-size: 14px; color: #888888;">
+          <p style="margin: 0;">
+            If you have any questions, feel free to <a href="mailto:support@example.com" style="color: #0d6efd; text-decoration: none;">contact us</a>.
+          </p>
+          <p style="margin: 10px 0 0;">&copy; ${new Date().getFullYear()} The Team. All rights reserved.</p>
+        </div>
+      </div>
+    `;
+
+    await sendEmail(
+      user.email,
+      "Subscription Set to Cancel",
+      textContent,
+      htmlContent
+    );
+
+    console.log(`Subscription set to cancel at period end for user: ${user.email}`);
+    res.status(200).json({
+      message: "Subscription successfully set to cancel at the end of the current billing period.",
+      subscriptionId: canceledSubscription.id,
+    });
+  } catch (error: any) {
+    console.error("Error canceling subscription:", error);
+    res.status(500).json({ error: "Failed to cancel subscription." });
+  }
+};
+
+
 const Webhook = async (req: Request, res: Response) => {
   const webhookSecret = "whsec_8ab581e0ee7aa6de572d6db241f16b3c253172564e802c2a15e5f6a741fcf397";
   const signature = req.headers["stripe-signature"];
@@ -177,8 +356,8 @@ const Webhook = async (req: Request, res: Response) => {
     "invoice.payment_succeeded": handleInvoicePaymentSucceeded,
   };
 
-//   payment_intent.succeeded
-// payment_intent.payment_failed
+  //   payment_intent.succeeded
+  // payment_intent.payment_failed
 
 
   const handler = eventHandlers[event.type];
@@ -209,7 +388,6 @@ const handleInvoiceUpcoming = async (invoice: Stripe.Invoice) => {
   }
 };
 
-
 const handlePaymentFailed = async (invoice: Stripe.Invoice) => {
   const email = invoice.customer_email;
   const subscriptionId = invoice.subscription as string | null;
@@ -217,7 +395,7 @@ const handlePaymentFailed = async (invoice: Stripe.Invoice) => {
   if (subscriptionId) {
     try {
       const subscription = await stripe.subscriptions.retrieve(subscriptionId);
-      subscriptionStatus = subscription.status; 
+      subscriptionStatus = subscription.status;
     } catch (error) {
       console.error(
         `Error retrieving subscription status for subscription ID: ${subscriptionId}`,
@@ -244,7 +422,6 @@ const handlePaymentFailed = async (invoice: Stripe.Invoice) => {
     }
   }
 };
-
 
 const handleSubscriptionUpdated = async (subscription: Stripe.Subscription) => {
   const status = subscription.status;
@@ -341,61 +518,61 @@ const handleInvoiceFinalized = async (invoice: Stripe.Invoice) => {
     { customerId, invoice_pdf: pdfUrl, subscriptionStatus: "active" }
   );
 
-//   if (email) {
-//     const htmlContent = `
-//       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 20px auto; padding: 20px; background-color: #ffffff; border: 1px solid #e0e0e0; border-radius: 8px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);">
-//   <!-- Header Section -->
-//   <div style="background-color: #0d6efd; color: #ffffff; padding: 20px; border-radius: 8px 8px 0 0; text-align: center;">
-//     <h1 style="margin: 0; font-size: 24px; font-weight: bold;">Invoice Finalized</h1>
-//   </div>
+  //   if (email) {
+  //     const htmlContent = `
+  //       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 20px auto; padding: 20px; background-color: #ffffff; border: 1px solid #e0e0e0; border-radius: 8px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);">
+  //   <!-- Header Section -->
+  //   <div style="background-color: #0d6efd; color: #ffffff; padding: 20px; border-radius: 8px 8px 0 0; text-align: center;">
+  //     <h1 style="margin: 0; font-size: 24px; font-weight: bold;">Invoice Finalized</h1>
+  //   </div>
 
-//   <!-- Body Content -->
-//   <div style="padding: 20px;">
-//     <p style="color: #333333; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
-//       Hello,
-//     </p>
-//     <p style="color: #333333; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
-//       We’re pleased to inform you that your invoice has been finalized. The total amount is:
-//     </p>
-//     <p style="font-size: 20px; color: #0d6efd; font-weight: bold; text-align: center; margin: 20px 0;">
-//       $${total.toFixed(2)}
-//     </p>
-//     <p style="color: #333333; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
-//       You can view or download your invoice using the button below:
-//     </p>
-//     <div style="text-align: center; margin-bottom: 30px;">
-//       <a href="${pdfUrl}" style="display: inline-block; padding: 12px 24px; background-color: #0d6efd; color: #ffffff; text-decoration: none; font-size: 16px; font-weight: bold; border-radius: 6px;">
-//         Download Invoice PDF
-//       </a>
-//     </div>
-//     <p style="color: #333333; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
-//       Thank you for your continued support and being a valued subscriber.
-//     </p>
-//   </div>
+  //   <!-- Body Content -->
+  //   <div style="padding: 20px;">
+  //     <p style="color: #333333; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
+  //       Hello,
+  //     </p>
+  //     <p style="color: #333333; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
+  //       We’re pleased to inform you that your invoice has been finalized. The total amount is:
+  //     </p>
+  //     <p style="font-size: 20px; color: #0d6efd; font-weight: bold; text-align: center; margin: 20px 0;">
+  //       $${total.toFixed(2)}
+  //     </p>
+  //     <p style="color: #333333; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
+  //       You can view or download your invoice using the button below:
+  //     </p>
+  //     <div style="text-align: center; margin-bottom: 30px;">
+  //       <a href="${pdfUrl}" style="display: inline-block; padding: 12px 24px; background-color: #0d6efd; color: #ffffff; text-decoration: none; font-size: 16px; font-weight: bold; border-radius: 6px;">
+  //         Download Invoice PDF
+  //       </a>
+  //     </div>
+  //     <p style="color: #333333; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
+  //       Thank you for your continued support and being a valued subscriber.
+  //     </p>
+  //   </div>
 
-//   <!-- Footer Section -->
-//   <div style="background-color: #f8f9fa; padding: 15px; text-align: center; border-radius: 0 0 8px 8px; font-size: 14px; color: #888888;">
-//     <p style="margin: 0;">
-//       If you have any questions, feel free to <a href="mailto:support@example.com" style="color: #0d6efd; text-decoration: none;">contact us</a>.
-//     </p>
-//     <p style="margin: 10px 0 0;">&copy; ${new Date().getFullYear()} The Team. All rights reserved.</p>
-//   </div>
-// </div>
+  //   <!-- Footer Section -->
+  //   <div style="background-color: #f8f9fa; padding: 15px; text-align: center; border-radius: 0 0 8px 8px; font-size: 14px; color: #888888;">
+  //     <p style="margin: 0;">
+  //       If you have any questions, feel free to <a href="mailto:support@example.com" style="color: #0d6efd; text-decoration: none;">contact us</a>.
+  //     </p>
+  //     <p style="margin: 10px 0 0;">&copy; ${new Date().getFullYear()} The Team. All rights reserved.</p>
+  //   </div>
+  // </div>
 
-//     `;
+  //     `;
 
-//     try {
-//       await sendEmail(
-//         email,
-//         "Your Invoice is Finalized",
-//         `Hello, Your invoice for $${total.toFixed(2)} is finalized. Download your invoice here: ${pdfUrl}`, // Plain-text fallback
-//         htmlContent
-//       );
-//       console.log(`Finalized invoice email sent to ${email}`);
-//     } catch (error) {
-//       console.error(`Failed to send finalized invoice email to ${email}:`, error);
-//     }
-//   }
+  //     try {
+  //       await sendEmail(
+  //         email,
+  //         "Your Invoice is Finalized",
+  //         `Hello, Your invoice for $${total.toFixed(2)} is finalized. Download your invoice here: ${pdfUrl}`, // Plain-text fallback
+  //         htmlContent
+  //       );
+  //       console.log(`Finalized invoice email sent to ${email}`);
+  //     } catch (error) {
+  //       console.error(`Failed to send finalized invoice email to ${email}:`, error);
+  //     }
+  //   }
 
 };
 
@@ -408,6 +585,7 @@ const handleSubscriptionDeleted = async (subscription: Stripe.Subscription) => {
 /** 7) New Handler: Invoice Payment Succeeded
     -----------------------------------------
     This fires whenever a recurring invoice is paid (e.g., monthly subscription). */
+
 const handleInvoicePaymentSucceeded = async (invoice: Stripe.Invoice) => {
   const email = invoice.customer_email;
   const amountPaid = (invoice.amount_paid ?? 0) / 100;
@@ -490,10 +668,11 @@ Thank you for being a valued subscriber!
   } else {
     console.log("No email on invoice; consider retrieving customer to get their email.");
   }
-  
+
 };
 
 export const stripePaymentService = {
   stripePayment,
+  cancelSubscription,
   Webhook,
 };

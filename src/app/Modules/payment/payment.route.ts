@@ -7,8 +7,8 @@ import bodyParser from "body-parser";
 const router = Router()
 
 router.post("/stripe", stripePaymentService.stripePayment);
+router.post("/cancel-subscription/:customerId", stripePaymentService.cancelSubscription);
 router.post("/Webhook", bodyParser.raw({ type: "application/json" }), stripePaymentService.Webhook);
-
 
 
 export const StripePaymentRoutes = router
