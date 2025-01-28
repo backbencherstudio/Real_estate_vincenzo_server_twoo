@@ -50,12 +50,25 @@ app.use(
   })
 );
 
+
 app.get('/chats', async (req, res) => {
   try {
+    const { email } = req.query;
+
+    if (!email) {
+      return res.status(400).json({ error: 'Email is required' });
+    }
+
     const chats = await MessageModel
-      .find()
+      .find({
+        $or: [
+          { sender: email },
+          { recipient: email }
+        ]
+      })
       .sort({ timestamp: -1 })
       .lean();
+      
     res.json(chats);
   } catch (err) {
     res.status(500).json({ error: 'Error fetching messages' });
