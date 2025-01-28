@@ -4,10 +4,10 @@ import { Types } from 'mongoose';
 export const createToken = (
   jwtPayload: { 
     email: string;
-    name : string;
     role : string;
     userId : Types.ObjectId;
-    customerId ?: string
+    customerId ?: string;
+    subscriptionStatus?:string;
   },
   secret: string,
   expiresIn: string,
