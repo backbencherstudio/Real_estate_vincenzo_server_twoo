@@ -7,6 +7,7 @@ export const createToken = (
     name : string;
     role : string;
     userId : Types.ObjectId;
+    customerId ?: string
   },
   secret: string,
   expiresIn: string,

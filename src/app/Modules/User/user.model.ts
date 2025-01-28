@@ -113,6 +113,9 @@ const userSchema = new Schema<TUser>(
     subscriptionStatus: {
       type: String,
     },
+    invoice_pdf: {
+      type: String,
+    },
   },
   {
     timestamps: true,

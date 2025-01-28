@@ -69,7 +69,8 @@ const loginUserIntoDB = async ( paylod: TLoginUser) => {
     email: userData.email,
     name: userData.name ,
     role : userData.role,
-    userId : userData._id
+    userId : userData._id,
+    customerId : userData?.customerId && userData?.customerId
   };
   
   const accessToken = createToken(
@@ -101,7 +102,6 @@ const getAbsoluteFilePath = (dbPath: string) => {
   }
 };
 
-
 const deleteFile = (filePath: string) => {
   try {
     if (!filePath) {
@@ -121,8 +121,6 @@ const deleteFile = (filePath: string) => {
     return false;
   }
 };
-
-
 
 const updateUserDataIntoDB = async (payload: Partial<TUser>) => {
   try {
@@ -148,8 +146,6 @@ const updateUserDataIntoDB = async (payload: Partial<TUser>) => {
     throw new Error('Failed to update user data');
   }
 };
-
-
 
 const getAllUserFromDB = async (query : Record< string, unknown >) => {
   const userQuery = new QueryBuilder(User.find(), query)
