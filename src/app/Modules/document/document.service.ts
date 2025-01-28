@@ -51,7 +51,7 @@ const getSingleUserAllDocumentsFromDB = async (id : string )=>{
     return result
 }
 
-const findSingleTenentDocumentByOwnerFromDB = async (tenantId : string)=>{
+const findSingleTenentDocumentByOwnerFromDB = async (tenantId : string)=>{    
     const result = await Document.find({ tenantId}).sort({createdAt : -1})
     return result
 }
