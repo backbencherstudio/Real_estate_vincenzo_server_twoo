@@ -127,10 +127,10 @@ const transporter = nodemailer.createTransport({
 
 
 const stripePayment = async (
-  req: { body: { email: string; amount: number; paymentMethodId: string } },
+  req: { body: { email: string; amount: number; paymentMethodId: string; getTotalUnit : number } },
   res: any
 ) => {
-  const { email, amount, paymentMethodId } = req.body;
+  const { email, amount, paymentMethodId, getTotalUnit } = req.body;
 
   if (!email || !amount || !paymentMethodId) {
     return res.status(400).send({
@@ -201,6 +201,7 @@ const stripePayment = async (
           subscriptionId: subscription.id,
           subscriptionStatus: subscription.status,
           invoice_pdf: invoicePdf,
+          getTotalUnit
         },
       },
       { new: true, runValidators: true }

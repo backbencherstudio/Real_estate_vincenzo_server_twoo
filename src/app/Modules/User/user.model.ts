@@ -116,6 +116,9 @@ const userSchema = new Schema<TUser>(
     invoice_pdf: {
       type: String,
     },
+    getTotalUnit: {
+      type: Number,
+    },
   },
   {
     timestamps: true,
