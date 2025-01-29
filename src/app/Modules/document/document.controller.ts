@@ -62,7 +62,15 @@ const findSingleTenentDocumentByOwner = catchAsync(async (req, res) => {
     })
 })
 
-
+const updateDocumentStatusByOwner = catchAsync(async (req, res) => {    
+    const result = await DocumentService.updateDocumentStatusByOwnerIntoDB(req.params.documentId, req.body.status);
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: "Document status update successfully",
+        data: result,
+    })
+})
 
 
 
@@ -71,5 +79,6 @@ export const doculmentController = {
     getSingleOwnerAllDocuments,
     getSingleDocument,
     getSingleUserAllDocuments,
-    findSingleTenentDocumentByOwner
+    findSingleTenentDocumentByOwner,
+    updateDocumentStatusByOwner
 }

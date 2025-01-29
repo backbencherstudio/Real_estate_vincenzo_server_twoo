@@ -56,7 +56,10 @@ const findSingleTenentDocumentByOwnerFromDB = async (tenantId : string)=>{
     return result
 }
 
-
+const updateDocumentStatusByOwnerIntoDB = async (documentId : string, status : string)=>{    
+    const result = await Document.findByIdAndUpdate({_id : documentId}, {status}, {new : true, runValidators : true} )
+    return result
+}
 
 
 export const DocumentService = {
@@ -64,5 +67,6 @@ export const DocumentService = {
     getSingleOwnerAllDocumentsFromDB,
     getSingleDocumentFromDB,
     getSingleUserAllDocumentsFromDB,
-    findSingleTenentDocumentByOwnerFromDB
+    findSingleTenentDocumentByOwnerFromDB,
+    updateDocumentStatusByOwnerIntoDB
 }
