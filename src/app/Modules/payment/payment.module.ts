@@ -30,7 +30,13 @@ const TenantPaymentSchema = new Schema<TTenantPayment>({
     },
     invoice: {
         type: String,
-        default : "Upcomming"
+        default : "Upcoming"
+    },
+    createdAt:{
+        type : Date
+    },
+    updatedAt:{
+        type : Date
     },
 }, {
     timestamps: true,

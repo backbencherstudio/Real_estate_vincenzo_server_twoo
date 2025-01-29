@@ -8,5 +8,7 @@ export type TTenantPayment = {
     ownerId : Schema.Types.ObjectId;
     status : 'Pending' | "Paid";
     invoice : string;
+    createdAt: Date;
+    updatedAt: Date;
   }
  
