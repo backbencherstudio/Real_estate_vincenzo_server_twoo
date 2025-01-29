@@ -8,7 +8,7 @@ const createALlTenantsForPaymentFormDB = async () => {
         const tenants = await Tenant.find({ isDeleted: false }).lean();
         const payments = tenants.map(tenant => {
             const { _id, ...tenantData } = tenant; 
-            return { ...tenantData, status: "Pending", invoice: "pcomming" }; 
+            return { ...tenantData, status: "Pending", invoice: "Upcomming" }; 
         });
         const result = await TenantPayment.insertMany(payments);
         return result;
@@ -23,8 +23,16 @@ const getAllTenantPaymentDataFromDB = async () =>{
     return result
 }
 
+const getSingleUserAllPaymentDataFromDB = async (userId : string) =>{
+    const result = await TenantPayment.find({userId}).populate([{path : "userId"}, {path : "unitId"}, {path : "propertyId"}]).sort({ createdAt : -1 })
+    return result
+}
+
+
+
 
 export const paymentService = {
     createALlTenantsForPaymentFormDB,
-    getAllTenantPaymentDataFromDB
+    getAllTenantPaymentDataFromDB,
+    getSingleUserAllPaymentDataFromDB
 };

@@ -25,8 +25,19 @@ const getAllTenantPaymentData = catchAsync(async (req, res) => {
     });
 });
 
+const getSingleUserAllPaymentData = catchAsync(async (req, res) => {
+    const result = await paymentService.getSingleUserAllPaymentDataFromDB(req.params.userId);
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: 'get all tenant payment data successfully',
+        data: result,
+    });
+});
+
 
 export const paymentController = {
     createALlTenantsForPayment,
-    getAllTenantPaymentData
+    getAllTenantPaymentData,
+    getSingleUserAllPaymentData
 }
