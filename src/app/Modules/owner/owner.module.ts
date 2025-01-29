@@ -174,6 +174,10 @@ const createTenantSchema = new Schema<TCreateTenant>({
     required: [true, 'Owner ID is required'],
     ref: 'User',
   }, 
+  isDeleted : {
+    type : Boolean,
+    default : false
+  }
 }, {
   timestamps: true,
   versionKey : false

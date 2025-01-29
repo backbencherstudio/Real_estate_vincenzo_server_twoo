@@ -262,6 +262,8 @@ const getAllDataOverviewByOwnerFromDB = async (ownerId: string): Promise<Overvie
 
 
 
+
+
 export const OwnerServices = {
   createPropertiesDB,
   getSingleOwnerAllPropertiesFromDB,

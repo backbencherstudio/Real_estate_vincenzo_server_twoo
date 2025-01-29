@@ -46,6 +46,7 @@ export type TUnits = {
     propertyId : Schema.Types.ObjectId;
     unitId : Schema.Types.ObjectId;
     ownerId : Schema.Types.ObjectId;
+    isDeleted : boolean
     // unitNumber : string;
     // name : string;
     // email : string;
