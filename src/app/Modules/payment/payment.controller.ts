@@ -4,6 +4,16 @@ import sendResponse from "../../utils/sendResponse";
 import { paymentService } from "./payment.service";
 
 
+const stripeTenantPayment = catchAsync(async (req, res) => {
+    const result = await paymentService.stripeTenantPaymentFun(req.body);
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: 'Payment for this month has been successfully processed.',
+        data: result,
+    });
+});
+
 const createALlTenantsForPayment = catchAsync(async (req, res) => {
     // const { ownerId } = req.params;
     const result = await paymentService.createALlTenantsForPaymentFormDB();
@@ -37,6 +47,7 @@ const getSingleUserAllPaymentData = catchAsync(async (req, res) => {
 
 
 export const paymentController = {
+    stripeTenantPayment,
     createALlTenantsForPayment,
     getAllTenantPaymentData,
     getSingleUserAllPaymentData

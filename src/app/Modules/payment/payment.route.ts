@@ -7,6 +7,7 @@ import { paymentController } from "./payment.controller";
 
 const router = Router()
 
+router.post("/stripeTenantPayment", paymentController.stripeTenantPayment);
 router.get("/tenantPayment", paymentController.createALlTenantsForPayment);
 router.get("/getAllTenantPaymentData", paymentController.getAllTenantPaymentData);
 router.get("/getSingleUserAllPaymentData/:userId", paymentController.getSingleUserAllPaymentData);

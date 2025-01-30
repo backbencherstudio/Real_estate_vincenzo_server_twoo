@@ -8,6 +8,7 @@ import nodemailer from "nodemailer";
 import { Request, Response } from "express";
 import config from "../../config";
 import { User } from "../User/user.model";
+import { TenantPayment } from "./payment.module";
 
 const stripe = new Stripe(
   "sk_test_51NFvq6ArRmO7hNaVBU6gVxCbaksurKb6Sspg6o8HePfktRB4OQY6kX5qqcQgfxnLnJ3w9k2EA0T569uYp8DEcfeq00KXKRmLUw"
@@ -127,7 +128,7 @@ const transporter = nodemailer.createTransport({
 
 
 const stripePayment = async (
-  req: { body: { email: string; amount: number; paymentMethodId: string; getTotalUnit : number } },
+  req: { body: { email: string; amount: number; paymentMethodId: string; getTotalUnit: number } },
   res: any
 ) => {
   const { email, amount, paymentMethodId, getTotalUnit } = req.body;
@@ -347,6 +348,8 @@ const Webhook = async (req: Request, res: Response) => {
     return res.status(400).send(`Webhook signature verification failed.`);
   }
 
+  // charge.updated
+
   const eventHandlers: { [key: string]: (data: any) => Promise<void> } = {
     "invoice.upcoming": handleInvoiceUpcoming,
     "invoice.payment_failed": handlePaymentFailed,
@@ -355,6 +358,7 @@ const Webhook = async (req: Request, res: Response) => {
     "invoice.finalized": handleInvoiceFinalized,
     "customer.subscription.deleted": handleSubscriptionDeleted,
     "invoice.payment_succeeded": handleInvoicePaymentSucceeded,
+    "charge.updated": handleChargeUpdated,
   };
 
   //   payment_intent.succeeded
@@ -671,6 +675,128 @@ Thank you for being a valued subscriber!
   }
 
 };
+
+// const handleChargeUpdated = async (charge: Stripe.Charge) => {
+//   const customerId = charge.customer as string;
+//   const receiptUrl = charge.receipt_url;
+//   const paymentStatus = charge.status;
+
+//   try {
+//     const customer = await stripe.customers.retrieve(customerId);
+//     const email = (customer as Stripe.Customer)?.email;
+
+//     const user = await User.findOne({ email })
+
+//     if (!email) {
+//       console.warn(`No email found for customer: ${customerId}`);
+//       return;
+//     }
+
+//     if (!user?.isSecurityDepositPay) {
+//       await updateUserInDB(
+//         { _id: user?._id },
+//         {
+//           // lastPaymentStatus: paymentStatus,
+//           // invoice : receiptUrl,
+//           isSecurityDepositPay: true
+//         }
+//       );
+//     }
+
+
+
+//     if (receiptUrl) {
+//       const emailSubject = "Payment Receipt for Your Rent";
+//       const emailText = `Hello, your rent payment has been updated. You can view your receipt here: ${receiptUrl}`;
+//       const emailHtml = `
+//         <p>Hello,</p>
+//         <p>Your rent payment has been successfully updated.</p>
+//         <p><strong>Status:</strong> ${paymentStatus}</p>
+//         <p>You can view your receipt by clicking the link below:</p>
+//         <a href="${receiptUrl}" target="_blank" style="display:inline-block; padding:10px 20px; background-color:#0d6efd; color:#ffffff; text-decoration:none; border-radius:5px;">View Receipt</a>
+//         <p>Thank you for your payment.</p>
+//       `;
+
+//       await sendEmail(email, emailSubject, emailText, emailHtml);
+//       console.log(`✅ Rent payment updated. Receipt sent to: ${email}`);
+//     }
+//   } catch (error) {
+//     console.error(`❌ Error handling charge update for customer: ${customerId}`, error);
+//   }
+// };
+
+
+
+
+// ======================   id get successfully jus now send emial and update data base
+const handleChargeUpdated = async (charge: Stripe.Charge) => {
+  const customerId = charge.customer as string;
+  const receiptUrl = charge.receipt_url;
+  const paymentStatus = charge.status;
+  const paymentIntentId = charge.payment_intent as string;
+
+  console.log(paymentIntentId);
+  
+
+  try {
+      const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+      const monthlyPaymentId = paymentIntent.metadata.monthlyPaymentId; 
+
+      console.log({monthlyPaymentId});
+      
+
+      if (!monthlyPaymentId) {
+          console.warn(`No monthlyPaymentId found for payment intent: ${paymentIntentId}`);
+          return;
+      }
+
+      const customer = await stripe.customers.retrieve(customerId);
+      const email = (customer as Stripe.Customer)?.email;
+
+      if (!email) {
+          console.warn(`No email found for customer: ${customerId}`);
+          return;
+      }
+
+      const tenantPayment = await TenantPayment.findOne({
+          _id: monthlyPaymentId, 
+          status: "Pending",
+      });
+
+      if (!tenantPayment) {
+          console.warn(`No matching rent payment found for monthlyPaymentId: ${monthlyPaymentId}`);
+          return;
+      }
+
+      await TenantPayment.updateOne(
+          { _id: tenantPayment._id },
+          { $set: { invoice: receiptUrl, status: "Paid" } }
+      );
+
+      console.log(`✅ Updated invoice URL for monthlyPaymentId: ${monthlyPaymentId}`);
+
+      if (receiptUrl) {
+          const emailSubject = "Payment Receipt for Your Rent";
+          const emailText = `Hello, your rent payment has been updated. You can view your receipt here: ${receiptUrl}.`;
+          const emailHtml = `
+              <p>Hello,</p>
+              <p>Your rent payment has been successfully updated.</p>
+              <p><strong>Monthly Payment ID:</strong> ${monthlyPaymentId}</p>
+              <p>You can view your receipt by clicking the link below:</p>
+              <a href="${receiptUrl}" target="_blank" style="display:inline-block; padding:10px 20px; background-color:#0d6efd; color:#ffffff; text-decoration:none; border-radius:5px;">View Receipt</a>
+              <p>Thank you for your payment.</p>
+          `;
+
+          await sendEmail(email, emailSubject, emailText, emailHtml);
+          console.log(`✅ Rent payment updated. Receipt sent to: ${email}`);
+      }
+
+  } catch (error) {
+      console.error(`❌ Error handling charge update for customer: ${customerId}`, error);
+  }
+};
+
+
 
 export const stripePaymentService = {
   stripePayment,
