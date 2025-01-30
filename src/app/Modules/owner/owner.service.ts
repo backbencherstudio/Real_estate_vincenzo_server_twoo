@@ -115,7 +115,7 @@ const createTenantIntoDB = async (payload: any) => {
   const { name, email, role, password: pass, isDeleted, ...allIds } = payload;
 
   const password = await bcrypt.hash(pass, 8);
-  const userData = { email, name, role, password, isDeleted };
+  const userData = { email, name, role, password, isDeleted , isSecurityDepositPay : false };
   const session = await mongoose.startSession();
 
   try {

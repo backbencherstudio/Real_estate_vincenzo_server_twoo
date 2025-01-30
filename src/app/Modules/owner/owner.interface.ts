@@ -34,10 +34,9 @@ export type TUnits = {
   rent: number;
   booked: boolean;
   securityDeposit: number;
-  isSecurityDepositPay: boolean;
   rentType: string;
   lateFee: number;
-  paymentDueDate: Date;
+  // paymentDueDate: Date;
 }
 
 
@@ -49,6 +48,7 @@ export type TCreateTenant = {
   isDeleted: boolean;
   createdAt?: Date;
   updatedAt?: Date;
+  isSecurityDepositPay: boolean;
   // unitNumber : string;
   // name : string;
   // email : string;

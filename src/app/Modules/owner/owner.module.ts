@@ -127,11 +127,7 @@ const UnitSchema = new Schema<TUnits>(
     securityDeposit: {
       type: Number,
       required: [true, "Security deposit is required"],
-    },
-    isSecurityDepositPay: {
-      type: Boolean,
-      default: false,
-    },
+    },    
     rentType: {
       type: String,
       required: [true, "Rent type is required"],
@@ -140,10 +136,10 @@ const UnitSchema = new Schema<TUnits>(
       type: Number,
       required: [true, "Late fee is required"],
     },
-    paymentDueDate: {
-      type: Date,
-      required: [true, "Payment due date is required"],
-    },
+    // paymentDueDate: {
+    //   type: Date,
+    //   required: [true, "Payment due date is required"],
+    // },
   },
   {
     timestamps: true,
@@ -173,7 +169,11 @@ const createTenantSchema = new Schema<TCreateTenant>({
     type: Schema.Types.ObjectId,
     required: [true, 'Owner ID is required'],
     ref: 'User',
-  }, 
+  },
+  // isSecurityDepositPay: {
+  //   type: Boolean,
+  //   default: false,
+  // },
   isDeleted : {
     type : Boolean,
     default : false

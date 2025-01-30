@@ -53,6 +53,8 @@ const getSingleUserAllPaymentDataFromDB = async (userId: string) => {
 
 
 
+
+
 export const paymentService = {
     createALlTenantsForPaymentFormDB,
     getAllTenantPaymentDataFromDB,

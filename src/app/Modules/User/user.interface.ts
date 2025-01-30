@@ -37,7 +37,8 @@ export interface TUser {
   customerId : string;
   subscriptionStatus:string;
   invoice_pdf : string;
-  getTotalUnit : number
+  getTotalUnit : number;
+  isSecurityDepositPay?:boolean
 }
 
 
