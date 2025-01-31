@@ -12,7 +12,7 @@ const stripe = new Stripe(
 
 const stripeTenantPaymentFun = async (paymentData : any) => {
     
-    const { paymentMethodId, amount, monthlyPaymentId } = paymentData;
+    const { paymentMethodId, amount, monthlyPaymentId, ownerId } = paymentData;
     try {
       const paymentIntent = await stripe.paymentIntents.create({
         amount: amount * 100,
@@ -21,7 +21,8 @@ const stripeTenantPaymentFun = async (paymentData : any) => {
         payment_method_types: ["card"],
         confirm: true,
         metadata: {
-            monthlyPaymentId: monthlyPaymentId, // ✅ Store product_id in Stripe metadata
+            monthlyPaymentId: monthlyPaymentId, 
+            ownerId: ownerId,
         },
       });
   

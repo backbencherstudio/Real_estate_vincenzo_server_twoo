@@ -801,11 +801,13 @@ const handleChargeUpdated = async (charge: Stripe.Charge) => {
   const paymentStatus = charge.status;
   const paymentIntentId = charge.payment_intent as string;
   const paymentMethodId = charge.payment_method as string;
+  const amount = charge.amount / 100;
 
   try {
 
     const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
     const monthlyPaymentId = paymentIntent.metadata.monthlyPaymentId;
+    const ownerId = paymentIntent.metadata.ownerId;
 
     const tenantPayment = await TenantPayment.findOne({
       _id: monthlyPaymentId,
@@ -822,6 +824,16 @@ const handleChargeUpdated = async (charge: Stripe.Charge) => {
       { $set: { invoice: receiptUrl, status: "Paid" } },
       { new: true, runValidators: true }
     );
+
+    const ownerData = await User.findById({ _id: ownerId })
+
+    if (ownerData) {
+      await User.findOneAndUpdate(
+        { _id: ownerId },
+        { paidAmount: (ownerData?.paidAmount ? parseInt(ownerData?.paidAmount.toString()) : 0) + parseInt(amount.toString()) },
+        { new: true, runValidators: true }
+      )
+    }
 
     let email = null;
     if (paymentMethodId) {

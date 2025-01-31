@@ -122,6 +122,9 @@ const userSchema = new Schema<TUser>(
     isSecurityDepositPay: {
       type: Boolean
     },
+    paidAmount: {
+      type: Number
+    },
   },
   {
     timestamps: true,
