@@ -9,7 +9,7 @@ const stripeTenantPayment = catchAsync(async (req, res) => {
     sendResponse(res, {
         statusCode: httpStatus.OK,
         success: true,
-        message: 'Payment for this month has been successfully processed.',
+        message: 'Payment for this month has been successfully processed. please wait a moment for invoice ',
         data: result,
     });
 });

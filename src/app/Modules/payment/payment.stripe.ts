@@ -729,70 +729,165 @@ Thank you for being a valued subscriber!
 
 
 // ======================   id get successfully jus now send emial and update data base
+
+
+// const handleChargeUpdated = async (charge: Stripe.Charge) => {
+//   const customerId = charge.customer as string;
+//   const receiptUrl = charge.receipt_url;
+//   const paymentStatus = charge.status;
+//   const paymentIntentId = charge.payment_intent as string;
+
+//   try {
+//     const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+//     const monthlyPaymentId = paymentIntent.metadata.monthlyPaymentId;
+
+//     console.log({ monthlyPaymentId });
+
+//     const tenantPayment = await TenantPayment.findOne({
+//       _id: monthlyPaymentId,
+//       status: "Pending",
+//     });
+
+//     if (tenantPayment) {
+//       const res = await TenantPayment.findByIdAndUpdate(
+//         { _id: monthlyPaymentId },
+//         { $set: { invoice: receiptUrl, status: "Paid" } },
+//         {runValidators : true, new : true}
+//       );
+
+//       console.log({ res });
+//     }
+
+//     const customer = await stripe.customers.retrieve(customerId);
+//     const email = (customer as Stripe.Customer)?.email;
+
+//     console.log({ email });
+
+//     const res = await TenantPayment.findByIdAndUpdate(
+//       { _id: monthlyPaymentId },
+//       { $set: { invoice: receiptUrl, status: "Paid" } }
+//     );
+
+//     console.log({ res });
+
+
+//     console.log(`✅ Updated invoice URL for monthlyPaymentId: ${monthlyPaymentId}`);
+
+//     if (receiptUrl) {
+//       const emailSubject = "Payment Receipt for Your Rent";
+//       const emailText = `Hello, your rent payment has been updated. You can view your receipt here: ${receiptUrl}.`;
+//       const emailHtml = `
+//               <p>Hello,</p>
+//               <p>Your rent payment has been successfully updated.</p>
+//               <p><strong>Monthly Payment ID:</strong> ${monthlyPaymentId}</p>
+//               <p>You can view your receipt by clicking the link below:</p>
+//               <a href="${receiptUrl}" target="_blank" style="display:inline-block; padding:10px 20px; background-color:#0d6efd; color:#ffffff; text-decoration:none; border-radius:5px;">View Receipt</a>
+//               <p>Thank you for your payment.</p>
+//           `;
+
+//       await sendEmail(email, emailSubject, emailText, emailHtml);
+//       console.log(`✅ Rent payment updated. Receipt sent to: ${email}`);
+//     }
+
+//   } catch (error) {
+//     console.error(`❌ Error handling charge update for customer: ${customerId}`, error);
+//   }
+// };
+
+
 const handleChargeUpdated = async (charge: Stripe.Charge) => {
   const customerId = charge.customer as string;
   const receiptUrl = charge.receipt_url;
   const paymentStatus = charge.status;
   const paymentIntentId = charge.payment_intent as string;
-
-  console.log(paymentIntentId);
-  
+  const paymentMethodId = charge.payment_method as string;
 
   try {
-      const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
-      const monthlyPaymentId = paymentIntent.metadata.monthlyPaymentId; 
 
-      console.log({monthlyPaymentId});
-      
+    const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+    const monthlyPaymentId = paymentIntent.metadata.monthlyPaymentId;
 
-      if (!monthlyPaymentId) {
-          console.warn(`No monthlyPaymentId found for payment intent: ${paymentIntentId}`);
-          return;
-      }
+    const tenantPayment = await TenantPayment.findOne({
+      _id: monthlyPaymentId,
+      status: "Pending",
+    });
 
-      const customer = await stripe.customers.retrieve(customerId);
-      const email = (customer as Stripe.Customer)?.email;
+    if (!tenantPayment) {
+      console.warn(`⚠ No matching payment found for monthlyPaymentId: ${monthlyPaymentId}`);
+      return;
+    }
 
-      if (!email) {
-          console.warn(`No email found for customer: ${customerId}`);
-          return;
-      }
+    await TenantPayment.findByIdAndUpdate(
+      { _id: monthlyPaymentId },
+      { $set: { invoice: receiptUrl, status: "Paid" } },
+      { new: true, runValidators: true }
+    );
 
-      const tenantPayment = await TenantPayment.findOne({
-          _id: monthlyPaymentId, 
-          status: "Pending",
-      });
+    let email = null;
+    if (paymentMethodId) {
+      const paymentMethod = await stripe.paymentMethods.retrieve(paymentMethodId);
+      email = paymentMethod?.billing_details?.email;
+    }
 
-      if (!tenantPayment) {
-          console.warn(`No matching rent payment found for monthlyPaymentId: ${monthlyPaymentId}`);
-          return;
-      }
+    if (!email) {
+      console.warn(`⚠ No email found for customer: ${customerId}. Payment ID: ${monthlyPaymentId}`);
+      return;
+    }
 
-      await TenantPayment.updateOne(
-          { _id: tenantPayment._id },
-          { $set: { invoice: receiptUrl, status: "Paid" } }
-      );
+    if (receiptUrl) {
+      const emailSubject = "📄 Payment Receipt for Your Rent";
+      const emailText = `Hello, your rent payment has been successfully processed. You can view your receipt here: ${receiptUrl}.`;
+      const emailHtml = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 20px auto; padding: 20px; background-color: #ffffff; border: 1px solid #e0e0e0; border-radius: 8px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);">
+          <!-- Header Section -->
+          <div style="background: linear-gradient(135deg, #6a11cb, #2575fc); color: #ffffff; padding: 20px; border-radius: 8px 8px 0 0; text-align: center;">
+              <h1 style="margin: 0; font-size: 24px; font-weight: bold;">🏠 Rent Payment Receipt</h1>
+          </div>
+  
+          <!-- Body Content -->
+          <div style="padding: 20px;">
+              <p style="color: #333333; font-size: 16px; line-height: 1.6;">
+                  Hello,
+              </p>
+              <p style="color: #333333; font-size: 16px; line-height: 1.6;">
+                  We are pleased to confirm that your rent payment has been successfully processed.
+              </p>
+              <p style="font-size: 20px; color: #2575fc; font-weight: bold; text-align: center; margin: 20px 0;">
+                  Payment ID: <strong>${monthlyPaymentId}</strong>
+              </p>
+              <p style="color: #333333; font-size: 16px; line-height: 1.6;">
+                  You can view and download your receipt by clicking the button below:
+              </p>
+  
+              <!-- Call to Action Button -->
+              <div style="text-align: center; margin-bottom: 30px;">
+                  <a href="${receiptUrl}" style="display: inline-block; padding: 14px 24px; background-color: #2575fc; color: #ffffff; text-decoration: none; font-size: 16px; font-weight: bold; border-radius: 6px; box-shadow: 0px 4px 10px rgba(37, 117, 252, 0.2);">
+                      📄 View Receipt
+                  </a>
+              </div>
+  
+              <p style="color: #333333; font-size: 16px; line-height: 1.6;">
+                  Thank you for your payment! If you have any questions, please feel free to contact us.
+              </p>
+          </div>
+  
+          <!-- Footer Section -->
+          <div style="background-color: #f8f9fa; padding: 15px; text-align: center; border-radius: 0 0 8px 8px; font-size: 14px; color: #888888;">
+              <p style="margin: 0;">
+                  Need help? <a href="mailto:support@example.com" style="color: #2575fc; text-decoration: none;">Contact Support</a>
+              </p>
+              <p style="margin: 10px 0 0;">&copy; ${new Date().getFullYear()} Your Company. All rights reserved.</p>
+          </div>
+      </div>
+      `;
 
-      console.log(`✅ Updated invoice URL for monthlyPaymentId: ${monthlyPaymentId}`);
+      await sendEmail(email, emailSubject, emailText, emailHtml);
+      console.log(`✅ Rent payment updated. Receipt sent to: ${email}`);
+    }
 
-      if (receiptUrl) {
-          const emailSubject = "Payment Receipt for Your Rent";
-          const emailText = `Hello, your rent payment has been updated. You can view your receipt here: ${receiptUrl}.`;
-          const emailHtml = `
-              <p>Hello,</p>
-              <p>Your rent payment has been successfully updated.</p>
-              <p><strong>Monthly Payment ID:</strong> ${monthlyPaymentId}</p>
-              <p>You can view your receipt by clicking the link below:</p>
-              <a href="${receiptUrl}" target="_blank" style="display:inline-block; padding:10px 20px; background-color:#0d6efd; color:#ffffff; text-decoration:none; border-radius:5px;">View Receipt</a>
-              <p>Thank you for your payment.</p>
-          `;
-
-          await sendEmail(email, emailSubject, emailText, emailHtml);
-          console.log(`✅ Rent payment updated. Receipt sent to: ${email}`);
-      }
 
   } catch (error) {
-      console.error(`❌ Error handling charge update for customer: ${customerId}`, error);
+    console.error(`❌ Error handling charge update for customer: ${customerId}`, error);
   }
 };
 

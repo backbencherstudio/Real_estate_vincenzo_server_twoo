@@ -33,7 +33,6 @@ const stripeTenantPaymentFun = async (paymentData : any) => {
   };
 
 
-
 const createALlTenantsForPaymentFormDB = async () => {
     try {
         const tenants = await Tenant.find({ isDeleted: false }).lean();
@@ -56,16 +55,13 @@ const createALlTenantsForPaymentFormDB = async () => {
 };
 
 
-
-
-
 const getAllTenantPaymentDataFromDB = async () => {
     const result = await TenantPayment.find().sort({ createdAt: -1 })
     return result
 }
 
 const getSingleUserAllPaymentDataFromDB = async (userId: string) => {
-    const result = await TenantPayment.find({ userId }).populate([{ path: "userId" }, { path: "unitId" }, { path: "propertyId" }]).sort({ createdAt: -1 })
+    const result = await TenantPayment.find({ userId }).populate([{ path: "userId" }, { path: "unitId" }, { path: "propertyId" }]).sort({ status: 1, updatedAt: -1, createdAt : -1 });
     return result
 }
 
