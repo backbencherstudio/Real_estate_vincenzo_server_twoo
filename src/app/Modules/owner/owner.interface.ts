@@ -1,4 +1,4 @@
-import { Schema } from "mongoose";
+import { Schema, Types } from "mongoose";
 
 export type TpropertyLocation = {
   country: string;
@@ -57,3 +57,11 @@ export type TCreateTenant = {
   // isDeleted: boolean;
 }
 
+export interface PopulatedPayment {
+  _id: Types.ObjectId;
+  ownerId: Types.ObjectId;
+  status: "Pending" | "Paid";
+  createdAt: Date;
+  unitId?: { rent?: number }; 
+  paidAmount?: number;
+}
