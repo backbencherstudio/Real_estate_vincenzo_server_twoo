@@ -10,5 +10,6 @@ export type TTenantPayment = {
     invoice : string;
     createdAt: Date;
     updatedAt: Date;
+    paidAmount : number
   }
  

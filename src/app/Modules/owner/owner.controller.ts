@@ -153,6 +153,19 @@ const getAllDataOverviewByOwner = catchAsync(async (req, res) => {
       data: result,  
     });
   });
+
+const getResentPaymentDataByOwner = catchAsync(async (req, res) => {
+  const { ownerId } = req.params;
+  const { status } = req.query;
+    
+    const result = await OwnerServices.getResentPaymentDataByOwnerFromDB(ownerId, status as string);  
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'get all resent payment data successfully',
+      data: result,  
+    });
+  });
   
 
  export const propertyController  = {
@@ -167,5 +180,6 @@ const getAllDataOverviewByOwner = catchAsync(async (req, res) => {
     getEachOwnerAllMaintenanceRequestData,
     getSingleMaintenanceRequestData,
     maintenanceStatusChenge,
-    getAllDataOverviewByOwner
+    getAllDataOverviewByOwner,
+    getResentPaymentDataByOwner
  }

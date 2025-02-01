@@ -222,7 +222,6 @@ const stripePayment = async (
 
 
 
-
 const sendEmail = async (
   to: string,
   subject: string,
@@ -821,7 +820,7 @@ const handleChargeUpdated = async (charge: Stripe.Charge) => {
 
     await TenantPayment.findByIdAndUpdate(
       { _id: monthlyPaymentId },
-      { $set: { invoice: receiptUrl, status: "Paid" } },
+      { $set: { invoice: receiptUrl, status: "Paid", paidAmount : amount } },
       { new: true, runValidators: true }
     );
 

@@ -32,6 +32,9 @@ const TenantPaymentSchema = new Schema<TTenantPayment>({
         type: String,
         default : "Upcoming"
     },
+    paidAmount: {
+        type: Number
+    },
     createdAt:{
         type : Date
     },
