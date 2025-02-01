@@ -10,6 +10,8 @@ export type TTenantPayment = {
     invoice : string;
     createdAt: Date;
     updatedAt: Date;
+    PaymentPlaced: Date;
     paidAmount : number
+    lateFee : number
   }
  

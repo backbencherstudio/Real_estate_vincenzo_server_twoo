@@ -7,31 +7,32 @@ import { TenantPayment } from "./payment.module";
 
 const stripe = new Stripe(
     "sk_test_51NFvq6ArRmO7hNaVBU6gVxCbaksurKb6Sspg6o8HePfktRB4OQY6kX5qqcQgfxnLnJ3w9k2EA0T569uYp8DEcfeq00KXKRmLUw"
-  );
+);
 
 
-const stripeTenantPaymentFun = async (paymentData : any) => {
-    
-    const { paymentMethodId, amount, monthlyPaymentId, ownerId } = paymentData;
+const stripeTenantPaymentFun = async (paymentData: any) => {
+
+    const { paymentMethodId, amount, lateFee, monthlyPaymentId, ownerId } = paymentData;
     try {
-      const paymentIntent = await stripe.paymentIntents.create({
-        amount: amount * 100,
-        currency: "usd",
-        payment_method: paymentMethodId,
-        payment_method_types: ["card"],
-        confirm: true,
-        metadata: {
-            monthlyPaymentId: monthlyPaymentId, 
-            ownerId: ownerId,
-        },
-      });
-  
-      return ({ success: true, paymentIntent });
+        const paymentIntent = await stripe.paymentIntents.create({
+            amount: amount * 100,
+            currency: "usd",
+            payment_method: paymentMethodId,
+            payment_method_types: ["card"],
+            confirm: true,
+            metadata: {
+                monthlyPaymentId: monthlyPaymentId,
+                ownerId: ownerId,
+                lateFee: lateFee
+            },
+        });
+
+        return ({ success: true, paymentIntent });
     } catch (err) {
-      console.error("Stripe Error:", err);
-      return({ success: false, error: err });
+        console.error("Stripe Error:", err);
+        return ({ success: false, error: err });
     }
-  };
+};
 
 
 const createALlTenantsForPaymentFormDB = async () => {
@@ -62,7 +63,7 @@ const getAllTenantPaymentDataFromDB = async () => {
 }
 
 const getSingleUserAllPaymentDataFromDB = async (userId: string) => {
-    const result = await TenantPayment.find({ userId }).populate([{ path: "userId" }, { path: "unitId" }, { path: "propertyId" }]).sort({ status: 1, updatedAt: -1, createdAt : -1 });
+    const result = await TenantPayment.find({ userId }).populate([{ path: "userId" }, { path: "unitId" }, { path: "propertyId" }]).sort({ status: 1, updatedAt: -1, createdAt: -1 });
     return result
 }
 

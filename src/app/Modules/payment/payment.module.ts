@@ -35,6 +35,12 @@ const TenantPaymentSchema = new Schema<TTenantPayment>({
     paidAmount: {
         type: Number
     },
+    lateFee: {
+        type: Number
+    },
+    PaymentPlaced:{
+        type : Date
+    },
     createdAt:{
         type : Date
     },
