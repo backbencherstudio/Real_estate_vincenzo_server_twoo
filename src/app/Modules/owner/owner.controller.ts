@@ -200,6 +200,7 @@ const getPaymentDataOverviewByOwner = catchAsync(async (req, res) => {
 });
 
 
+
 export const propertyController = {
   createProperties,
   getSingleOwnerAllProperties,
@@ -214,5 +215,5 @@ export const propertyController = {
   maintenanceStatusChenge,
   getAllDataOverviewByOwner,
   getResentPaymentDataByOwner,
-  getPaymentDataOverviewByOwner
+  getPaymentDataOverviewByOwner,
 }
