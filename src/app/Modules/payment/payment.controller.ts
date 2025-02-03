@@ -9,7 +9,7 @@ const stripeTenantPayment = catchAsync(async (req, res) => {
     sendResponse(res, {
         statusCode: httpStatus.OK,
         success: true,
-        message: 'Payment for this month has been successfully processed. please wait a moment for invoice ',
+        message: 'Payment for this month has been successfully processed. please wait a moment for receipt ',
         data: result,
     });
 });
@@ -35,7 +35,7 @@ const getAllTenantPaymentData = catchAsync(async (req, res) => {
     });
 });
 
-const getSingleUserAllPaymentData = catchAsync(async (req, res) => {
+const getSingleUserAllPaymentData = catchAsync(async (req, res) => {    
     const result = await paymentService.getSingleUserAllPaymentDataFromDB(req.params.userId);
     sendResponse(res, {
         statusCode: httpStatus.OK,

@@ -361,5 +361,5 @@ export const OwnerServices = {
   maintenanceStatusChengeIntoDB,
   getAllDataOverviewByOwnerFromDB,
   getResentPaymentDataByOwnerFromDB,
-  getPaymentDataOverviewByOwnerFromDB
+  getPaymentDataOverviewByOwnerFromDB,
 };

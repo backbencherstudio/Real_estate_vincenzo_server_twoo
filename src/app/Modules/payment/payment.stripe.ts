@@ -698,10 +698,18 @@ const handleChargeUpdated = async (charge: Stripe.Charge) => {
       status: "Pending",
     });
 
+    
+
     if (!tenantPayment) {
       console.warn(`⚠ No matching payment found for monthlyPaymentId: ${monthlyPaymentId}`);
       return;
     }
+
+    await User.findByIdAndUpdate(
+      { _id: tenantPayment?.userId },
+      { $set: { isSecurityDepositPay : true } },
+      { new: true, runValidators: true }
+    );
 
     await TenantPayment.findByIdAndUpdate(
       { _id: monthlyPaymentId },
