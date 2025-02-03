@@ -41,8 +41,6 @@ app.use((req, res, next) => {
   }
 });
 
-
-
 app.use(
   cors({
     origin: ['http://localhost:5173'],  
@@ -50,25 +48,15 @@ app.use(
   })
 );
 
+app.use("/api/v1", router);
+
 
 app.get('/chats', async (req, res) => {
   try {
-    const { email } = req.query;
-
-    if (!email) {
-      return res.status(400).json({ error: 'Email is required' });
-    }
-
     const chats = await MessageModel
-      .find({
-        $or: [
-          { sender: email },
-          { recipient: email }
-        ]
-      })
+      .find()
       .sort({ timestamp: -1 })
       .lean();
-      
     res.json(chats);
   } catch (err) {
     res.status(500).json({ error: 'Error fetching messages' });
@@ -132,7 +120,6 @@ app.get('/', async (req, res) => {
   res.send(a);
 });
 
-app.use("/api/v1", router);
 
 app.use(globalErrorHandler);
 

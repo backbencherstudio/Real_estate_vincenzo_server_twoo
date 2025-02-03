@@ -80,6 +80,18 @@ router.get(
     propertyController.getAllDataOverviewByOwner,
 );
 
+router.get(
+    '/getResentPaymentDataByOwner/:ownerId',
+    Auth(User_Role.owner),
+    propertyController.getResentPaymentDataByOwner,
+);
+
+router.get(
+    '/getPaymentDataOverviewByOwner/:ownerId',
+    Auth(User_Role.owner),
+    propertyController.getPaymentDataOverviewByOwner,
+);
+
 
 
 export const OwnerRouter = router;

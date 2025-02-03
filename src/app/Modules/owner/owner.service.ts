@@ -1,13 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import mongoose, { Query, Types } from "mongoose";
 import { User } from "../User/user.model";
-import { TProperties, TUnits } from "./owner.interface";
+import { PopulatedPayment, TProperties, TUnits } from "./owner.interface";
 import { Properties, Tenant, Unit } from "./owner.module";
 import bcrypt from 'bcrypt';
 import { AppError } from "../../errors/AppErrors";
 import httpStatus from "http-status";
 import { Maintenance } from "../maintenance/maintenance.module";
 import { OverviewData } from "../admin/admin.interface";
+import { TenantPayment } from "../payment/payment.module";
 
 
 const createPropertiesDB = async (payload: TProperties) => {
@@ -115,7 +116,7 @@ const createTenantIntoDB = async (payload: any) => {
   const { name, email, role, password: pass, isDeleted, ...allIds } = payload;
 
   const password = await bcrypt.hash(pass, 8);
-  const userData = { email, name, role, password, isDeleted };
+  const userData = { email, name, role, password, isDeleted, isSecurityDepositPay: false };
   const session = await mongoose.startSession();
 
   try {
@@ -212,7 +213,7 @@ const getAllDataOverviewByOwnerFromDB = async (ownerId: string): Promise<Overvie
     const monthlyProperties = await Properties.aggregate([
       {
         $match: {
-          ownerId: new Types.ObjectId(ownerId) 
+          ownerId: new Types.ObjectId(ownerId)
         }
       },
       {
@@ -232,7 +233,7 @@ const getAllDataOverviewByOwnerFromDB = async (ownerId: string): Promise<Overvie
     const monthlyTenants = await Tenant.aggregate([
       {
         $match: {
-          ownerId: new Types.ObjectId(ownerId) 
+          ownerId: new Types.ObjectId(ownerId)
         }
       },
       {
@@ -261,6 +262,90 @@ const getAllDataOverviewByOwnerFromDB = async (ownerId: string): Promise<Overvie
 };
 
 
+const getResentPaymentDataByOwnerFromDB = async (ownerId: string, status: string) => {
+  const result = await TenantPayment.find({ ownerId, status }).populate([{ path: "propertyId" }, { path: "unitId" }, { path: "userId" }]).sort({ updatedAt: -1 })
+  return result
+}
+
+
+// const getPaymentDataOverviewByOwnerFromDB = async (ownerId : string, data : string) => {
+//   const pendingPayments = await TenantPayment.find({ ownerId, status: "Pending" })
+//     .populate("unitId") 
+//     .lean();
+//   const pendingCount = pendingPayments.length;
+
+//   const totalRentAmount = pendingPayments.reduce((sum, payment) => {
+//     return sum + (payment?.unitId.rent || 0); 
+//   }, 0);
+
+//   return {
+//     pendingCount,
+//     totalRentAmount
+//   };
+// };
+
+
+// const getPaymentDataOverviewByOwnerFromDB = async (ownerId: string, selectedDate: string) => {
+//   const [year, month] = selectedDate.split("-").map(Number);
+//   const payments = await TenantPayment.find({
+//     ownerId,
+//     status: { $in: ["Pending", "Paid"] }, 
+//     createdAt: {
+//       $gte: new Date(year, month - 1, 1), 
+//       $lt: new Date(year, month, 1) 
+//     }
+//   })
+//     .populate("unitId", "rent") 
+//     .lean();
+//   let totalDueRentAmount = 0;
+//   let totalPaidRentAmount = 0;
+
+//   payments.forEach((payment) => {
+//     if (payment.status === "Pending") {
+//       totalDueRentAmount += payment?.unitId?.rent || 0;
+//     } else if (payment.status === "Paid") {
+//       totalPaidRentAmount += payment?.paidAmount || 0;
+//     }
+//   });
+
+//   return {
+//     totalDueRentAmount,
+//     totalPaidRentAmount
+//   };
+// };
+
+const getPaymentDataOverviewByOwnerFromDB = async (ownerId: string, selectedDate: string) => {
+  const [year, month] = selectedDate.split("-").map(Number);
+  const payments: PopulatedPayment[] = await TenantPayment.find({
+    ownerId,
+    status: { $in: ["Pending", "Paid"] },
+    createdAt: {
+      $gte: new Date(year, month - 1, 1),
+      $lt: new Date(year, month, 1)
+    }
+  })
+    .populate<{ unitId: { rent?: number } }>("unitId", "rent") 
+    .lean();
+
+  let totalDueRentAmount = 0;
+  let totalPaidRentAmount = 0;
+
+  payments.forEach((payment) => {
+    if (payment.status === "Pending") {
+      totalDueRentAmount += payment.unitId?.rent ?? 0; 
+    } else if (payment.status === "Paid") {
+      totalPaidRentAmount += payment.paidAmount ?? 0;
+    }
+  });
+
+  return {
+    totalDueRentAmount,
+    totalPaidRentAmount
+  };
+};
+
+
+
 
 export const OwnerServices = {
   createPropertiesDB,
@@ -274,5 +359,7 @@ export const OwnerServices = {
   getEachOwnerAllMaintenanceRequestFromDB,
   getSingleMaintenanceRequestDataFromDB,
   maintenanceStatusChengeIntoDB,
-  getAllDataOverviewByOwnerFromDB
+  getAllDataOverviewByOwnerFromDB,
+  getResentPaymentDataByOwnerFromDB,
+  getPaymentDataOverviewByOwnerFromDB
 };

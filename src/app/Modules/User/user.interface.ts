@@ -36,7 +36,10 @@ export interface TUser {
   bookedUnitNumber : number;
   customerId : string;
   subscriptionStatus:string;
-  invoice_pdf : string
+  invoice_pdf : string;
+  getTotalUnit : number;
+  isSecurityDepositPay?:boolean;
+  paidAmount ?: number;
 }
 
 

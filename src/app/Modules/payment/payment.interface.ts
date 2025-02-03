@@ -1,0 +1,17 @@
+import { Schema } from "mongoose";
+
+
+export type TTenantPayment = {
+    userId : Schema.Types.ObjectId;
+    propertyId : Schema.Types.ObjectId;
+    unitId : Schema.Types.ObjectId;
+    ownerId : Schema.Types.ObjectId;
+    status : 'Pending' | "Paid";
+    invoice : string;
+    createdAt: Date;
+    updatedAt: Date;
+    PaymentPlaced: Date;
+    paidAmount : number
+    lateFee : number
+  }
+ 
