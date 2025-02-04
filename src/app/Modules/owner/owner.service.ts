@@ -355,9 +355,7 @@ const getPaymentDataOverviewByOwnerFromDB = async (ownerId: string, selectedDate
 const getAllTenantsForMessageFromDB = async (id: string) => {
   const tenant = await Tenant.find({ ownerId: id })
     .populate({ path: "userId", select: "name email role profileImage" }); 
-
   const admin = await User.find({ role: "admin" }).select("name email role profileImage"); 
-
   return [...tenant.map(t => t.userId), ...admin];
 };
 
