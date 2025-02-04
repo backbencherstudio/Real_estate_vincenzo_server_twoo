@@ -324,7 +324,7 @@ const getPaymentDataOverviewByOwnerFromDB = async (ownerId: string, selectedDate
       $lt: new Date(year, month, 1)
     }
   })
-    .populate<{ unitId: { rent?: number } }>("unitId", "rent") 
+    .populate<{ unitId: { rent?: number } }>("unitId", "rent")
     .lean();
 
   let totalDueRentAmount = 0;
@@ -332,7 +332,7 @@ const getPaymentDataOverviewByOwnerFromDB = async (ownerId: string, selectedDate
 
   payments.forEach((payment) => {
     if (payment.status === "Pending") {
-      totalDueRentAmount += payment.unitId?.rent ?? 0; 
+      totalDueRentAmount += payment.unitId?.rent ?? 0;
     } else if (payment.status === "Paid") {
       totalPaidRentAmount += payment.paidAmount ?? 0;
     }
@@ -343,6 +343,26 @@ const getPaymentDataOverviewByOwnerFromDB = async (ownerId: string, selectedDate
     totalPaidRentAmount
   };
 };
+
+
+// const getAllTenantsForMessageFromDB = async (id: string) => {
+//   const tenant = await Tenant.find({ ownerId: id }).select("userId.name userId.email").populate([{ path: "userId" }]);
+//   const admin = await User.find({ role: "admin" });
+//   const result = [...tenant, ...admin]
+//   return result
+// }
+
+const getAllTenantsForMessageFromDB = async (id: string) => {
+  const tenant = await Tenant.find({ ownerId: id })
+    .populate({ path: "userId", select: "name email role profileImage" }); 
+
+  const admin = await User.find({ role: "admin" }).select("name email role profileImage"); 
+
+  return [...tenant.map(t => t.userId), ...admin];
+};
+
+
+
 
 
 
@@ -362,4 +382,5 @@ export const OwnerServices = {
   getAllDataOverviewByOwnerFromDB,
   getResentPaymentDataByOwnerFromDB,
   getPaymentDataOverviewByOwnerFromDB,
+  getAllTenantsForMessageFromDB
 };
