@@ -12,6 +12,11 @@ router.get(
     tenantController.getTenantDetails,
 );
 
+router.get(
+    '/message/:id',
+    tenantController.getAllTenantsForMessageForEachPropertyTenant,
+);
+
 
 
 export const TenantRouter = router;

@@ -14,6 +14,19 @@ const getTenantDetails = catchAsync(async (req, res) => {
     });
 });
 
+
+const getAllTenantsForMessageForEachPropertyTenant = catchAsync(async (req, res) => {
+    const { id } = req.params;    
+    const result = await TenantService.getAllTenantsForMessageFromDBForEachPropertyTenant(id);
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: 'Get tenant message data successfully for each user per property',
+        data: result,
+    });
+});
+
 export const tenantController = {
-    getTenantDetails
+    getTenantDetails,
+    getAllTenantsForMessageForEachPropertyTenant
 }

@@ -16,7 +16,6 @@ const moduleRoutes = [
   { path: '/maintenance', route: MaintenanceRoutes },
   { path: '/document', route: DocumentRoutes },
   { path: '/payment', route: StripePaymentRoutes},
-
 ];
 
 moduleRoutes.forEach((pathRouter) =>

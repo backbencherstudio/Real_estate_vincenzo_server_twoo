@@ -1,4 +1,5 @@
 import { Tenant } from "../owner/owner.module"
+import { User } from "../User/user.model";
 
 const getTenantDetailsFromDB = async (id: string) => {
     const result = await Tenant.findOne({ userId: id }).populate([{ path: "propertyId" }, { path: "unitId" }, {
@@ -9,6 +10,21 @@ const getTenantDetailsFromDB = async (id: string) => {
 }
 
 
+const getAllTenantsForMessageFromDBForEachPropertyTenant = async (userId: string) => {
+    const tenant = await Tenant.findOne({ userId });
+    if (!tenant) {
+        console.log("No tenant found for this userId.");
+        return null;
+    }
+    const propertyId = tenant.propertyId;
+    const allTenantSingleProperty = await Tenant.find({ propertyId })
+        .populate({ path: "userId", select: "name email role profileImage" });
+        const ownerData = await User.findById({_id : tenant.ownerId}).select("name email role profileImage")
+        return [...allTenantSingleProperty.map(t => t.userId), ownerData];
+};
+
+
 export const TenantService = {
-    getTenantDetailsFromDB
+    getTenantDetailsFromDB,
+    getAllTenantsForMessageFromDBForEachPropertyTenant
 }
