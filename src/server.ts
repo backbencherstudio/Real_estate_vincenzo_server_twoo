@@ -8,6 +8,7 @@ import config from './app/config';
 import { app, httpServer, io } from './app';
 import MessageModel from './app/Modules/messages/message.module';
 import MessageService from './app/Modules/messages/message.service';
+import { seedAdmin } from './app/DB/admin';
 
 const numCPUs = os.cpus().length;
 
@@ -23,6 +24,7 @@ if (cluster.isPrimary) {
   async function main() {
     try {
       await mongoose.connect(config.database_url as string);
+      seedAdmin()
       
       const messageService = new MessageService(io, MessageModel);
 

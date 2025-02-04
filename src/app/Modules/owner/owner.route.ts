@@ -92,5 +92,11 @@ router.get(
     propertyController.getPaymentDataOverviewByOwner,
 );
 
+router.get(
+    '/getAllTenantsForMessage/:ownerId',
+    Auth(User_Role.owner),
+    propertyController.getAllTenantsForMessage,
+);
+
 
 export const OwnerRouter = router;
