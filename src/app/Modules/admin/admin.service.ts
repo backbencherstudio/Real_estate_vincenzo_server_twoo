@@ -1,9 +1,11 @@
+
 /* eslint-disable no-useless-catch */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Query } from "mongoose";
 import { Properties, Tenant, Unit } from "../owner/owner.module"
 import { User } from "../User/user.model";
-import { OverviewData } from "./admin.interface";
+import { OverviewData, TPlanDetails } from "./admin.interface";
+import { PlanDetails } from "./admin.module";
 
 
 const getALlPropertiesFromDB = async () =>{
@@ -94,6 +96,11 @@ const getAllDataOverviewByAdminFromDB = async (): Promise<OverviewData> => {
 };
 
 
+const createPlanIntoDB = async (payload : TPlanDetails ) =>{
+    const result = await PlanDetails.create(payload)
+    return result    
+}
+
 
  
 
@@ -104,5 +111,6 @@ export const AdminService = {
     getALlTenantsFormDB,
     getSingleTenantDetailseFromDB,
     getSingleOwnerAllPropertiesWithOwnerInfoFromDB,
-    getAllDataOverviewByAdminFromDB
+    getAllDataOverviewByAdminFromDB,
+    createPlanIntoDB
 }

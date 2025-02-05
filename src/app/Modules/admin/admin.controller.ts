@@ -66,6 +66,16 @@ const getALlProperties = catchAsync(async (req, res) => {
     });
   });
 
+  const createPlan = catchAsync(async (req, res) => {
+    const result = await AdminService.createPlanIntoDB(req.body);  
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'Get All Data Overview successfully',
+      data: result,  
+    });
+  });
+
 
  
 
@@ -75,5 +85,6 @@ export const AdminController = {
     getALlTenants,
     getSingleTenantDetailse,
     getSingleOwnerAllPropertiesWithOwnerInfo,
-    getAllDataOverviewByAdmin
+    getAllDataOverviewByAdmin,
+    createPlan
 }

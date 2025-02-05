@@ -37,6 +37,12 @@ router.get(
     AdminController.getAllDataOverviewByAdmin,
 );
 
+router.get(
+    '/createPlan',
+    Auth(User_Role.admin),
+    AdminController.createPlan,
+);
+
 
 
 export const AdminRouter = router
