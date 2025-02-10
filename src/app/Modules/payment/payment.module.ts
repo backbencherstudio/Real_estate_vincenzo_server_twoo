@@ -1,5 +1,5 @@
-import { model, Schema } from "mongoose";
-import { TTenantPayment } from "./payment.interface";
+import { model, Schema, Types } from "mongoose";
+import { TOwnerPayOut, TTenantPayment } from "./payment.interface";
 
 
 const TenantPaymentSchema = new Schema<TTenantPayment>({
@@ -52,5 +52,20 @@ const TenantPaymentSchema = new Schema<TTenantPayment>({
     versionKey: false
 });
 
+
+const OwnerPayoutSchema = new Schema <TOwnerPayOut>({
+    ownerId: { type: Types.ObjectId, required: true, ref: 'User' }, 
+    amount: { type: Number, required: true },
+    accountId: { type: String, required: true },
+    email: { type: String, required: true },
+    status: {
+      type: String,
+      enum: ['Pending', 'On progress', 'Failed', 'Success'], 
+      default: 'Pending',
+    },
+    transactionId: { type: String }, 
+  }, { timestamps: true })
+
+export const OwnerPayout = model('OwnerPayout', OwnerPayoutSchema);
 
 export const TenantPayment = model('TenantPayment', TenantPaymentSchema);

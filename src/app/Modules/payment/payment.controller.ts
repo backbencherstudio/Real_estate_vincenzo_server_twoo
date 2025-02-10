@@ -45,10 +45,32 @@ const getSingleUserAllPaymentData = catchAsync(async (req, res) => {
     });
 });
 
+const createPayoutByOwner = catchAsync(async (req, res) => {    
+    const result = await paymentService.createPayoutByOwnerIntoDB(req.body);
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: 'PayOut request placed successfully',
+        data: result,
+    });
+});
+
+const getPayoutDataByAdmin = catchAsync(async (req, res) => {    
+    const result = await paymentService.getPayoutDataFromDBbyAdmin();
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: 'Get All PayOut Placed Data successfully by Admin',
+        data: result,
+    });
+});
+
 
 export const paymentController = {
     stripeTenantPayment,
     createALlTenantsForPayment,
     getAllTenantPaymentData,
-    getSingleUserAllPaymentData
+    getSingleUserAllPaymentData,
+    createPayoutByOwner,
+    getPayoutDataByAdmin
 }

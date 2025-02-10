@@ -3,7 +3,8 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import Stripe from "stripe";
 import { Tenant } from "../owner/owner.module";
-import { TenantPayment } from "./payment.module";
+import { OwnerPayout, TenantPayment } from "./payment.module";
+import { TOwnerPayOut } from "./payment.interface";
 
 const stripe = new Stripe(
     "sk_test_51NFvq6ArRmO7hNaVBU6gVxCbaksurKb6Sspg6o8HePfktRB4OQY6kX5qqcQgfxnLnJ3w9k2EA0T569uYp8DEcfeq00KXKRmLUw"
@@ -68,9 +69,28 @@ const getSingleUserAllPaymentDataFromDB = async (userId: string) => {
 }
 
 
+// =======================================================>>>>>>> PayOut Functions
+
+const createPayoutByOwnerIntoDB = async (payload : TOwnerPayOut ) => {
+    const result = await OwnerPayout.create(payload);
+    return result
+}
+
+
+const getPayoutDataFromDBbyAdmin = async () => {
+    const result = await OwnerPayout.find({ status: "Pending" }).sort({ createdAt: -1 });
+    return result;
+};
+
+
+
+
+
 export const paymentService = {
     stripeTenantPaymentFun,
     createALlTenantsForPaymentFormDB,
     getAllTenantPaymentDataFromDB,
-    getSingleUserAllPaymentDataFromDB
+    getSingleUserAllPaymentDataFromDB,
+    createPayoutByOwnerIntoDB,
+    getPayoutDataFromDBbyAdmin
 };

@@ -15,3 +15,13 @@ export type TTenantPayment = {
     lateFee : number
   }
  
+
+  export type TOwnerPayOut = {
+    ownerId: Schema.Types.ObjectId;
+    amount: number;
+    accountId: string;
+    email: string;
+    status: 'Pending' | 'On progress' | 'Failed' | 'Success';  
+    transactionId: string;  
+  };
+  
