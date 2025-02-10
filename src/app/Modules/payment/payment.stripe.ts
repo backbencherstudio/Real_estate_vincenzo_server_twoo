@@ -336,6 +336,7 @@ const cancelSubscription = async (req: Request, res: Response) => {
 
 
 const Webhook = async (req: Request, res: Response) => {
+  // const webhookSecret = "whsec_8ab581e0ee7aa6de572d6db241f16b3c253172564e802c2a15e5f6a741fcf397";
   const webhookSecret = "whsec_8ab581e0ee7aa6de572d6db241f16b3c253172564e802c2a15e5f6a741fcf397";
   const signature = req.headers["stripe-signature"];
   let event: Stripe.Event;
@@ -460,12 +461,38 @@ const handleSubscriptionUpdated = async (subscription: Stripe.Subscription) => {
 
       if (email) {
         const htmlContent = `
-          <p>Your subscription status is now: <strong>${status}</strong>.</p>
-          ${invoice_pdf
-            ? `<p>You can view your latest invoice <a href="${invoice_pdf}" target="_blank">here</a>.</p>`
-            : `<p>No invoice is available at the moment.</p>`
+  <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px; background-color: #f9f9f9;">
+    <h2 style="color: #333; text-align: center;">Subscription Update</h2>
+    <p style="font-size: 16px; color: #555; text-align: center;">
+      Your subscription status is now: <strong>${status}</strong>.
+    </p>
+    
+${invoice_pdf
+            ? `
+        <p style="font-size: 16px; color: #555; text-align: center;">
+          You can view your latest invoice by clicking the button below.
+        </p>
+        <div style="text-align: center; margin-top: 10px;">
+          <a href="${invoice_pdf}" target="_blank" style="background-color: #007bff; color: #fff; text-decoration: none; padding: 10px 20px; border-radius: 5px; display: inline-block; font-size: 16px;">
+            View Invoice
+          </a>
+        </div>
+      `
+            : `
+        <p style="font-size: 16px; color: #777; text-align: center;">
+          No invoice is available at the moment. If you have any questions, please contact support.
+        </p>
+      `
           }
-        `;
+
+    <hr style="border: 0; height: 1px; background: #ddd; margin: 20px 0;">
+    
+    <p style="font-size: 14px; color: #777; text-align: center;">
+      Need help? <a href="https://your-support-link.com" target="_blank" style="color: #007bff; text-decoration: none;">Contact Support</a>
+    </p>
+  </div>
+`;
+
         await sendEmail(
           email,
           "Subscription Updated",
@@ -698,7 +725,7 @@ const handleChargeUpdated = async (charge: Stripe.Charge) => {
       status: "Pending",
     });
 
-    
+
 
     if (!tenantPayment) {
       console.warn(`⚠ No matching payment found for monthlyPaymentId: ${monthlyPaymentId}`);
@@ -707,13 +734,13 @@ const handleChargeUpdated = async (charge: Stripe.Charge) => {
 
     await User.findByIdAndUpdate(
       { _id: tenantPayment?.userId },
-      { $set: { isSecurityDepositPay : true } },
+      { $set: { isSecurityDepositPay: true } },
       { new: true, runValidators: true }
     );
 
     await TenantPayment.findByIdAndUpdate(
       { _id: monthlyPaymentId },
-      { $set: { invoice: receiptUrl, status: "Paid", paidAmount : amount, PaymentPlaced: new Date(), lateFee } },
+      { $set: { invoice: receiptUrl, status: "Paid", paidAmount: amount, PaymentPlaced: new Date(), lateFee } },
       { new: true, runValidators: true }
     );
 
