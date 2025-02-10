@@ -37,10 +37,15 @@ router.get(
     AdminController.getAllDataOverviewByAdmin,
 );
 
-router.get(
+router.post(
     '/createPlan',
     Auth(User_Role.admin),
     AdminController.createPlan,
+);
+
+router.get(
+    '/getPlan',
+    AdminController.getPlan,
 );
 
 

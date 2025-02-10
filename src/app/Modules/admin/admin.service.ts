@@ -97,7 +97,12 @@ const getAllDataOverviewByAdminFromDB = async (): Promise<OverviewData> => {
 
 
 const createPlanIntoDB = async (payload : TPlanDetails ) =>{
+    await PlanDetails.deleteMany({}); 
     const result = await PlanDetails.create(payload)
+    return result    
+}
+const getPlanFromDB = async ( ) =>{
+    const result = await PlanDetails.find()
     return result    
 }
 
@@ -112,5 +117,6 @@ export const AdminService = {
     getSingleTenantDetailseFromDB,
     getSingleOwnerAllPropertiesWithOwnerInfoFromDB,
     getAllDataOverviewByAdminFromDB,
-    createPlanIntoDB
+    createPlanIntoDB,
+    getPlanFromDB
 }
