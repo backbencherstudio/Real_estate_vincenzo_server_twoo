@@ -16,7 +16,7 @@ const stripeTenantPayment = catchAsync(async (req, res) => {
 
 const createALlTenantsForPayment = catchAsync(async (req, res) => {
     // const { ownerId } = req.params;
-    const result = await paymentService.createALlTenantsForPaymentFormDB();
+    const result = await paymentService.createAllTenantsForPaymentFormDB();    
     sendResponse(res, {
         statusCode: httpStatus.OK,
         success: true,

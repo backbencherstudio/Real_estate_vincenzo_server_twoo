@@ -10,9 +10,7 @@ import config from "../../config";
 import { User } from "../User/user.model";
 import { TenantPayment } from "./payment.module";
 
-const stripe = new Stripe(
-  "sk_test_51NFvq6ArRmO7hNaVBU6gVxCbaksurKb6Sspg6o8HePfktRB4OQY6kX5qqcQgfxnLnJ3w9k2EA0T569uYp8DEcfeq00KXKRmLUw"
-);
+const stripe = new Stripe(config.stripe_test_secret_key as string);
 
 const transporter = nodemailer.createTransport({
   service: "gmail",

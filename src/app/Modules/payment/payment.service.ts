@@ -5,48 +5,45 @@ import Stripe from "stripe";
 import { Tenant } from "../owner/owner.module";
 import { OwnerPayout, TenantPayment } from "./payment.module";
 import { TOwnerPayOut } from "./payment.interface";
+import config from "../../config";
 
-const stripe = new Stripe(
-    "sk_test_51NFvq6ArRmO7hNaVBU6gVxCbaksurKb6Sspg6o8HePfktRB4OQY6kX5qqcQgfxnLnJ3w9k2EA0T569uYp8DEcfeq00KXKRmLUw"
-);
-
+const stripe = new Stripe(config.stripe_test_secret_key as string);
 
 const stripeTenantPaymentFun = async (paymentData: any) => {
-
     const { paymentMethodId, amount, lateFee, monthlyPaymentId, ownerId } = paymentData;
+
     try {
         const paymentIntent = await stripe.paymentIntents.create({
-            amount: amount * 100,
+            amount: Math.round(amount * 100), // Ensure cents conversion
             currency: "usd",
             payment_method: paymentMethodId,
             payment_method_types: ["card"],
             confirm: true,
             metadata: {
-                monthlyPaymentId: monthlyPaymentId,
-                ownerId: ownerId,
-                lateFee: lateFee
+                monthlyPaymentId,
+                ownerId,
+                lateFee,
             },
         });
 
-        return ({ success: true, paymentIntent });
-    } catch (err) {
+        return { success: true, paymentIntent };
+    } catch (err: any) {
         console.error("Stripe Error:", err);
-        return ({ success: false, error: err });
+        return { success: false, error: err.message || "Payment failed" };
     }
 };
 
-
-const createALlTenantsForPaymentFormDB = async () => {
+const createAllTenantsForPaymentFormDB = async () => {
     try {
         const tenants = await Tenant.find({ isDeleted: false }).lean();
-        const payments = tenants.map(tenant => {
-            const { _id, createdAt, updatedAt, ...tenantData } = tenant;
-            return {
-                ...tenantData,
-                status: "Pending",
-                invoice: "Upcoming",
-            };
-        });
+        if (!tenants.length) throw new Error("No tenants found");
+
+        const payments = tenants.map(tenant => ({
+            ...tenant,
+            status: "Pending",
+            invoice: "Upcoming",
+        }));
+
         const result = await TenantPayment.insertMany(payments);
         return result;
     } catch (error) {
@@ -55,79 +52,144 @@ const createALlTenantsForPaymentFormDB = async () => {
     }
 };
 
-
 const getAllTenantPaymentDataFromDB = async () => {
-    const result = await TenantPayment.find().sort({ createdAt: -1 })
-    return result
-}
+    return await TenantPayment.find().sort({ createdAt: -1 }).lean();
+};
 
 const getSingleUserAllPaymentDataFromDB = async (userId: string) => {
-    const result = await TenantPayment.find({ userId }).populate([{ path: "userId" }, { path: "unitId" }, { path: "propertyId" }]).sort({ status: 1, updatedAt: -1, createdAt: -1 });
-    return result
-}
+    return await TenantPayment.find({ userId })
+        .populate([{ path: "userId" }, { path: "unitId" }, { path: "propertyId" }])
+        .sort({ status: 1, updatedAt: -1, createdAt: -1 })
+        .lean();
+};
 
-// =================================================================>>>>>>> PayOut Functions
+// =========================== PAYOUT FUNCTIONS ===========================
 
 const getPayoutDataFromDBbySingleOwner = async (ownerId: string) => {
-    const result = await OwnerPayout.find({ ownerId }).sort({ createdAt: -1 });
-    return result;
+    return await OwnerPayout.find({ ownerId }).sort({ createdAt: -1 }).lean();
 };
 
 const createPayoutByOwnerIntoDB = async (payload: TOwnerPayOut) => {
-    const result = await OwnerPayout.create(payload);
-    return result
-}
+    return await OwnerPayout.create(payload);
+};
 
 const getPayoutDataFromDBbyAdmin = async () => {
-    // const result = await OwnerPayout.find({ status: "Pending" }).sort({ createdAt: -1 });
-    const result = await OwnerPayout.find().sort({ createdAt: -1 });
-    return result;
+    return await OwnerPayout.find().sort({ createdAt: -1 }).lean();
+};
+
+
+export const createConnectedAccount = async (email: string) => {
+    try {
+        const connectedAccount = await stripe.accounts.create({
+            type: "express",
+            email,
+            country: "US",
+            capabilities: {
+                transfers: { requested: true },
+            },
+        });
+
+        return connectedAccount;
+    } catch (error: any) {
+        console.error("Error creating connected account:", error);
+        throw new Error(error.message || "Failed to create connected account");
+    }
+};
+
+export const createOnboardingLink = async (accountId: string) => {
+    console.log(100, accountId);
+    
+    try {
+        const accountLink = await stripe.accountLinks.create({
+            account: accountId,
+            refresh_url: `${config.frontend_url}/stripe/refresh`,
+            return_url: `${config.frontend_url}/success`,
+            type: "account_onboarding",
+        });
+        
+        console.log(110, accountLink);
+        return accountLink.url;
+    } catch (error: any) {
+        console.error("Error creating onboarding link:", error);
+        throw new Error(error.message || "Failed to create onboarding link");
+    }
+};
+
+const createPayout = async (accountId: string, amount: number) => {
+    try {
+        const transfer = await stripe.transfers.create({
+            amount: Math.round(amount * 100), 
+            currency: "usd",
+            destination: accountId,
+        });
+
+        return transfer;
+    } catch (error: any) {
+        console.error("Error creating payout:", error);
+        throw new Error(error.message || "Failed to create payout");
+    }
 };
 
 const sendPayoutRequestByAdminToStripe = async (data: any) => {
+    try {
+        console.log("🚀 Processing payout request:", data);
 
-    console.log(data);
+        const { email, amount, accountId } = data;
 
-    if (data.selectedStatus === "Accepted") {
-        const payoutData = {
-            destination: data.record.accountId,
-            amount: data.record.amount * 100,
-            currency: "USD",
-            transfer_group: "ORDER_123",
+        let connectedAccount;
+        try {
+            connectedAccount = await stripe.accounts.retrieve(accountId);
+        } catch {
+            connectedAccount = await createConnectedAccount(email);
         }
 
-        const account = await stripe.accounts.retrieve(data.record.accountId);
+        const onboardingUrl = await createOnboardingLink(connectedAccount.id);
+        console.log(onboardingUrl);
+        
+        // if (!connectedAccount.details_submitted) {            
+        //     return { success: false, message: "⚠️ Account needs onboarding", onboardingUrl };
+        // }
 
-        console.log("✅ Account Exists:", account);
-        if (!account) {
-            return { return: null, message: "❌ Account Not Found" } 
+        // Check available balance
+        const balance = await stripe.balance.retrieve();
+        const availableBalance = balance.available.find(b => b.currency === "usd")?.amount || 0;
+
+        if (availableBalance < amount * 100) {
+            return { success: false, message: "❌ Insufficient funds in platform balance" };
         }
 
-        const result = await stripe.transfers.create(payoutData);
-        await OwnerPayout.findOneAndUpdate({ _id: data?.record?.key }, { status: "On progress" })
+        // Send payout
+        const payout = await createPayout(connectedAccount.id, amount);
 
-        return { result: result, message: "Your payment request has been submitted successfully. The transaction may take 2-7 working days to process. We appreciate your patience during this time. Thank You!" }
+        console.log("✅ Payout Successful:", payout);
 
+        return { success: true, result: payout, message: "✅ Payout processed successfully!" };
+    } catch (error: any) {
+        console.error("🔥 Payout Error:", error);
+        return { success: false, message: "❌ Error processing payout", error: error.message };
     }
+};
 
-    const result = await OwnerPayout.findOneAndUpdate({ _id: data?.record?.key }, { status: data?.selectedStatus })
+// Check Stripe account balance
+const checkStripeBalance = async () => {
+    try {
+        const balance = await stripe.balance.retrieve();
+        console.log("Stripe Balance:", balance);
+        return balance;
+    } catch (error: any) {
+        console.error("Error retrieving balance:", error);
+    }
+};
 
-    return { result: result, message: "payment request has been Rejected !!" }
-
-
-}
-
-
-
-
-
+// Export payment service functions
 export const paymentService = {
     stripeTenantPaymentFun,
-    createALlTenantsForPaymentFormDB,
+    createAllTenantsForPaymentFormDB,
     getAllTenantPaymentDataFromDB,
     getSingleUserAllPaymentDataFromDB,
     getPayoutDataFromDBbySingleOwner,
     createPayoutByOwnerIntoDB,
     getPayoutDataFromDBbyAdmin,
-    sendPayoutRequestByAdminToStripe
+    sendPayoutRequestByAdminToStripe,
+    checkStripeBalance,
 };
