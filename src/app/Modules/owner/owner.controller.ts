@@ -210,19 +210,6 @@ const getAllTenantsForMessage = catchAsync(async (req, res) => {
   });
 });
 
-const getPayoutDataBySingleOwner = catchAsync(async (req, res) => {
-  const { ownerId } = req.params;
-
-  const result = await OwnerServices.getPayoutDataFromDBbySingleOwner(ownerId); 
-  sendResponse(res, {
-    statusCode: httpStatus.OK,
-    success: true,
-    message: "Get all Payout data successfully by owner",
-    data: result,
-  });
-});
-
-
 
 export const propertyController = {
   createProperties,
@@ -240,5 +227,4 @@ export const propertyController = {
   getResentPaymentDataByOwner,
   getPaymentDataOverviewByOwner,
   getAllTenantsForMessage,
-  getPayoutDataBySingleOwner
 }

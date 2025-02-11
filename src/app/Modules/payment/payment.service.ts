@@ -47,8 +47,6 @@ const createALlTenantsForPaymentFormDB = async () => {
                 invoice: "Upcoming",
             };
         });
-
-        // Insert into TenantPayment collection
         const result = await TenantPayment.insertMany(payments);
         return result;
     } catch (error) {
@@ -68,20 +66,56 @@ const getSingleUserAllPaymentDataFromDB = async (userId: string) => {
     return result
 }
 
+// =================================================================>>>>>>> PayOut Functions
 
-// =======================================================>>>>>>> PayOut Functions
+const getPayoutDataFromDBbySingleOwner = async (ownerId: string) => {
+    const result = await OwnerPayout.find({ ownerId }).sort({ createdAt: -1 });
+    return result;
+};
 
-const createPayoutByOwnerIntoDB = async (payload : TOwnerPayOut ) => {
+const createPayoutByOwnerIntoDB = async (payload: TOwnerPayOut) => {
     const result = await OwnerPayout.create(payload);
     return result
 }
-
 
 const getPayoutDataFromDBbyAdmin = async () => {
     // const result = await OwnerPayout.find({ status: "Pending" }).sort({ createdAt: -1 });
     const result = await OwnerPayout.find().sort({ createdAt: -1 });
     return result;
 };
+
+const sendPayoutRequestByAdminToStripe = async (data: any) => {
+
+    console.log(data);
+
+    if (data.selectedStatus === "Accepted") {
+        const payoutData = {
+            destination: data.record.accountId,
+            amount: data.record.amount * 100,
+            currency: "USD",
+            transfer_group: "ORDER_123",
+        }
+
+        const account = await stripe.accounts.retrieve(data.record.accountId);
+
+        console.log("✅ Account Exists:", account);
+        if (!account) {
+            return { return: null, message: "❌ Account Not Found" } 
+        }
+
+        const result = await stripe.transfers.create(payoutData);
+        await OwnerPayout.findOneAndUpdate({ _id: data?.record?.key }, { status: "On progress" })
+
+        return { result: result, message: "Your payment request has been submitted successfully. The transaction may take 2-7 working days to process. We appreciate your patience during this time. Thank You!" }
+
+    }
+
+    const result = await OwnerPayout.findOneAndUpdate({ _id: data?.record?.key }, { status: data?.selectedStatus })
+
+    return { result: result, message: "payment request has been Rejected !!" }
+
+
+}
 
 
 
@@ -92,6 +126,8 @@ export const paymentService = {
     createALlTenantsForPaymentFormDB,
     getAllTenantPaymentDataFromDB,
     getSingleUserAllPaymentDataFromDB,
+    getPayoutDataFromDBbySingleOwner,
     createPayoutByOwnerIntoDB,
-    getPayoutDataFromDBbyAdmin
+    getPayoutDataFromDBbyAdmin,
+    sendPayoutRequestByAdminToStripe
 };

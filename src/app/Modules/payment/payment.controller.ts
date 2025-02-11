@@ -50,7 +50,7 @@ const createPayoutByOwner = catchAsync(async (req, res) => {
     sendResponse(res, {
         statusCode: httpStatus.OK,
         success: true,
-        message: 'PayOut request placed successfully',
+        message: 'Your payout request has been successfully placed. The transfer process may take 2-7 days. Please be patient during this time. Thank You!',
         data: result,
     });
 });
@@ -65,6 +65,31 @@ const getPayoutDataByAdmin = catchAsync(async (req, res) => {
     });
 });
 
+const getPayoutDataBySingleOwner = catchAsync(async (req, res) => {
+    const { ownerId } = req.params;
+  
+    const result = await paymentService.getPayoutDataFromDBbySingleOwner(ownerId); 
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "Get all Payout data successfully by owner",
+      data: result,
+    });
+  });
+
+
+const sendPayoutRequestByAdmin = catchAsync(async (req, res) => {  
+    const result = await paymentService.sendPayoutRequestByAdminToStripe(req.body); 
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: result?.message,
+      data: result?.result,
+    });
+  });
+  
+
+
 
 export const paymentController = {
     stripeTenantPayment,
@@ -72,5 +97,7 @@ export const paymentController = {
     getAllTenantPaymentData,
     getSingleUserAllPaymentData,
     createPayoutByOwner,
-    getPayoutDataByAdmin
+    getPayoutDataByAdmin,
+    getPayoutDataBySingleOwner,
+    sendPayoutRequestByAdmin
 }

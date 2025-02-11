@@ -98,11 +98,5 @@ router.get(
     propertyController.getAllTenantsForMessage,
 );
 
-router.get(
-    '/getPayoutDataBySingleOwner/:ownerId',
-    Auth(User_Role.owner),
-    propertyController.getPayoutDataBySingleOwner,
-);
-
 
 export const OwnerRouter = router;
