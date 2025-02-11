@@ -78,7 +78,8 @@ const createPayoutByOwnerIntoDB = async (payload : TOwnerPayOut ) => {
 
 
 const getPayoutDataFromDBbyAdmin = async () => {
-    const result = await OwnerPayout.find({ status: "Pending" }).sort({ createdAt: -1 });
+    // const result = await OwnerPayout.find({ status: "Pending" }).sort({ createdAt: -1 });
+    const result = await OwnerPayout.find().sort({ createdAt: -1 });
     return result;
 };
 
