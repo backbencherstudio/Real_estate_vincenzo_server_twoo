@@ -87,6 +87,8 @@ const getPayoutDataFromDBbyAdmin = async () => {
 
 
 
+
+
 export const paymentService = {
     stripeTenantPaymentFun,
     createALlTenantsForPaymentFormDB,
