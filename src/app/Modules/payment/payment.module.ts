@@ -60,10 +60,11 @@ const OwnerPayoutSchema = new Schema <TOwnerPayOut>({
     email: { type: String, required: true },
     status: {
       type: String,
-      enum: ['Pending', 'On progress', 'Failed', 'Success'], 
+      enum: ['Pending', 'On progress', 'Failed', 'Paid', 'Accepted', 'Rejected'], 
       default: 'Pending',
     },
     transactionId: { type: String }, 
+    Receipt: { type: String }, 
   }, { timestamps: true })
 
 export const OwnerPayout = model('OwnerPayout', OwnerPayoutSchema);

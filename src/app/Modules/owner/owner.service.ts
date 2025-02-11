@@ -8,7 +8,7 @@ import { AppError } from "../../errors/AppErrors";
 import httpStatus from "http-status";
 import { Maintenance } from "../maintenance/maintenance.module";
 import { OverviewData } from "../admin/admin.interface";
-import { TenantPayment } from "../payment/payment.module";
+import { OwnerPayout, TenantPayment } from "../payment/payment.module";
 
 
 const createPropertiesDB = async (payload: TProperties) => {
@@ -360,6 +360,11 @@ const getAllTenantsForMessageFromDB = async (id: string) => {
 };
 
 
+const getPayoutDataFromDBbySingleOwner = async (ownerId : string) => {
+    const result = await OwnerPayout.find({ ownerId }).sort({ createdAt: -1 });
+    return result;
+};
+
 
 
 
@@ -380,5 +385,6 @@ export const OwnerServices = {
   getAllDataOverviewByOwnerFromDB,
   getResentPaymentDataByOwnerFromDB,
   getPaymentDataOverviewByOwnerFromDB,
-  getAllTenantsForMessageFromDB
+  getAllTenantsForMessageFromDB,
+  getPayoutDataFromDBbySingleOwner
 };
