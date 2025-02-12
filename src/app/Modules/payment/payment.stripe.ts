@@ -8,7 +8,7 @@ import nodemailer from "nodemailer";
 import { Request, Response } from "express";
 import config from "../../config";
 import { User } from "../User/user.model";
-import { TenantPayment } from "./payment.module";
+import { OwnerPayout, TenantPayment } from "./payment.module";
 
 const stripe = new Stripe(config.stripe_test_secret_key as string);
 
@@ -249,7 +249,16 @@ const Webhook = async (req: Request, res: Response) => {
     "invoice.finalized": handleInvoiceFinalized,
     "customer.subscription.deleted": handleSubscriptionDeleted,
     "invoice.payment_succeeded": handleInvoicePaymentSucceeded,
+    // ==========================================Payout Hooks
     "charge.updated": handleChargeUpdated,
+    "account.updated" : handleAccountUpdated,
+    // "payout.paid": handlePayoutSucceeded,
+    // ====
+    "payout.paid": handlePayoutSucceeded,
+    "transfer.paid": handleTransferSucceeded,
+    "transfer.created": handleTransferCreated,
+    "payment.created": handlePaymentCreated,
+    "balance.available": handleBalanceAvailable,
   };
 
 
@@ -650,6 +659,148 @@ const handleChargeUpdated = async (charge: Stripe.Charge) => {
     console.error(`❌ Error handling charge update for customer: ${customerId}`, error);
   }
 };
+
+const handleAccountUpdated = async (account: Stripe.Account) => {
+  try {
+      console.log("✅ Stripe Account Updated:", account);
+
+      const email = account.email; 
+
+      if (!email) {
+          console.error("❌ No email found in Stripe account.");
+          return;
+      }
+      if (account.charges_enabled) {
+          console.log(`✅ Account ${account.id} is now fully connected!`);
+
+          const updatedUser = await User.findOneAndUpdate(
+              { email: email }, 
+              { $set: {stripeAccountId: account.id, accountConnect: true } }, 
+              { new: true, runValidators: true }
+          );
+
+          if (!updatedUser) {
+              console.warn(`⚠ No user found with email: ${email}`);
+              return;
+          }
+
+          console.log(`✅ User ${updatedUser.email} updated → accountConnect: true`);
+      } else {
+          console.log(`⚠️ Account ${account.id} is still not fully connected.`);
+      }
+
+  } catch (error) {
+      console.error("❌ Error handling account updated webhook:", error);
+  }
+};
+
+
+const handlePayoutSucceeded = async (transfer: Stripe.Transfer) => {
+  try {
+      console.log("✅ Payout Succeeded Webhook Triggered:", transfer);
+
+      const payoutId = transfer.id;
+      const amount = transfer.amount / 100; 
+      const ownerId = transfer.metadata.ownerId;
+      const payoutKey = transfer.metadata.payoutKey;
+      const email = transfer.metadata.email;
+
+      if (!ownerId) {
+          console.error("❌ Missing ownerId in payout metadata.");
+          return;
+      }
+
+      await OwnerPayout.findOneAndUpdate(
+          { _id: payoutKey },  
+          { $set: { status: "Paid" } },
+          { new: true, runValidators: true }
+      );
+
+      console.log(`✅ OwnerPayout updated for key: ${payoutKey} → Paid`);
+
+      const owner = await User.findById({_id : ownerId});
+      if (!owner) {
+          console.warn(`⚠ No owner found with ID: ${ownerId}`);
+          return;
+      }
+
+      const updatedPaidAmount = Math.max(0, (owner.paidAmount ?? 0) - amount);
+
+      await User.findByIdAndUpdate(
+          {_id : ownerId},
+          { $set: { paidAmount: updatedPaidAmount } },
+          { new: true, runValidators: true }
+      );
+
+      console.log(`✅ Updated User's paidAmount for ownerId: ${ownerId}, new paidAmount: $${updatedPaidAmount}`);
+
+      await sendEmail(email, "Payout Successful", `Your payout of $${amount} has been successfully transferred.`);
+
+  } catch (error) {
+      console.error("❌ Error handling payout succeeded webhook:", error);
+  }
+};
+
+const handleTransferSucceeded = async (transfer: Stripe.Transfer) => {
+  try {
+      console.log("✅ Transfer Succeeded:", transfer);
+
+      const transferId = transfer.id;
+      const amount = transfer.amount / 100;
+      const ownerId = transfer.metadata.ownerId;
+      const payoutKey = transfer.metadata.payoutKey;
+      const email = transfer.metadata.email;
+
+      if (!ownerId) {
+          console.error("❌ Missing ownerId in transfer metadata.");
+          return;
+      }
+
+      await OwnerPayout.findOneAndUpdate(
+          { _id: payoutKey },
+          { $set: { status: "Paid" } },
+          { new: true, runValidators: true }
+      );
+
+      console.log(`✅ OwnerPayout updated for key: ${payoutKey} → Paid`);
+
+      const owner = await User.findById(ownerId);
+      if (!owner) {
+          console.warn(`⚠ No owner found with ID: ${ownerId}`);
+          return;
+      }
+
+      const updatedPaidAmount = Math.max(0, (owner.paidAmount ?? 0) - amount);
+
+      await User.findByIdAndUpdate(
+          ownerId,
+          { $set: { paidAmount: updatedPaidAmount } },
+          { new: true, runValidators: true }
+      );
+
+      console.log(`✅ Updated User's paidAmount for ownerId: ${ownerId}, new paidAmount: $${updatedPaidAmount}`);
+
+      // 📩 Send email notification
+      await sendEmail(email, "Funds Transferred", `Your transfer of $${amount} has been successfully completed.`);
+
+  } catch (error) {
+      console.error("❌ Error handling transfer succeeded webhook:", error);
+  }
+};
+
+
+const handleTransferCreated = async (transfer: Stripe.Transfer) => {
+  console.log(`🔄 New Transfer Created: ${transfer.id} → Amount: $${transfer.amount / 100}`);
+};
+const handlePaymentCreated = async (payment: Stripe.PaymentIntent) => {
+  console.log(`💰 New Payment Created: ${payment.id} → Amount: $${payment.amount / 100}`);
+};
+const handleBalanceAvailable = async (balance: Stripe.Balance) => {
+  console.log("💵 Stripe Balance Updated:", balance.available);
+};
+
+
+
 
 
 

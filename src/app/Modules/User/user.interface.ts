@@ -21,6 +21,8 @@ export type TPermanentAddress = {
 
 export interface TUser {
   userId : string;
+  accountConnect : boolean;
+  stripeAccountId : string;
   personalInfo : TPersonalInfo;
   permanentAddress : TPermanentAddress;
   profileImage:string;

@@ -35,7 +35,15 @@ router.get(
 );
 
 
-// ============================ send Payout Request By Admin
+// ============================ send Payout Request By owner
+router.post(
+    '/sendPayoutRequestByOwnerToStripe',
+    Auth(User_Role.owner),
+    paymentController.sendPayoutRequestByOwnerToStripe,
+);
+
+
+// ============================ send Payout Request By owner
 router.post(
     '/sendPayoutRequestByAdmin',
     Auth(User_Role.admin),

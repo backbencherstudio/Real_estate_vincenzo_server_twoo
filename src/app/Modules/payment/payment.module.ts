@@ -64,6 +64,7 @@ const OwnerPayoutSchema = new Schema <TOwnerPayOut>({
       default: 'Pending',
     },
     transactionId: { type: String }, 
+    payoutId: { type: String }, 
     Receipt: { type: String }, 
   }, { timestamps: true })
 

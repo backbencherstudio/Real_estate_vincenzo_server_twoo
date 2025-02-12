@@ -9,7 +9,6 @@ import globalErrorHandler from './app/middleware/globalErrorHandlear';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import MessageModel from './app/Modules/messages/message.module';
-import { createConnectedAccount, createOnboardingLink } from './app/Modules/payment/payment.service';
 const app: Application = express();
 const httpServer = createServer(app);
 
@@ -114,15 +113,6 @@ app.get('/messages/unread/:userId', async (req, res) => {
     console.error('Error fetching unread messages:', err);
     res.status(500).json({ error: 'Error fetching unread messages' });
   }
-});
-
-app.get('/test-payment', async (req, res) => {
-
-  const account = await createConnectedAccount("test@gmail.com")
-  const accountLink = await createOnboardingLink(account.id)
-  console.log("accountLink", accountLink);
-  
-res.send("ok")
 });
 
 

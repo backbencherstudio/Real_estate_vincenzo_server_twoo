@@ -6,6 +6,7 @@ import { Tenant } from "../owner/owner.module";
 import { OwnerPayout, TenantPayment } from "./payment.module";
 import { TOwnerPayOut } from "./payment.interface";
 import config from "../../config";
+import { User } from "../User/user.model";
 
 const stripe = new Stripe(config.stripe_test_secret_key as string);
 
@@ -78,7 +79,7 @@ const getPayoutDataFromDBbyAdmin = async () => {
 };
 
 
-export const createConnectedAccount = async (email: string) => {
+ const createConnectedAccount = async (email: string) => {
     try {
         const connectedAccount = await stripe.accounts.create({
             type: "express",
@@ -88,7 +89,6 @@ export const createConnectedAccount = async (email: string) => {
                 transfers: { requested: true },
             },
         });
-
         return connectedAccount;
     } catch (error: any) {
         console.error("Error creating connected account:", error);
@@ -96,17 +96,14 @@ export const createConnectedAccount = async (email: string) => {
     }
 };
 
-export const createOnboardingLink = async (accountId: string) => {
-    console.log(100, accountId);
-    
+ const createOnboardingLink = async (accountId: string) => {    
     try {
         const accountLink = await stripe.accountLinks.create({
             account: accountId,
-            refresh_url: `${config.frontend_url}/stripe/refresh`,
-            return_url: `${config.frontend_url}/success`,
+            refresh_url: `${config.frontend_url}/admin/payOut`,
+            return_url: `${config.frontend_url}/admin/payOut`,
             type: "account_onboarding",
-        });
-        
+        });        
         console.log(110, accountLink);
         return accountLink.url;
     } catch (error: any) {
@@ -115,73 +112,163 @@ export const createOnboardingLink = async (accountId: string) => {
     }
 };
 
-const createPayout = async (accountId: string, amount: number) => {
-    try {
-        const transfer = await stripe.transfers.create({
-            amount: Math.round(amount * 100), 
-            currency: "usd",
-            destination: accountId,
-        });
-
-        return transfer;
-    } catch (error: any) {
-        console.error("Error creating payout:", error);
-        throw new Error(error.message || "Failed to create payout");
-    }
-};
-
-const sendPayoutRequestByAdminToStripe = async (data: any) => {
+const sendPayoutRequestByOwnerToStripe = async (data: any) => {
     try {
         console.log("🚀 Processing payout request:", data);
-
-        const { email, amount, accountId } = data;
-
-        let connectedAccount;
-        try {
-            connectedAccount = await stripe.accounts.retrieve(accountId);
-        } catch {
-            connectedAccount = await createConnectedAccount(email);
-        }
-
-        const onboardingUrl = await createOnboardingLink(connectedAccount.id);
-        console.log(onboardingUrl);
-        
-        // if (!connectedAccount.details_submitted) {            
-        //     return { success: false, message: "⚠️ Account needs onboarding", onboardingUrl };
-        // }
-
-        // Check available balance
-        const balance = await stripe.balance.retrieve();
-        const availableBalance = balance.available.find(b => b.currency === "usd")?.amount || 0;
-
-        if (availableBalance < amount * 100) {
-            return { success: false, message: "❌ Insufficient funds in platform balance" };
-        }
-
-        // Send payout
-        const payout = await createPayout(connectedAccount.id, amount);
-
-        console.log("✅ Payout Successful:", payout);
-
-        return { success: true, result: payout, message: "✅ Payout processed successfully!" };
+        const {email} = data;
+        const  connectedAccount = await createConnectedAccount(email);
+        const onboardingUrl = await createOnboardingLink(connectedAccount?.id);        
+        return { success: true, result: {onboardingUrl}, message: "✅ Payout processed successfully!" };
     } catch (error: any) {
         console.error("🔥 Payout Error:", error);
         return { success: false, message: "❌ Error processing payout", error: error.message };
     }
 };
 
-// Check Stripe account balance
-const checkStripeBalance = async () => {
+
+
+// const sendPayoutRequestByOwnerToStripe = async (data: any) => {
+//     try {
+//         console.log("🚀 Processing payout request:", data);
+//         const { email, amount, accountId, ownerId, key } = data.record;
+//         const selectedStatus = data.selectedStatus;
+
+//         if (selectedStatus !== "Accepted") {
+//             return { success: false, message: "❌ Payout request must be accepted first!" };
+//         }
+//         let connectedAccount;
+//         try {
+//             connectedAccount = await stripe.accounts.retrieve(accountId);
+//         } catch {
+//             console.log("⚠️ No existing connected account, creating a new one...");
+//             connectedAccount = await createConnectedAccount(email);
+//         }
+
+//         if (!connectedAccount.details_submitted) {
+//             console.log("⚠️ User needs to complete onboarding.");
+//             const onboardingUrl = await createOnboardingLink(connectedAccount.id);
+//             return { success: false, result: { onboardingUrl }, message: "⚠️ The account needs onboarding." };
+//         }
+
+//         const payout = await stripe.transfers.create({
+//             amount: Math.round(amount * 100), 
+//             currency: "usd",
+//             destination: connectedAccount.id, 
+//             metadata: {
+//                 ownerId, 
+//                 payoutKey: key, 
+//                 email,
+//             },
+//         });
+
+//         console.log(172, "✅ Payout Processed:", payout.id);
+
+//         return { success: true, result: { payoutId: payout.id }, message: "✅ Payout processed successfully!" };
+
+//     } catch (error: any) {
+//         console.error("🔥 Payout Error:", error);
+//         return { success: false, message: "❌ Error processing payout", error: error.message };
+//     }
+// };
+
+// const sendPayoutRequestByAdminToStripe = async (data: any) => {
+//     try {
+//         console.log("🚀 Processing payout request:", data);
+//         const { amount, ownerId, key } = data.record;
+//         const selectedStatus = data.selectedStatus;
+
+//         if (selectedStatus !== "Accepted") {
+//             return { success: false, message: "❌ Payout request must be accepted first!" };
+//         }
+
+//         // 1️⃣ Find the owner's Stripe account ID
+//         const owner = await User.findById(ownerId);
+//         if (!owner || !owner.stripeAccountId) {
+//             return { success: false, message: "❌ Owner's Stripe account not found!" };
+//         }
+
+//         const accountId = owner.stripeAccountId;
+//         console.log(`✅ Sending payout to Stripe account: ${accountId}`);
+
+//         // 2️⃣ Update `OwnerPayout` status to "On Progress"
+//         await OwnerPayout.findOneAndUpdate(
+//             { _id: key },
+//             { $set: { status: "On Progress" } }
+//         );
+
+//         // 3️⃣ Create Payout (Send Money)
+//         const payout = await stripe.transfers.create({
+//             amount: Math.round(amount * 100), // Convert dollars to cents
+//             currency: "usd",
+//             destination: accountId, // ✅ Send money to the connected Stripe account
+//             metadata: {
+//                 ownerId,  // ✅ Track ownerId
+//                 payoutKey: key,  // ✅ Track payout request
+//                 email: owner.email, // ✅ Track email for confirmation
+//             },
+//         });
+
+//         console.log("✅ Payout Processed:", payout.id);
+
+//         return { success: true, result: { payoutId: payout.id }, message: "✅ Payout processed successfully!" };
+
+//     } catch (error: any) {
+//         console.error("🔥 Payout Error:", error);
+//         return { success: false, message: "❌ Error processing payout", error: error.message };
+//     }
+// };
+
+const sendPayoutRequestByAdminToStripe = async (data: any) => {
     try {
-        const balance = await stripe.balance.retrieve();
-        console.log("Stripe Balance:", balance);
-        return balance;
+        console.log("🚀 Processing payout request:", data);
+        const { amount, ownerId, key } = data.record;
+        const selectedStatus = data.selectedStatus;
+
+        if (selectedStatus !== "Accepted") {
+            return { success: false, message: "❌ Payout request must be accepted first!" };
+        }
+
+        const owner = await User.findById(ownerId);
+        if (!owner || !owner.stripeAccountId) {
+            return { success: false, message: "❌ Owner's Stripe account not found!" };
+        }
+
+        const accountId = owner.stripeAccountId;
+        console.log(`✅ Sending payout to Stripe account: ${accountId}`);
+
+        await OwnerPayout.findOneAndUpdate(
+            { _id: key },
+            { $set: { status: "On Progress" } }
+        );
+
+        const payout = await stripe.transfers.create({
+            amount: Math.round(amount * 100), 
+            currency: "usd",
+            destination: accountId, 
+            metadata: {
+                ownerId,  
+                payoutKey: key, 
+                email: owner.email,
+            },
+        });
+
+        await OwnerPayout.findOneAndUpdate(
+            { _id: key },
+            { $set: { payoutId: payout.id } }
+        );
+
+        console.log("✅ Payout Processed:", payout.id);
+
+        return { success: true, result: { payoutId: payout.id }, message: "✅ Payout processed successfully!" };
+
     } catch (error: any) {
-        console.error("Error retrieving balance:", error);
+        console.error("🔥 Payout Error:", error);
+        return { success: false, message: "❌ Error processing payout", error: error.message };
     }
 };
 
-// Export payment service functions
+
+
 export const paymentService = {
     stripeTenantPaymentFun,
     createAllTenantsForPaymentFormDB,
@@ -190,6 +277,6 @@ export const paymentService = {
     getPayoutDataFromDBbySingleOwner,
     createPayoutByOwnerIntoDB,
     getPayoutDataFromDBbyAdmin,
-    sendPayoutRequestByAdminToStripe,
-    checkStripeBalance,
+    sendPayoutRequestByOwnerToStripe,
+    sendPayoutRequestByAdminToStripe
 };

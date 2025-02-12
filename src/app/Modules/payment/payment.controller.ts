@@ -66,8 +66,7 @@ const getPayoutDataByAdmin = catchAsync(async (req, res) => {
 });
 
 const getPayoutDataBySingleOwner = catchAsync(async (req, res) => {
-    const { ownerId } = req.params;
-  
+    const { ownerId } = req.params;  
     const result = await paymentService.getPayoutDataFromDBbySingleOwner(ownerId); 
     sendResponse(res, {
       statusCode: httpStatus.OK,
@@ -77,6 +76,16 @@ const getPayoutDataBySingleOwner = catchAsync(async (req, res) => {
     });
   });
 
+
+const sendPayoutRequestByOwnerToStripe = catchAsync(async (req, res) => {  
+    const result = await paymentService.sendPayoutRequestByOwnerToStripe(req.body); 
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: result?.message,
+      data: result?.result,
+    });
+  });
 
 const sendPayoutRequestByAdmin = catchAsync(async (req, res) => {  
     const result = await paymentService.sendPayoutRequestByAdminToStripe(req.body); 
@@ -99,5 +108,6 @@ export const paymentController = {
     createPayoutByOwner,
     getPayoutDataByAdmin,
     getPayoutDataBySingleOwner,
+    sendPayoutRequestByOwnerToStripe,
     sendPayoutRequestByAdmin
 }

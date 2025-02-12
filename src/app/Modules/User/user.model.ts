@@ -39,7 +39,13 @@ const userSchema = new Schema<TUser>(
   {
     name: {
       type: String,
-      // required: [true, "Name is required"],
+    },
+    accountConnect: {
+      type: Boolean,
+      default : false
+    },
+    stripeAccountId: {
+      type: String,
     },
     profileImage: {
       type: String,
