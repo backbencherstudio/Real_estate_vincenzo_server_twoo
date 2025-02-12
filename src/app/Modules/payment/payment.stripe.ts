@@ -252,7 +252,7 @@ const Webhook = async (req: Request, res: Response) => {
     // ==========================================Payout Hooks
     "charge.updated": handleChargeUpdated,
     "account.updated" : handleAccountUpdated,
-    // ====
+    // =================
     // "payout.paid": handlePayoutSucceeded,
     "transfer.paid": handlePayoutSucceeded,
     "transfer.created": handleTransferCreated,
@@ -703,15 +703,40 @@ const handlePayoutSucceeded = async (transfer: Stripe.Transfer) => {
       const ownerId = transfer.metadata.ownerId;
       const payoutKey = transfer.metadata.payoutKey;  // payment data _id 
       const email = transfer.metadata.email;
+      const balanceTransactionId = transfer.balance_transaction as string;
 
       if (!ownerId) {
           console.error("❌ Missing ownerId in payout metadata.");
           return;
       }
 
+    //   let receiptUrl = null;
+    // if (balanceTransactionId) {
+    //   try {
+    //     const balanceTransaction = await stripe.balanceTransactions.retrieve(balanceTransactionId);
+    //     receiptUrl = balanceTransaction.receipt_url || null;
+    //   } catch (err) {
+    //     console.error("❌ Error retrieving balance transaction:", err);
+    //   }
+    // }
+
+    let receiptUrl: string | null = null;
+    if (balanceTransactionId) {
+      try {
+        const balanceTransaction = await stripe.balanceTransactions.retrieve(balanceTransactionId);
+
+        if (balanceTransaction.source && typeof balanceTransaction.source === "string") {
+          const charge = await stripe.charges.retrieve(balanceTransaction.source);
+          receiptUrl = charge.receipt_url || null;
+        }
+      } catch (err) {
+        console.error("❌ Error retrieving balance transaction:", err);
+      }
+    }
+
       await OwnerPayout.findByIdAndUpdate(
           { _id: payoutKey },  
-          { $set: { status: "Paid" } },
+          { $set: { status: "Paid", receipt: receiptUrl  } },
           { new: true, runValidators: true }
       );
 
