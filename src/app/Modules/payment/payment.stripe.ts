@@ -736,7 +736,7 @@ const handlePayoutSucceeded = async (transfer: Stripe.Transfer) => {
 
       await OwnerPayout.findByIdAndUpdate(
           { _id: payoutKey },  
-          { $set: { status: "Paid", receipt: receiptUrl  } },
+          { $set: { status: "Paid", Receipt: receiptUrl  } },
           { new: true, runValidators: true }
       );
 
