@@ -225,7 +225,11 @@ const sendPayoutRequestByAdminToStripe = async (data: any) => {
         const selectedStatus = data.selectedStatus;
 
         if (selectedStatus !== "Accepted") {
-            return { success: false, message: "❌ Payout request must be accepted first!" };
+            await OwnerPayout.findOneAndUpdate(
+                { _id: key },
+                { $set: { status: "Rejected" } }
+            );
+            return { success: false, message: "❌ Payout request Rejected!" };
         }
 
         const owner = await User.findById(ownerId);

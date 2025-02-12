@@ -255,7 +255,7 @@ const Webhook = async (req: Request, res: Response) => {
     // "payout.paid": handlePayoutSucceeded,
     // ====
     "payout.paid": handlePayoutSucceeded,
-    "transfer.paid": handleTransferSucceeded,
+    // "transfer.paid": handleTransferSucceeded,
     "transfer.created": handleTransferCreated,
     "payment.created": handlePaymentCreated,
     "balance.available": handleBalanceAvailable,
@@ -702,7 +702,7 @@ const handlePayoutSucceeded = async (transfer: Stripe.Transfer) => {
       const payoutId = transfer.id;
       const amount = transfer.amount / 100; 
       const ownerId = transfer.metadata.ownerId;
-      const payoutKey = transfer.metadata.payoutKey;
+      const payoutKey = transfer.metadata.payoutKey;  // payment data _id 
       const email = transfer.metadata.email;
 
       if (!ownerId) {
@@ -710,7 +710,7 @@ const handlePayoutSucceeded = async (transfer: Stripe.Transfer) => {
           return;
       }
 
-      await OwnerPayout.findOneAndUpdate(
+      await OwnerPayout.findByIdAndUpdate(
           { _id: payoutKey },  
           { $set: { status: "Paid" } },
           { new: true, runValidators: true }
@@ -734,59 +734,89 @@ const handlePayoutSucceeded = async (transfer: Stripe.Transfer) => {
 
       console.log(`✅ Updated User's paidAmount for ownerId: ${ownerId}, new paidAmount: $${updatedPaidAmount}`);
 
-      await sendEmail(email, "Payout Successful", `Your payout of $${amount} has been successfully transferred.`);
+      // await sendEmail(email, "Payout Successful", `Your payout of $${amount} has been successfully transferred.`);
+      await sendEmail(
+        email,
+        "✨ Payout Confirmation - Funds Successfully Transferred",
+        `
+        <div style="font-family: Arial, sans-serif; padding: 20px; background-color: #f9f9f9; color: #333;">
+          <div style="max-width: 600px; margin: auto; background: #ffffff; padding: 20px; border-radius: 8px; box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);">
+            <h2 style="color: #4CAF50; text-align: center;">🎉 Payout Successful!</h2>
+            <p>Dear <strong>${owner?.name}</strong>,</p>
+            <p>We are pleased to inform you that your payout has been successfully processed. The details of your transaction are as follows:</p>
+            
+            <div style="background: #f3f3f3; padding: 15px; border-radius: 5px; margin: 15px 0;">
+              <p><strong>💰 Amount:</strong> $${amount} USD</p>
+              <p><strong>📅 Date:</strong> ${new Date().toLocaleDateString()}</p>
+              <p><strong>🔗 Transaction ID:</strong> ${payoutId}</p>
+            </div>
+      
+            <p>The funds should reflect in your account within 2-7 business days, depending on your bank's processing time.</p>
+      
+            <p>If you have any questions or need further assistance, feel free to reach out to our support team.</p>
+      
+            <p>Best regards,<br>
+            <strong>Your Company Name</strong></p>
+      
+            <hr style="border: none; border-top: 1px solid #ddd;">
+            <p style="text-align: center; font-size: 12px; color: #777;">This is an automated email. Please do not reply.</p>
+          </div>
+        </div>
+        `
+      );
+      
 
   } catch (error) {
       console.error("❌ Error handling payout succeeded webhook:", error);
   }
 };
 
-const handleTransferSucceeded = async (transfer: Stripe.Transfer) => {
-  try {
-      console.log("✅ Transfer Succeeded:", transfer);
+// const handleTransferSucceeded = async (transfer: Stripe.Transfer) => {
+//   try {
+//       console.log("✅ Transfer Succeeded:", transfer);
 
-      const transferId = transfer.id;
-      const amount = transfer.amount / 100;
-      const ownerId = transfer.metadata.ownerId;
-      const payoutKey = transfer.metadata.payoutKey;
-      const email = transfer.metadata.email;
+//       const transferId = transfer.id;
+//       const amount = transfer.amount / 100;
+//       const ownerId = transfer.metadata.ownerId;
+//       const payoutKey = transfer.metadata.payoutKey;
+//       const email = transfer.metadata.email;
 
-      if (!ownerId) {
-          console.error("❌ Missing ownerId in transfer metadata.");
-          return;
-      }
+//       if (!ownerId) {
+//           console.error("❌ Missing ownerId in transfer metadata.");
+//           return;
+//       }
 
-      await OwnerPayout.findOneAndUpdate(
-          { _id: payoutKey },
-          { $set: { status: "Paid" } },
-          { new: true, runValidators: true }
-      );
+//       await OwnerPayout.findOneAndUpdate(
+//           { _id: payoutKey },
+//           { $set: { status: "Paid" } },
+//           { new: true, runValidators: true }
+//       );
 
-      console.log(`✅ OwnerPayout updated for key: ${payoutKey} → Paid`);
+//       console.log(`✅ OwnerPayout updated for key: ${payoutKey} → Paid`);
 
-      const owner = await User.findById(ownerId);
-      if (!owner) {
-          console.warn(`⚠ No owner found with ID: ${ownerId}`);
-          return;
-      }
+//       const owner = await User.findById(ownerId);
+//       if (!owner) {
+//           console.warn(`⚠ No owner found with ID: ${ownerId}`);
+//           return;
+//       }
 
-      const updatedPaidAmount = Math.max(0, (owner.paidAmount ?? 0) - amount);
+//       const updatedPaidAmount = Math.max(0, (owner.paidAmount ?? 0) - amount);
 
-      await User.findByIdAndUpdate(
-          ownerId,
-          { $set: { paidAmount: updatedPaidAmount } },
-          { new: true, runValidators: true }
-      );
+//       await User.findByIdAndUpdate(
+//           ownerId,
+//           { $set: { paidAmount: updatedPaidAmount } },
+//           { new: true, runValidators: true }
+//       );
 
-      console.log(`✅ Updated User's paidAmount for ownerId: ${ownerId}, new paidAmount: $${updatedPaidAmount}`);
+//       console.log(`✅ Updated User's paidAmount for ownerId: ${ownerId}, new paidAmount: $${updatedPaidAmount}`);
 
-      // 📩 Send email notification
-      await sendEmail(email, "Funds Transferred", `Your transfer of $${amount} has been successfully completed.`);
+//       // 📩 Send email notification
+//       await sendEmail(email, "Funds Transferred", `Your transfer of $${amount} has been successfully completed.`);
 
-  } catch (error) {
-      console.error("❌ Error handling transfer succeeded webhook:", error);
-  }
-};
+//   } catch (error) {
+//       console.error("❌ Error handling transfer succeeded webhook:", error);
+//   }
+// };
 
 
 const handleTransferCreated = async (transfer: Stripe.Transfer) => {
