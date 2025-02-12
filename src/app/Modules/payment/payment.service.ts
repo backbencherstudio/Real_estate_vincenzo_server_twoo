@@ -248,6 +248,7 @@ const sendPayoutRequestByAdminToStripe = async (data: any) => {
         const payout = await stripe.transfers.create({
             amount: Math.round(amount * 100), 
             currency: "usd",
+            
             destination: accountId, 
             metadata: {
                 ownerId,  

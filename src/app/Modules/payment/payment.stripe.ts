@@ -252,10 +252,9 @@ const Webhook = async (req: Request, res: Response) => {
     // ==========================================Payout Hooks
     "charge.updated": handleChargeUpdated,
     "account.updated" : handleAccountUpdated,
-    // "payout.paid": handlePayoutSucceeded,
     // ====
-    "payout.paid": handlePayoutSucceeded,
-    // "transfer.paid": handleTransferSucceeded,
+    // "payout.paid": handlePayoutSucceeded,
+    "transfer.paid": handlePayoutSucceeded,
     "transfer.created": handleTransferCreated,
     "payment.created": handlePaymentCreated,
     "balance.available": handleBalanceAvailable,
@@ -764,7 +763,7 @@ const handlePayoutSucceeded = async (transfer: Stripe.Transfer) => {
         </div>
         `
       );
-      
+
 
   } catch (error) {
       console.error("❌ Error handling payout succeeded webhook:", error);
