@@ -90,7 +90,27 @@ const createUnitIntoDB = async (payload: TUnits) => {
 
 const deleteUnitFormDB = async (unitId : string )=>{
 
-  console.log(unitId);
+  const unitData = await Unit.findById({_id : unitId})
+  const ownerId = unitData?.ownerId  //=====  ( numberOfTotalUnits - 1,,, totalRentAmount - unitData.rent )
+  const propertyId = unitData?.propertyId  //=====  ( totalRent - unitData.rent,,, numberOfUnits - 1 )
+
+  if(!unitData){
+    throw new AppError(httpStatus.NOT_FOUND, "Unit Not Found")
+  }
+
+  const ownerData = await User.findById({_id : ownerId})
+  const propertyData = await Properties.findById({_id : propertyId})
+
+  await User.findByIdAndUpdate({_id : ownerId}, { 
+    totalRentAmount : ownerData?.totalRentAmount as number - unitData.rent,
+    numberOfTotalUnits : ownerData?.numberOfTotalUnits as number - 1
+   }, { new : true, runValidators : true } )
+
+   await Properties.findByIdAndUpdate({_id : propertyId } , {
+    totalRent : propertyData?.totalRent as number - unitData?.rent as number,
+    numberOfUnits : propertyData?.numberOfUnits as number - 1
+   }, { new : true, runValidators : true } )
+  
   
 }
 
