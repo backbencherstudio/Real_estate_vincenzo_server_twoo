@@ -88,6 +88,7 @@ const createUnitIntoDB = async (payload: TUnits) => {
   }
 };
 
+//=========================================================>>>>>>>>>>>>>>>>>>  Unit delete not work perfectly 
 const deleteUnitFormDB = async (unitId : string )=>{
 
   const unitData = await Unit.findById({_id : unitId})
