@@ -269,20 +269,16 @@ const deleteTenantIntoDB = async (id: string) => {
     await Maintenance.deleteMany({ userId }).session(session);
     await Tenant.findOneAndDelete({ userId }).session(session);
 
-    // ✅ Commit the transaction
     await session.commitTransaction();
     session.endSession();
 
     return true;
   } catch (error) {
-    // ❌ Rollback the transaction in case of failure
     await session.abortTransaction();
     session.endSession();
     throw error;
   }
 };
-
-
 
 
 const getAllTenantsIntoDB = async (id: string) => {
@@ -410,12 +406,6 @@ const getAllTenantsForMessageFromDB = async (id: string) => {
   const admin = await User.find({ role: "admin" }).select("name email role profileImage");
   return [...tenant.map(t => t.userId), ...admin];
 };
-
-
-
-
-
-
 
 
 
