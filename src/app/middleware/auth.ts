@@ -26,7 +26,7 @@ export const Auth = (...requiredRole : TUserRole[]) => {
     const userData = await User.findOne({email});
 
     if (!userData) {
-      throw new AppError(httpStatus.NOT_FOUND, 'User is not found, not decoded ');
+      throw new AppError(httpStatus.NOT_FOUND, 'User is not found, not decoded');
     }
 
     if (requiredRole && !requiredRole.includes(role)) {

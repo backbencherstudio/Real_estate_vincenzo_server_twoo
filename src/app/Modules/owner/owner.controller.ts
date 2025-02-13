@@ -86,6 +86,16 @@ const createTenant = catchAsync(async (req, res) => {
   });
 });
 
+const deleteTenant = catchAsync(async (req, res) => {
+  const result = await OwnerServices.deleteTenantIntoDB(req?.params?.tenantId);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Tenant delete successfully',
+    data: result,
+  });
+});
+
 const getAllTenants = catchAsync(async (req, res) => {
   const { id } = req.params;
   const result = await OwnerServices.getAllTenantsIntoDB(id);
@@ -218,6 +228,7 @@ export const propertyController = {
   getEachPropertyAllUnits,
   getSingleUnit,
   createTenant,
+  deleteTenant,
   getAllTenants,
   getSingleTenant,
   getEachOwnerAllMaintenanceRequestData,

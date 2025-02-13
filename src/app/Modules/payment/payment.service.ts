@@ -37,9 +37,9 @@ const stripeTenantPaymentFun = async (paymentData: any) => {
 const createAllTenantsForPaymentFormDB = async () => {
     try {
         const tenants = await Tenant.find({ isDeleted: false }).lean();
-        if (!tenants.length) throw new Error("No tenants found");
+        if (!tenants.length) throw new Error("No tenants found");        
 
-        const payments = tenants.map(tenant => ({
+        const payments = tenants.map(({ _id, ...tenant }) => ({
             ...tenant,
             status: "Pending",
             invoice: "Upcoming",

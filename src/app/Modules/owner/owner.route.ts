@@ -38,6 +38,12 @@ router.post(
     propertyController.createTenant,
 );
 
+router.delete(
+    "/delete-tenant/:tenantId",
+    Auth(User_Role.owner),
+    propertyController.deleteTenant,
+);
+
 router.get( 
     '/unit/:id',
     Auth(User_Role.owner),

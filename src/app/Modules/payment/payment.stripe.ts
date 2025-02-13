@@ -710,15 +710,6 @@ const handlePayoutSucceeded = async (transfer: Stripe.Transfer) => {
           return;
       }
 
-    //   let receiptUrl = null;
-    // if (balanceTransactionId) {
-    //   try {
-    //     const balanceTransaction = await stripe.balanceTransactions.retrieve(balanceTransactionId);
-    //     receiptUrl = balanceTransaction.receipt_url || null;
-    //   } catch (err) {
-    //     console.error("❌ Error retrieving balance transaction:", err);
-    //   }
-    // }
 
     let receiptUrl: string | null = null;
     if (balanceTransactionId) {
@@ -794,53 +785,6 @@ const handlePayoutSucceeded = async (transfer: Stripe.Transfer) => {
       console.error("❌ Error handling payout succeeded webhook:", error);
   }
 };
-
-// const handleTransferSucceeded = async (transfer: Stripe.Transfer) => {
-//   try {
-//       console.log("✅ Transfer Succeeded:", transfer);
-
-//       const transferId = transfer.id;
-//       const amount = transfer.amount / 100;
-//       const ownerId = transfer.metadata.ownerId;
-//       const payoutKey = transfer.metadata.payoutKey;
-//       const email = transfer.metadata.email;
-
-//       if (!ownerId) {
-//           console.error("❌ Missing ownerId in transfer metadata.");
-//           return;
-//       }
-
-//       await OwnerPayout.findOneAndUpdate(
-//           { _id: payoutKey },
-//           { $set: { status: "Paid" } },
-//           { new: true, runValidators: true }
-//       );
-
-//       console.log(`✅ OwnerPayout updated for key: ${payoutKey} → Paid`);
-
-//       const owner = await User.findById(ownerId);
-//       if (!owner) {
-//           console.warn(`⚠ No owner found with ID: ${ownerId}`);
-//           return;
-//       }
-
-//       const updatedPaidAmount = Math.max(0, (owner.paidAmount ?? 0) - amount);
-
-//       await User.findByIdAndUpdate(
-//           ownerId,
-//           { $set: { paidAmount: updatedPaidAmount } },
-//           { new: true, runValidators: true }
-//       );
-
-//       console.log(`✅ Updated User's paidAmount for ownerId: ${ownerId}, new paidAmount: $${updatedPaidAmount}`);
-
-//       // 📩 Send email notification
-//       await sendEmail(email, "Funds Transferred", `Your transfer of $${amount} has been successfully completed.`);
-
-//   } catch (error) {
-//       console.error("❌ Error handling transfer succeeded webhook:", error);
-//   }
-// };
 
 
 const handleTransferCreated = async (transfer: Stripe.Transfer) => {
