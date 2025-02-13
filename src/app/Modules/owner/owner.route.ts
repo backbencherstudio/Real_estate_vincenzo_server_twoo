@@ -24,6 +24,11 @@ router.post(
     Auth(User_Role.owner),
     propertyController.createUnits,
 );
+router.delete(
+    '/delete-unit/:unitId',
+    Auth(User_Role.owner),
+    propertyController.deleteUnit,
+);
 
 // =================== admin and owner both can access this route
 router.get(

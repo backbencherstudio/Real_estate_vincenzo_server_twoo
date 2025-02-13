@@ -54,6 +54,16 @@ const createUnits = catchAsync(async (req, res) => {
   });
 });
 
+const deleteUnit = catchAsync(async (req, res) => {
+  const result = await OwnerServices.deleteUnitFormDB(req.params.unitId);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Unit delete successfully',
+    data: result,
+  });
+});
+
 const getEachPropertyAllUnits = catchAsync(async (req, res) => {
   const { id } = req.params;
   const result = await OwnerServices.getSinglePropertiesAllUnitsFromDB(id);
@@ -225,6 +235,7 @@ export const propertyController = {
   createProperties,
   getSingleOwnerAllProperties,
   createUnits,
+  deleteUnit,
   getEachPropertyAllUnits,
   getSingleUnit,
   createTenant,

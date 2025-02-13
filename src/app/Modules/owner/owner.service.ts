@@ -88,6 +88,12 @@ const createUnitIntoDB = async (payload: TUnits) => {
   }
 };
 
+const deleteUnitFormDB = async (unitId : string )=>{
+
+  console.log(unitId);
+  
+}
+
 const getSinglePropertiesAllUnitsFromDB = async (id: string) => {
   const property = await Properties.findById({ _id: id });
   const allUnits = await Unit.find({ propertyId: id });
@@ -102,8 +108,6 @@ const getSingleUnitFormDB = async (id: string) => {
   const result = await Unit.findById({ _id: id }).populate({ path: "propertyId", populate: { path: "ownerId" } });
   return result
 }
-
-
 
 const createTenantIntoDB = async (payload: any) => {
 
@@ -178,8 +182,6 @@ const createTenantIntoDB = async (payload: any) => {
     throw new Error(error.message || "Error occurred during transaction");
   }
 };
-
-
 
 // const deleteTenantIntoDB = async (id: string) => {
 //   const tenantData = await Tenant.findById({ _id: id })
@@ -279,7 +281,6 @@ const deleteTenantIntoDB = async (id: string) => {
     throw error;
   }
 };
-
 
 const getAllTenantsIntoDB = async (id: string) => {
   const result = await Tenant.find({ ownerId: id }).populate([{ path: "userId" }, { path: "propertyId" }, { path: "unitId" }]);
@@ -413,6 +414,7 @@ export const OwnerServices = {
   createPropertiesDB,
   getSingleOwnerAllPropertiesFromDB,
   createUnitIntoDB,
+  deleteUnitFormDB,
   getSinglePropertiesAllUnitsFromDB,
   getSingleUnitFormDB,
   createTenantIntoDB,
