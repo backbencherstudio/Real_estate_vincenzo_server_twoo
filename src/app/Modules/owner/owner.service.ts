@@ -90,7 +90,6 @@ const createUnitIntoDB = async (payload: TUnits) => {
 
 //=========================================================>>>>>>>>>>>>>>>>>>  Unit delete not work perfectly 
 const deleteUnitFormDB = async (unitId : string )=>{
-
   const unitData = await Unit.findById({_id : unitId})
   const ownerId = unitData?.ownerId  //=====  ( numberOfTotalUnits - 1,,, totalRentAmount - unitData.rent )
   const propertyId = unitData?.propertyId  //=====  ( totalRent - unitData.rent,,, numberOfUnits - 1 )
@@ -103,17 +102,21 @@ const deleteUnitFormDB = async (unitId : string )=>{
   const propertyData = await Properties.findById({_id : propertyId})
 
   await User.findByIdAndUpdate({_id : ownerId}, { 
-    totalRentAmount : ownerData?.totalRentAmount as number - unitData.rent,
+    totalAmount : ownerData?.totalAmount as number - unitData.rent,
     numberOfTotalUnits : ownerData?.numberOfTotalUnits as number - 1
    }, { new : true, runValidators : true } )
 
    await Properties.findByIdAndUpdate({_id : propertyId } , {
     totalRent : propertyData?.totalRent as number - unitData?.rent as number,
     numberOfUnits : propertyData?.numberOfUnits as number - 1
-   }, { new : true, runValidators : true } )
-  
-  
+   }, { new : true, runValidators : true } ) 
+
+   await Unit.findByIdAndDelete({_id : unitId})
+
+   return true
+
 }
+
 
 const getSinglePropertiesAllUnitsFromDB = async (id: string) => {
   const property = await Properties.findById({ _id: id });
