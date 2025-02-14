@@ -72,7 +72,7 @@ const stripePayment = async (
     const price = await stripe.prices.create({
       unit_amount: amount * 100,
       currency: "usd",
-      recurring: { interval: "month" },
+      recurring: { interval: "day" },
       product: product.id,
     });
 

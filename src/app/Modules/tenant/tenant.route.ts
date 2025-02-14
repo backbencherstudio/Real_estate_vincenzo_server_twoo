@@ -17,6 +17,11 @@ router.get(
     tenantController.getAllTenantsForMessageForEachPropertyTenant,
 );
 
+router.get(
+    '/isOwnerActiveOrNot/:id',
+    tenantController.isOwnerActiveOrNot,
+);
+
 
 
 export const TenantRouter = router;

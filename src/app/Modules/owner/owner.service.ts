@@ -13,7 +13,6 @@ import { Document } from "../document/document.module";
 
 
 const createPropertiesDB = async (payload: TProperties) => {
-
   const result = await Properties.create(payload);
   const userData = await User.findById({ _id: payload.ownerId });
   if (userData) {
@@ -26,6 +25,29 @@ const createPropertiesDB = async (payload: TProperties) => {
       }
     );
   }
+  return result;
+};
+
+const deletePropertiesIntoDB = async (propertyId : string) => {
+
+  const propertyData = await Properties.findById({_id : propertyId});
+  if(!propertyData){
+    throw new AppError(httpStatus.NOT_FOUND, "Property Not Found")
+  }  
+  const userData = await User.findById({ _id: propertyData.ownerId });
+
+  if (userData) {
+    await User.findByIdAndUpdate(
+      { _id: propertyData.ownerId },
+      {
+        $set: {
+          numberOfProperty: (userData?.numberOfProperty || 0) - 1,
+        },
+      }
+    );
+  }
+  const result = await Properties.findByIdAndDelete({_id : propertyId});
+
   return result;
 };
 
@@ -252,8 +274,6 @@ const updateUnitIntoDB = async (payload: any) => {
     throw error;
   }
 };
-
-
 
 const getSinglePropertiesAllUnitsFromDB = async (id: string) => {
   const property = await Properties.findById({ _id: id });
@@ -571,8 +591,11 @@ const getAllTenantsForMessageFromDB = async (id: string) => {
 
 
 
+
+
 export const OwnerServices = {
   createPropertiesDB,
+  deletePropertiesIntoDB,
   getSingleOwnerAllPropertiesFromDB,
   createUnitIntoDB,
   deleteUnitFormDB,

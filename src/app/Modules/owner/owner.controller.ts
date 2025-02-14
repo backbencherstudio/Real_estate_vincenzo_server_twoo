@@ -33,6 +33,17 @@ const createProperties = catchAsync(async (req, res) => {
   }
 });
 
+const deleteProperties = catchAsync(async (req, res) => {  
+    const result = await OwnerServices.deletePropertiesIntoDB(req.params.propertyId);
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'Property Delete successfully',
+      data: result,
+    });
+  
+});
+
 const getSingleOwnerAllProperties = catchAsync(async (req, res) => {
   const { id } = req.params;
   const result = await OwnerServices.getSingleOwnerAllPropertiesFromDB(id);
@@ -243,6 +254,7 @@ const getAllTenantsForMessage = catchAsync(async (req, res) => {
 
 export const propertyController = {
   createProperties,
+  deleteProperties,
   getSingleOwnerAllProperties,
   createUnits,
   deleteUnit,

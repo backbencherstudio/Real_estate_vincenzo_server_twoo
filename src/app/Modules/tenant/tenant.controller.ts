@@ -26,7 +26,19 @@ const getAllTenantsForMessageForEachPropertyTenant = catchAsync(async (req, res)
     });
 });
 
+const isOwnerActiveOrNot = catchAsync(async (req, res) => {
+    const { id } = req.params;    
+    const result = await TenantService.checkOwnerActiveOrNot(id);
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: 'get owner subscription activity',
+        data: result,
+    });
+});
+
 export const tenantController = {
     getTenantDetails,
-    getAllTenantsForMessageForEachPropertyTenant
+    getAllTenantsForMessageForEachPropertyTenant,
+    isOwnerActiveOrNot
 }

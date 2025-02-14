@@ -12,6 +12,12 @@ router.post(
     upload.array('propertyImages', 10), 
     propertyController.createProperties
   );
+
+router.delete(
+    '/deleteProperties/:propertyId',
+    Auth(User_Role.owner),
+    propertyController.deleteProperties
+  );
   
 router.get(
     '/:id',

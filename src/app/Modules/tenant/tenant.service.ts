@@ -23,8 +23,15 @@ const getAllTenantsForMessageFromDBForEachPropertyTenant = async (userId: string
         return [...allTenantSingleProperty.map(t => t.userId), ownerData];
 };
 
+const checkOwnerActiveOrNot = async (tenantId : string ) =>{
+    const tenantData = await Tenant.findOne({userId : tenantId})
+    const ownerData = await User.findById({_id : tenantData?.ownerId}).select("subscriptionStatus")
+    return ownerData
+}
+
 
 export const TenantService = {
     getTenantDetailsFromDB,
-    getAllTenantsForMessageFromDBForEachPropertyTenant
+    getAllTenantsForMessageFromDBForEachPropertyTenant,
+    checkOwnerActiveOrNot
 }
