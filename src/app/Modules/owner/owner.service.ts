@@ -118,22 +118,138 @@ const deleteUnitFormDB = async (unitId : string )=>{
 }
 
 
+// const updateUnitIntoDB = async (payload: any) => {  
+//   const {unitId, ...data} = payload
+//   const unitData = await Unit.findById({_id : unitId})
+//   try {
+//       const res = await Unit.findByIdAndUpdate(
+//           unitId, 
+//           { $set: data }, 
+//           { new: true, runValidators: true } 
+//       );
+//       if (!res) {
+//           throw new Error("Unit not found or update failed.");
+//       }
+//       if(unitData && payload?.rent){
+//         const propertyData = await Properties.findById({_id : unitData.propertyId})
+//         const ownerData = await User.findById({_id : unitData.ownerId})       
+//         if(!propertyData || !ownerData){
+//           throw new AppError(httpStatus.NOT_FOUND, "Not Found")
+//         }
+//         if( unitData?.rent < payload?.rent ){
+//           const rent = payload.rent - unitData.rent;
+//           await User.findByIdAndUpdate({_id : unitData.ownerId}, { totalAmount : ownerData?.totalAmount as number + rent })
+//           await Properties.findByIdAndUpdate({_id : unitData.propertyId}, { totalRent : propertyData?.totalRent as number + rent })          
+//         }
+//         else if( unitData?.rent > payload?.rent ){
+//           const rent =  unitData.rent - payload.rent;
+//           await User.findByIdAndUpdate({_id : unitData.ownerId}, { totalAmount : ownerData?.totalAmount as number - rent })
+//           await Properties.findByIdAndUpdate({_id : unitData.propertyId}, { totalRent : propertyData?.totalRent as number - rent })
+//         }        
+//       }
+//       return res;
+
+//   } catch (error) {
+//       console.error("Error updating unit:", error);
+//       throw error;
+//   }
+// };
+
 const updateUnitIntoDB = async (payload: any) => {  
-  const {unitId, ...data} = payload
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
   try {
-      const res = await Unit.findByIdAndUpdate(
-          unitId, 
-          { $set: data }, 
-          { new: true, runValidators: true } 
-      );
-      if (!res) {
-          throw new Error("Unit not found or update failed.");
+    const { unitId, ...data } = payload;
+    const unitData = await Unit.findById({ _id: unitId }).session(session);
+
+    const res = await Unit.findByIdAndUpdate(
+      unitId, 
+      { $set: data }, 
+      { new: true, runValidators: true, session } 
+    );
+
+    if (!res) {
+      throw new Error("Unit not found or update failed.");
+    }
+
+    if (unitData && payload?.rent) {
+      const propertyData = await Properties.findById({ _id: unitData.propertyId }).session(session);
+      const ownerData = await User.findById({ _id: unitData.ownerId }).session(session);
+
+      if (!propertyData || !ownerData) {
+        throw new AppError(httpStatus.NOT_FOUND, "Not Found");
       }
-      console.log("Updated Unit Data:", res);
-      return res;
+
+      
+      if (unitData?.rent < payload?.rent) {
+
+        const rent = payload.rent - unitData.rent;
+        await User.findByIdAndUpdate(
+          { _id: unitData.ownerId }, 
+          { totalAmount: ownerData?.totalAmount as number + rent },
+          { session }
+        );
+        await Properties.findByIdAndUpdate(
+          { _id: unitData.propertyId }, 
+          { totalRent: propertyData?.totalRent as number + rent },
+          { session }
+        );
+
+        if(unitData.booked){
+          await User.findByIdAndUpdate(
+            { _id: unitData.ownerId }, 
+            { totalRentAmount: ownerData?.totalRentAmount as number + rent },
+            { session }
+          );
+          await Properties.findByIdAndUpdate(
+            { _id: unitData.propertyId }, 
+            { totalBookedRent: propertyData?.totalBookedRent as number + rent },
+            { session }
+          );
+        }
+
+
+      } else if (unitData?.rent > payload?.rent) {
+        const rent = unitData.rent - payload.rent;
+        await User.findByIdAndUpdate(
+          { _id: unitData.ownerId }, 
+          { totalAmount: ownerData?.totalAmount as number - rent },
+          { session }
+        );
+        await Properties.findByIdAndUpdate(
+          { _id: unitData.propertyId }, 
+          { totalRent: propertyData?.totalRent as number - rent },
+          { session }
+        );
+
+        if(unitData.booked){
+
+          await User.findByIdAndUpdate(
+            { _id: unitData.ownerId }, 
+            { totalRentAmount: ownerData?.totalRentAmount as number - rent },
+            { session }
+          );
+
+          await Properties.findByIdAndUpdate(
+            { _id: unitData.propertyId }, 
+            { totalBookedRent: propertyData?.totalBookedRent as number - rent },
+            { session }
+          );
+
+        }
+      }
+    }
+
+    await session.commitTransaction();
+    session.endSession();
+    return res;
+
   } catch (error) {
-      console.error("Error updating unit:", error);
-      throw error;
+    await session.abortTransaction();
+    session.endSession();
+    console.error("Error updating unit:", error);
+    throw error;
   }
 };
 
