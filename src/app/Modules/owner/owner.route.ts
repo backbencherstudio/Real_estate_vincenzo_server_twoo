@@ -24,10 +24,17 @@ router.post(
     Auth(User_Role.owner),
     propertyController.createUnits,
 );
+
 router.delete(
     '/delete-unit/:unitId',
     Auth(User_Role.owner),
     propertyController.deleteUnit,
+);
+
+router.patch(
+    '/update-unit/:unitId',
+    Auth(User_Role.owner),
+    propertyController.updateUnit,
 );
 
 // =================== admin and owner both can access this route

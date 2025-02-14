@@ -64,6 +64,18 @@ const deleteUnit = catchAsync(async (req, res) => {
   });
 });
 
+const updateUnit = catchAsync(async (req, res) => {
+  console.log(req.body);
+  
+  const result = await OwnerServices.updateUnitIntoDB(req.body);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Unit Update successfully',
+    data: result,
+  });
+});
+
 const getEachPropertyAllUnits = catchAsync(async (req, res) => {
   const { id } = req.params;
   const result = await OwnerServices.getSinglePropertiesAllUnitsFromDB(id);
@@ -236,6 +248,7 @@ export const propertyController = {
   getSingleOwnerAllProperties,
   createUnits,
   deleteUnit,
+  updateUnit,
   getEachPropertyAllUnits,
   getSingleUnit,
   createTenant,

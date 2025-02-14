@@ -118,6 +118,27 @@ const deleteUnitFormDB = async (unitId : string )=>{
 }
 
 
+const updateUnitIntoDB = async (payload: any) => {  
+  const {unitId, ...data} = payload
+  try {
+      const res = await Unit.findByIdAndUpdate(
+          unitId, 
+          { $set: data }, 
+          { new: true, runValidators: true } 
+      );
+      if (!res) {
+          throw new Error("Unit not found or update failed.");
+      }
+      console.log("Updated Unit Data:", res);
+      return res;
+  } catch (error) {
+      console.error("Error updating unit:", error);
+      throw error;
+  }
+};
+
+
+
 const getSinglePropertiesAllUnitsFromDB = async (id: string) => {
   const property = await Properties.findById({ _id: id });
   const allUnits = await Unit.find({ propertyId: id });
@@ -439,6 +460,7 @@ export const OwnerServices = {
   getSingleOwnerAllPropertiesFromDB,
   createUnitIntoDB,
   deleteUnitFormDB,
+  updateUnitIntoDB,
   getSinglePropertiesAllUnitsFromDB,
   getSingleUnitFormDB,
   createTenantIntoDB,
