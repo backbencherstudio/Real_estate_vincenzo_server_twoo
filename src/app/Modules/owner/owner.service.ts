@@ -1,3 +1,5 @@
+/* eslint-disable no-undef */
+import path from 'path';
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import mongoose, { Query, Types } from "mongoose";
 import { User } from "../User/user.model";
@@ -10,6 +12,7 @@ import { Maintenance } from "../maintenance/maintenance.module";
 import { OverviewData } from "../admin/admin.interface";
 import { TenantPayment } from "../payment/payment.module";
 import { Document } from "../document/document.module";
+import fs from 'fs';
 
 
 const createPropertiesDB = async (payload: TProperties) => {
@@ -28,12 +31,28 @@ const createPropertiesDB = async (payload: TProperties) => {
   return result;
 };
 
-const deletePropertiesIntoDB = async (propertyId : string) => {
 
-  const propertyData = await Properties.findById({_id : propertyId});
-  if(!propertyData){
+
+const deletePropertiesIntoDB = async (propertyId: string) => {
+
+  const propertyData = await Properties.findById({ _id: propertyId });
+  if (!propertyData) {
     throw new AppError(httpStatus.NOT_FOUND, "Property Not Found")
-  }  
+  }
+  if (propertyData.propertyImages && propertyData.propertyImages.length > 0) {
+    propertyData.propertyImages.forEach((image) => {
+      const filePath = path.resolve(__dirname, "..", "..", "..", "..", "uploads", path.basename(image));
+      if (fs.existsSync(filePath)) {
+        fs.unlink(filePath, (err) => {
+          if (err) {
+            console.error("Error deleting audio file:", err);
+          }
+        });
+      } else {
+        console.warn(61, filePath);
+      }
+    });
+  }
   const userData = await User.findById({ _id: propertyData.ownerId });
 
   if (userData) {
@@ -46,10 +65,11 @@ const deletePropertiesIntoDB = async (propertyId : string) => {
       }
     );
   }
-  const result = await Properties.findByIdAndDelete({_id : propertyId});
-
+  const result = await Properties.findByIdAndDelete({ _id: propertyId });
   return result;
 };
+
+
 
 const getSingleOwnerAllPropertiesFromDB = async (id: string) => {
   const result = await Properties.find({ ownerId: id }).sort({ createdAt: -1 })
@@ -111,31 +131,31 @@ const createUnitIntoDB = async (payload: TUnits) => {
 };
 
 //=========================================================>>>>>>>>>>>>>>>>>>  Unit delete not work perfectly 
-const deleteUnitFormDB = async (unitId : string )=>{
-  const unitData = await Unit.findById({_id : unitId})
+const deleteUnitFormDB = async (unitId: string) => {
+  const unitData = await Unit.findById({ _id: unitId })
   const ownerId = unitData?.ownerId  //=====  ( numberOfTotalUnits - 1,,, totalRentAmount - unitData.rent )
   const propertyId = unitData?.propertyId  //=====  ( totalRent - unitData.rent,,, numberOfUnits - 1 )
 
-  if(!unitData){
+  if (!unitData) {
     throw new AppError(httpStatus.NOT_FOUND, "Unit Not Found")
   }
 
-  const ownerData = await User.findById({_id : ownerId})
-  const propertyData = await Properties.findById({_id : propertyId})
+  const ownerData = await User.findById({ _id: ownerId })
+  const propertyData = await Properties.findById({ _id: propertyId })
 
-  await User.findByIdAndUpdate({_id : ownerId}, { 
-    totalAmount : ownerData?.totalAmount as number - unitData.rent,
-    numberOfTotalUnits : ownerData?.numberOfTotalUnits as number - 1
-   }, { new : true, runValidators : true } )
+  await User.findByIdAndUpdate({ _id: ownerId }, {
+    totalAmount: ownerData?.totalAmount as number - unitData.rent,
+    numberOfTotalUnits: ownerData?.numberOfTotalUnits as number - 1
+  }, { new: true, runValidators: true })
 
-   await Properties.findByIdAndUpdate({_id : propertyId } , {
-    totalRent : propertyData?.totalRent as number - unitData?.rent as number,
-    numberOfUnits : propertyData?.numberOfUnits as number - 1
-   }, { new : true, runValidators : true } ) 
+  await Properties.findByIdAndUpdate({ _id: propertyId }, {
+    totalRent: propertyData?.totalRent as number - unitData?.rent as number,
+    numberOfUnits: propertyData?.numberOfUnits as number - 1
+  }, { new: true, runValidators: true })
 
-   await Unit.findByIdAndDelete({_id : unitId})
+  await Unit.findByIdAndDelete({ _id: unitId })
 
-   return true
+  return true
 
 }
 
@@ -177,7 +197,7 @@ const deleteUnitFormDB = async (unitId : string )=>{
 //   }
 // };
 
-const updateUnitIntoDB = async (payload: any) => {  
+const updateUnitIntoDB = async (payload: any) => {
   const session = await mongoose.startSession();
   session.startTransaction();
 
@@ -186,9 +206,9 @@ const updateUnitIntoDB = async (payload: any) => {
     const unitData = await Unit.findById({ _id: unitId }).session(session);
 
     const res = await Unit.findByIdAndUpdate(
-      unitId, 
-      { $set: data }, 
-      { new: true, runValidators: true, session } 
+      unitId,
+      { $set: data },
+      { new: true, runValidators: true, session }
     );
 
     if (!res) {
@@ -203,29 +223,29 @@ const updateUnitIntoDB = async (payload: any) => {
         throw new AppError(httpStatus.NOT_FOUND, "Not Found");
       }
 
-      
+
       if (unitData?.rent < payload?.rent) {
 
         const rent = payload.rent - unitData.rent;
         await User.findByIdAndUpdate(
-          { _id: unitData.ownerId }, 
+          { _id: unitData.ownerId },
           { totalAmount: ownerData?.totalAmount as number + rent },
           { session }
         );
         await Properties.findByIdAndUpdate(
-          { _id: unitData.propertyId }, 
+          { _id: unitData.propertyId },
           { totalRent: propertyData?.totalRent as number + rent },
           { session }
         );
 
-        if(unitData.booked){
+        if (unitData.booked) {
           await User.findByIdAndUpdate(
-            { _id: unitData.ownerId }, 
+            { _id: unitData.ownerId },
             { totalRentAmount: ownerData?.totalRentAmount as number + rent },
             { session }
           );
           await Properties.findByIdAndUpdate(
-            { _id: unitData.propertyId }, 
+            { _id: unitData.propertyId },
             { totalBookedRent: propertyData?.totalBookedRent as number + rent },
             { session }
           );
@@ -235,26 +255,26 @@ const updateUnitIntoDB = async (payload: any) => {
       } else if (unitData?.rent > payload?.rent) {
         const rent = unitData.rent - payload.rent;
         await User.findByIdAndUpdate(
-          { _id: unitData.ownerId }, 
+          { _id: unitData.ownerId },
           { totalAmount: ownerData?.totalAmount as number - rent },
           { session }
         );
         await Properties.findByIdAndUpdate(
-          { _id: unitData.propertyId }, 
+          { _id: unitData.propertyId },
           { totalRent: propertyData?.totalRent as number - rent },
           { session }
         );
 
-        if(unitData.booked){
+        if (unitData.booked) {
 
           await User.findByIdAndUpdate(
-            { _id: unitData.ownerId }, 
+            { _id: unitData.ownerId },
             { totalRentAmount: ownerData?.totalRentAmount as number - rent },
             { session }
           );
 
           await Properties.findByIdAndUpdate(
-            { _id: unitData.propertyId }, 
+            { _id: unitData.propertyId },
             { totalBookedRent: propertyData?.totalBookedRent as number - rent },
             { session }
           );
@@ -364,44 +384,6 @@ const createTenantIntoDB = async (payload: any) => {
   }
 };
 
-// const deleteTenantIntoDB = async (id: string) => {
-//   const tenantData = await Tenant.findById({ _id: id })
-//   if (!tenantData) {
-//     throw new AppError(httpStatus.NOT_FOUND, "Tenant Not Found")
-//   }
-
-//   const unitId = tenantData.unitId;   //( booked : false )
-//   const ownerId = tenantData.ownerId;  // ( bookedUnitNumber - 1,,, totalRentAmount - unit.rent )
-//   const userId = tenantData.userId;     // ( delete user --->> Tenant )
-//   const propertyId = tenantData.propertyId;  // ( numberOfBookedUnits - 1,,,  totalBookedRent - unit.rent )
-
-//   const unitData = await Unit.findById({ _id: unitId })
-//   const ownerData = await User.findById({ _id: ownerId })
-//   const propertyData = await Properties.findById({ _id: propertyId })
-
-//   await User.findByIdAndUpdate({ _id: ownerId }, {
-//     bookedUnitNumber: (ownerData?.bookedUnitNumber as number) - 1,
-//     totalRentAmount: (ownerData?.totalRentAmount as number) - (unitData?.rent as number)
-//   })
-
-
-//   await Unit.findByIdAndUpdate({ _id: unitId }, { booked: false });
-//   await Properties.findByIdAndUpdate({ _id: propertyId }, {
-//     numberOfBookedUnits: (propertyData?.numberOfBookedUnits as number) - 1,
-//     totalBookedRent: (propertyData?.totalBookedRent as number) - (unitData?.rent as number)
-//   });
-  
-//   await User.findByIdAndDelete({ _id: userId })
-//   await TenantPayment.deleteMany({ userId })
-//   await Document.deleteMany({ userId })
-//   await Maintenance.deleteMany({ userId })
-//   await Tenant.findOneAndDelete({ userId })
-
-
-
-//   return true
-
-// }
 
 const deleteTenantIntoDB = async (id: string) => {
   const session = await mongoose.startSession();
@@ -588,8 +570,6 @@ const getAllTenantsForMessageFromDB = async (id: string) => {
   const admin = await User.find({ role: "admin" }).select("name email role profileImage");
   return [...tenant.map(t => t.userId), ...admin];
 };
-
-
 
 
 
