@@ -13,6 +13,13 @@ router.post(
     propertyController.createProperties
   );
 
+router.patch(
+    "/update-properties",
+    Auth(User_Role.owner),
+    upload.array('propertyImages', 10), 
+    propertyController.updatePorperty
+  );
+
 router.delete(
     '/deleteProperties/:propertyId',
     Auth(User_Role.owner),

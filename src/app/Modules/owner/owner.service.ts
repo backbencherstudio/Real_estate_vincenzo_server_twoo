@@ -32,9 +32,108 @@ const createPropertiesDB = async (payload: TProperties) => {
 };
 
 
+const updatePorpertyIntoDB = async(payload : any, id : string)=>{ 
+
+  
+  
+  const propertyData = await Properties.findById({ _id: id });
+  if (!propertyData) {
+    throw new AppError(httpStatus.NOT_FOUND, "Property Not Found")
+  }
+  
+  if (payload.propertyImages && propertyData.propertyImages && propertyData.propertyImages.length > 0) {
+    propertyData.propertyImages.forEach((image) => {
+      const filePath = path.resolve(__dirname, "..", "..", "..", "..", "uploads", path.basename(image));
+      if (fs.existsSync(filePath)) {
+        fs.unlink(filePath, (err) => {
+          if (err) {
+            console.error("Error deleting audio file:", err);
+          }
+        });
+      } else {
+        console.warn(61, filePath);
+      }
+    });
+  }
+  const result = await Properties.findByIdAndUpdate({ _id : id },  { $set: payload }, {runValidators : true, new : true} )
+  return result  
+}
+
+
+// const updatePorpertyIntoDB = async (payload: any, id: string) => { 
+//   const propertyData = await Properties.findById(id);
+//   if (!propertyData) {
+//     throw new AppError(httpStatus.NOT_FOUND, "Property Not Found");
+//   }
+
+//   if (payload.propertyImages && propertyData.propertyImages && propertyData.propertyImages.length > 0) {
+//     propertyData.propertyImages.forEach((image) => {
+//       const filePath = path.resolve(__dirname, "..", "..", "..", "..", "uploads", path.basename(image));
+//       if (fs.existsSync(filePath)) {
+//         fs.unlink(filePath, (err) => {
+//           if (err) console.error("Error deleting image file:", err);
+//         });
+//       }
+//     });
+//   }
+
+
+//   console.log(93, payload);
+  
+
+
+//   const result = await Properties.findByIdAndUpdate(id, payload, {
+//     runValidators: true,
+//     new: true,
+//   });
+
+//   return result;
+// };
+
+// const updatePorpertyIntoDB = async (payload: any, id: string) => {
+//   console.log("Updating Property:", payload);
+
+//   const propertyData = await Properties.findById(id);
+//   if (!propertyData) {
+//     throw new AppError(httpStatus.NOT_FOUND, "Property Not Found");
+//   }
+
+//   // Handle propertyImages deletion before updating
+//   if (payload.propertyImages && propertyData.propertyImages && propertyData.propertyImages.length > 0) {
+//     propertyData.propertyImages.forEach((image) => {
+//       const filePath = path.resolve(__dirname, "..", "..", "..", "..", "uploads", path.basename(image));
+//       if (fs.existsSync(filePath)) {
+//         fs.unlink(filePath, (err) => {
+//           if (err) console.error("Error deleting image file:", err);
+//         });
+//       }
+//     });
+//   }
+
+//   // Merge propertyLocation if it exists, else use the existing one
+//   const updatedData = {
+//     ...propertyData.toObject(),
+//     ...payload,
+//     propertyLocation: payload.propertyLocation ? {
+//       ...propertyData.propertyLocation,
+//       ...payload.propertyLocation, // Merging the propertyLocation fields
+//     } : propertyData.propertyLocation,  // Use the existing propertyLocation if no update
+//   };
+
+//   console.log("Final Updated Data:", updatedData);
+
+//   // Update and return the result
+//   const result = await Properties.findByIdAndUpdate(id, updatedData, {
+//     runValidators: true,
+//     new: true,
+//   });
+
+//   return result;
+// };
+
+
 
 const deletePropertiesIntoDB = async (propertyId: string) => {
-
   const propertyData = await Properties.findById({ _id: propertyId });
   if (!propertyData) {
     throw new AppError(httpStatus.NOT_FOUND, "Property Not Found")
@@ -68,7 +167,6 @@ const deletePropertiesIntoDB = async (propertyId: string) => {
   const result = await Properties.findByIdAndDelete({ _id: propertyId });
   return result;
 };
-
 
 
 const getSingleOwnerAllPropertiesFromDB = async (id: string) => {
@@ -575,6 +673,7 @@ const getAllTenantsForMessageFromDB = async (id: string) => {
 
 export const OwnerServices = {
   createPropertiesDB,
+  updatePorpertyIntoDB,
   deletePropertiesIntoDB,
   getSingleOwnerAllPropertiesFromDB,
   createUnitIntoDB,
