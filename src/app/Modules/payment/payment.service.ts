@@ -120,7 +120,6 @@ const getPayoutDataFromDBbyAdmin = async () => {
 
 const sendPayoutRequestByOwnerToStripe = async (data: any) => {
     try {
-        console.log("🚀 Processing payout request:", data);
         const {email} = data;
         const  connectedAccount = await createConnectedAccount(email);
         const onboardingUrl = await createOnboardingLink(connectedAccount?.id);        
@@ -221,6 +220,7 @@ const sendPayoutRequestByOwnerToStripe = async (data: any) => {
 //         return { success: false, message: "❌ Error processing payout", error: error.message };
 //     }
 // };
+
 
 const sendPayoutRequestByAdminToStripe = async (data: any) => {
     try {

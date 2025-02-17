@@ -96,7 +96,8 @@ const stripePayment = async (
           subscriptionId: subscription.id,
           subscriptionStatus: subscription.status,
           invoice_pdf: invoicePdf,
-          getTotalUnit
+          getTotalUnit,          
+          cancelRequest : false
         },
       },
       { new: true, runValidators: true }
@@ -167,6 +168,8 @@ const cancelSubscription = async (req: Request, res: Response) => {
     const canceledSubscription = await stripe.subscriptions.update(subscriptionId, {
       cancel_at_period_end: true,
     });
+
+    await User.findByIdAndUpdate({_id : user._id}, { $set : {cancelRequest : true} }, { new : true, runValidators : true })
 
     const textContent = `
       Hello,
@@ -253,8 +256,8 @@ const Webhook = async (req: Request, res: Response) => {
     "charge.updated": handleChargeUpdated,
     "account.updated" : handleAccountUpdated,
     // =================
-    // "payout.paid": handlePayoutSucceeded,
-    "transfer.paid": handlePayoutSucceeded,
+    "payout.paid": handlePayoutSucceeded,
+    // "transfer.paid": handlePayoutSucceeded,
     "transfer.created": handleTransferCreated,
     "payment.created": handlePaymentCreated,
     "balance.available": handleBalanceAvailable,
@@ -347,10 +350,11 @@ const handleSubscriptionUpdated = async (subscription: Stripe.Subscription) => {
         invoice_pdf = fetchedInvoice.invoice_pdf ?? undefined;
       }
 
-      const updateData: { subscriptionStatus: string; invoicePdfUrl?: string } =
+      const updateData: { subscriptionStatus: string; invoicePdfUrl?: string} =
       {
         subscriptionStatus: status,
       };
+
       if (invoice_pdf) {
         updateData.invoicePdfUrl = invoice_pdf;
       }
@@ -410,6 +414,9 @@ ${invoice_pdf
 const handleSubscriptionCanceled = async (
   schedule: Stripe.SubscriptionSchedule
 ) => {
+
+  console.log("subscription_schedule.canceled Hit");
+  
   const status = schedule.status; // e.g. "canceled"
   const customerId = schedule.customer as string;
 
