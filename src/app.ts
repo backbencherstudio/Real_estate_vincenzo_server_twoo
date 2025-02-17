@@ -47,8 +47,6 @@ app.use(
     credentials: true,
   })
 );
-// http://rentpadhomes.com/
-// http://rentpadhomes.com/
 
 app.use("/api/v1", router);
 

@@ -24,7 +24,7 @@ const getSinglePropertiesAllUnitsFromDB = async(id : string ) =>{
 }
 
 const getALlTenantsFormDB = async () =>{
-    const result = await Tenant.find().populate([{path : "userId"}, {path : "propertyId"}, {path : "unitId"}]);
+    const result = await Tenant.find().populate([{path : "userId"}, {path : "propertyId"}, { path: "ownerId" }, {path : "unitId"}]);
     return result
   }
   

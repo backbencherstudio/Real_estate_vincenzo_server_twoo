@@ -150,6 +150,7 @@ const updateUserDataIntoDB = async (payload: Partial<TUser>) => {
 
 const getAllUserFromDB = async (query : Record< string, unknown >) => {  
   const userQuery = new QueryBuilder(User.find(), query)
+  .search(["name", "email"])
   .filter()
   const result = await userQuery.modelQuery;  
   return result;
