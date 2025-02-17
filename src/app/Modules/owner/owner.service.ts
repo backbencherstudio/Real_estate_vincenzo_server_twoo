@@ -633,6 +633,7 @@ const getResentPaymentDataByOwnerFromDB = async (ownerId: string, status: string
 }
 
 const getPaymentDataOverviewByOwnerFromDB = async (ownerId: string, selectedDate: string) => {
+
   const [year, month] = selectedDate.split("-").map(Number);
   const payments: PopulatedPayment[] = await TenantPayment.find({
     ownerId,
@@ -660,6 +661,7 @@ const getPaymentDataOverviewByOwnerFromDB = async (ownerId: string, selectedDate
     totalDueRentAmount,
     totalPaidRentAmount
   };
+  
 };
 
 const getAllTenantsForMessageFromDB = async (id: string) => {

@@ -43,7 +43,9 @@ const getSingleOwnerAllPropertiesWithOwnerInfoFromDB = async(id : string ) =>{
 }
 
 
-const getAllDataOverviewByAdminFromDB = async (): Promise<OverviewData> => {
+const getAllDataOverviewByAdminFromDB = async (selectedDate : any): Promise<OverviewData> => {
+    console.log(selectedDate);
+    
     try {
         const queries: { key: keyof Omit<OverviewData, 'monthlyProperties' | 'monthlyTenants'>; query: Query<number, any> }[] = [
             { key: "propertyLength", query: Properties.countDocuments() },
@@ -94,6 +96,9 @@ const getAllDataOverviewByAdminFromDB = async (): Promise<OverviewData> => {
         throw error;
     }
 };
+
+
+
 
 
 const createPlanIntoDB = async (payload : TPlanDetails ) =>{

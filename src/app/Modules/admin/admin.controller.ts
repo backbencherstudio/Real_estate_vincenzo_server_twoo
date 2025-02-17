@@ -57,7 +57,8 @@ const getALlProperties = catchAsync(async (req, res) => {
 
 
   const getAllDataOverviewByAdmin = catchAsync(async (req, res) => {
-    const result = await AdminService.getAllDataOverviewByAdminFromDB();  
+    const {selectedDate} = req.query;
+    const result = await AdminService.getAllDataOverviewByAdminFromDB(selectedDate);  
     sendResponse(res, {
       statusCode: httpStatus.OK,
       success: true,
