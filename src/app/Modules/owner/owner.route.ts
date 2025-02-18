@@ -6,6 +6,12 @@ import { upload } from '../../middleware/upload';
 
 const router = express.Router();
 
+router.get(
+    '/isOwnerActive',
+    Auth(User_Role.owner),
+    propertyController.isOwnerActive,
+);
+
 router.post(
     '/create-properties',
     Auth(User_Role.owner),
@@ -128,6 +134,8 @@ router.get(
     Auth(User_Role.owner),
     propertyController.getAllTenantsForMessage,
 );
+
+
 
 
 export const OwnerRouter = router;

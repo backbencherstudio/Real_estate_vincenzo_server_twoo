@@ -362,22 +362,6 @@ const getResentPaymentDataByOwner = catchAsync(async (req, res) => {
 });
 
 
-// const getPaymentDataOverviewByOwner = catchAsync(async (req, res) => {
-//   const { ownerId } = req.params;
-//   const { date } = req.query;
-
-//   console.log(ownerId);
-//   console.log(date);
-
-//   const result = await OwnerServices.getPaymentDataOverviewByOwnerFromDB(ownerId, date as string);
-//   sendResponse(res, {
-//     statusCode: httpStatus.OK,
-//     success: true,
-//     message: 'get payment overview data successfully',
-//     data: result,
-//   });
-// });
-
 const getPaymentDataOverviewByOwner = catchAsync(async (req, res) => {
   const { ownerId } = req.params;
   const { selectedDate } = req.query;
@@ -406,6 +390,18 @@ const getAllTenantsForMessage = catchAsync(async (req, res) => {
 });
 
 
+const isOwnerActive = catchAsync(async (req, res) => {
+  const { email } = req.query;
+  const result = await OwnerServices.isOwnerActiveOrNot(email as string);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Get owner subscription Status ",
+    data: result,
+  });
+});
+
+
 export const propertyController = {
   createProperties,
   updatePorperty,
@@ -427,4 +423,5 @@ export const propertyController = {
   getResentPaymentDataByOwner,
   getPaymentDataOverviewByOwner,
   getAllTenantsForMessage,
+  isOwnerActive
 }

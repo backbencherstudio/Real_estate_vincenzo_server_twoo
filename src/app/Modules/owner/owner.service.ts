@@ -32,10 +32,7 @@ const createPropertiesDB = async (payload: TProperties) => {
 };
 
 
-const updatePorpertyIntoDB = async(payload : any, id : string)=>{ 
-
-  
-  
+const updatePorpertyIntoDB = async(payload : any, id : string)=>{   
   const propertyData = await Properties.findById({ _id: id });
   if (!propertyData) {
     throw new AppError(httpStatus.NOT_FOUND, "Property Not Found")
@@ -672,6 +669,13 @@ const getAllTenantsForMessageFromDB = async (id: string) => {
 };
 
 
+const isOwnerActiveOrNot = async (email : string) => {
+  console.log(email);
+  
+  const resutl = await User.findOne({email}).select("subscriptionStatus")
+  return resutl
+}
+
 
 export const OwnerServices = {
   createPropertiesDB,
@@ -693,5 +697,6 @@ export const OwnerServices = {
   getAllDataOverviewByOwnerFromDB,
   getResentPaymentDataByOwnerFromDB,
   getPaymentDataOverviewByOwnerFromDB,
-  getAllTenantsForMessageFromDB
+  getAllTenantsForMessageFromDB,
+  isOwnerActiveOrNot
 };
