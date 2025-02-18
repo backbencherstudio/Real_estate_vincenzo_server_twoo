@@ -670,8 +670,6 @@ const getAllTenantsForMessageFromDB = async (id: string) => {
 
 
 const isOwnerActiveOrNot = async (email : string) => {
-  console.log(email);
-  
   const resutl = await User.findOne({email}).select("subscriptionStatus")
   return resutl
 }
