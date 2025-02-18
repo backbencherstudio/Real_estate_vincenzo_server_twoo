@@ -8,10 +8,19 @@ import { OverviewData, TPlanDetails } from "./admin.interface";
 import { PlanDetails } from "./admin.module";
 
 
-const getALlPropertiesFromDB = async () =>{
-    const result = await Properties.find().sort({createdAt : -1});
+const getALlPropertiesFromDB = async (selectedDate : string) =>{    
+    if (!selectedDate) {
+        const result = await Properties.find().sort({createdAt : -1});
+        return result
+    }
+    const [year, month] = selectedDate.split('-').map(Number);
+        const startDate = new Date(year, month - 1, 1);
+        const endDate = new Date(year, month, 0);
+    
+    const result = await Properties.find({createdAt: { $gte: startDate, $lte: endDate }}).sort({createdAt : -1});
     return result
 }
+
 
 const getSinglePropertiesAllUnitsFromDB = async(id : string ) =>{
     const property = await Properties.findById({_id : id}).populate("ownerId");
@@ -106,28 +115,19 @@ const getAllDataOverviewByAdminFromDB = async (selectedDate: string): Promise<Ov
         const queries = [
             {
                 key: "propertyLength",
-                query: Properties.countDocuments({
-                    createdAt: { $gte: startDate, $lte: endDate }
-                })
+                query: Properties.countDocuments()
             },
             {
                 key: "tenantLength",
-                query: Tenant.countDocuments({
-                    createdAt: { $gte: startDate, $lte: endDate }
-                })
+                query: Tenant.countDocuments()
             },
             {
                 key: "ownersLength",
-                query: User.countDocuments({
-                    role: "owner",
-                    createdAt: { $gte: startDate, $lte: endDate }
-                })
+                query: User.countDocuments({ role: "owner", subscriptionStatus : "active" })
             },
             {
                 key: "unitsLength",
-                query: Unit.countDocuments({
-                    createdAt: { $gte: startDate, $lte: endDate }
-                })
+                query: Unit.countDocuments()
             }
         ];
 
@@ -191,10 +191,6 @@ const getAllDataOverviewByAdminFromDB = async (selectedDate: string): Promise<Ov
 };
 
 
-
-
-
-
 const createPlanIntoDB = async (payload : TPlanDetails ) =>{
     await PlanDetails.deleteMany({}); 
     const result = await PlanDetails.create(payload)
@@ -205,6 +201,11 @@ const getPlanFromDB = async ( ) =>{
     return result    
 }
 
+
+const deleteNoSubscriberOwnerFormDB = (id : string) =>{
+    const result = User.findByIdAndDelete({_id : id})
+    return result
+}
 
  
 
@@ -217,5 +218,6 @@ export const AdminService = {
     getSingleOwnerAllPropertiesWithOwnerInfoFromDB,
     getAllDataOverviewByAdminFromDB,
     createPlanIntoDB,
-    getPlanFromDB
+    getPlanFromDB,
+    deleteNoSubscriberOwnerFormDB
 }

@@ -148,12 +148,18 @@ const updateUserDataIntoDB = async (payload: Partial<TUser>) => {
   }
 };
 
-const getAllUserFromDB = async (query : Record< string, unknown >) => {  
+const getAllUserFromDB = async (query: Record<string, unknown>) => {
+  if (query.subscriptionStatus === "nonSubscriber") {
+    return await User.find({
+      role: query.role,
+      subscriptionStatus: { $exists: false } 
+    });
+  }
   const userQuery = new QueryBuilder(User.find(), query)
-  .search(["name", "email"])
-  .filter()
-  const result = await userQuery.modelQuery;  
-  return result;
+    .search(["name", "email"])
+    .filter();
+
+  return await userQuery.modelQuery; 
 };
 
 const getSingleUserFromDB = async (email : string) =>{  
