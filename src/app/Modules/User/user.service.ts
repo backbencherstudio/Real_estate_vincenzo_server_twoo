@@ -206,6 +206,7 @@ const refreshToken = async (token: string) => {
     throw new AppError(httpStatus.UNAUTHORIZED, 'You are not authorize!');
   }
   const decoded = verifyToken(token, config.jwt_refresh_secret as string);
+  
   const { email } = decoded;
 
   const userData = await User.findOne({email});
@@ -216,9 +217,10 @@ const refreshToken = async (token: string) => {
 
   const jwtPayload = {
     email: userData.email,
-    name: userData.name ,
     role : userData.role,
-    userId : userData._id
+    userId : userData._id,
+    customerId : userData?.customerId && userData?.customerId,
+    subscriptionStatus : userData.subscriptionStatus
   };
 
   const accessToken = createToken(
