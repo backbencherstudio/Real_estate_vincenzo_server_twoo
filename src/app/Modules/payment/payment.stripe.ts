@@ -707,7 +707,7 @@ const handlePayoutSucceeded = async (transfer: Stripe.Transfer) => {
 
       const payoutId = transfer.id;
       const amount = transfer.amount / 100; 
-      const ownerId = transfer.metadata.ownerId;
+      const ownerId = transfer.metadata.ownerId; 
       const payoutKey = transfer.metadata.payoutKey;  // payment data _id 
       const email = transfer.metadata.email;
       const balanceTransactionId = transfer.balance_transaction as string;
