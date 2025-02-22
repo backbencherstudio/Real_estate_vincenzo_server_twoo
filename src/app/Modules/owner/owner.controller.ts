@@ -401,6 +401,16 @@ const isOwnerActive = catchAsync(async (req, res) => {
   });
 });
 
+const CreateReviewFromOwner = catchAsync(async (req, res) => {
+  const result = await OwnerServices.CreateReviewFromOwnerIntoDB(req.body);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Thank you for your valuable feedback. We sincerely appreciate your time and insights.",
+    data: result,
+  });
+});
+
 
 export const propertyController = {
   createProperties,
@@ -423,5 +433,6 @@ export const propertyController = {
   getResentPaymentDataByOwner,
   getPaymentDataOverviewByOwner,
   getAllTenantsForMessage,
-  isOwnerActive
+  isOwnerActive,
+  CreateReviewFromOwner
 }

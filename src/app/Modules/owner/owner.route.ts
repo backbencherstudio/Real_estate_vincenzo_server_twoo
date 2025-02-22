@@ -135,6 +135,12 @@ router.get(
     propertyController.getAllTenantsForMessage,
 );
 
+router.post(
+    '/createReviewFromOwner',
+    Auth(User_Role.owner),
+    propertyController.CreateReviewFromOwner,
+);
+
 
 
 
