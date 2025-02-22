@@ -17,9 +17,9 @@ export interface TPlanDetails {
 export interface TRealEstateAdvisor {
     name : string,
     designation : string,
-    image : string,
+    image : string[],
     facebook : string,
     twitter : string,
     instagram : string,
     linkedin : string,
-}
+} 

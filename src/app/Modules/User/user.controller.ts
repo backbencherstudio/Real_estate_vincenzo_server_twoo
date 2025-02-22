@@ -212,6 +212,16 @@ const ContactUsController = catchAsync(async (req, res) => {
   });
 });
 
+const getAdvisersData = catchAsync(async (req, res) => {
+  const result = await UserServices.getAdvisersDataFromDB(); 
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'get Adviser data successfully',
+    data: result,
+  });
+});
+
 
 export const userController = {
   getAllUser,
@@ -225,5 +235,6 @@ export const userController = {
   resetPassword,
   verifyOtpForResetPassword,
   sendEmailToUser,
-  ContactUsController
+  ContactUsController,
+  getAdvisersData
 };

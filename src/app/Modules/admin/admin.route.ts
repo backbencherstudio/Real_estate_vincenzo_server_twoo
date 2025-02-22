@@ -2,6 +2,7 @@ import express from 'express';
 import { AdminController } from './admin.controller';
 import { Auth } from '../../middleware/auth';
 import { User_Role } from '../User/user.constent';
+import { upload } from '../../middleware/upload';
 
 const router = express.Router()
 
@@ -53,6 +54,16 @@ router.get(
 router.delete(
     '/deleteNoSubscriberOwner/:ownerId',
     AdminController.deleteNoSubscriberOwner,
+);
+
+router.post(
+    '/realEstateAdvisor',
+     upload.array('image', 10),
+    AdminController.realEstateAdvisor,
+);
+router.delete(
+    '/realEstateAdvisordelete/:id',
+    AdminController.realEstateAdvisordelete,
 );
 
 

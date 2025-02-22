@@ -146,6 +146,9 @@ const ContactUsSchema = new Schema<TContactUs>(
     email : String,
     mobileNumber : String,
     message : String
+  },
+  {
+    timestamps : true
   }
 )
 

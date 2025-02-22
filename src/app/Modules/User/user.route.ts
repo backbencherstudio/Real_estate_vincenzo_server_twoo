@@ -69,6 +69,11 @@ router.post(
   userController.ContactUsController,
 );
 
+router.get(
+  '/getAdvisersData',
+  userController.getAdvisersData,
+);
+
 
 
 export const UserRouter = router;

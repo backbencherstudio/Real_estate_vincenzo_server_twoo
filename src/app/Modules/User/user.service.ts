@@ -17,6 +17,7 @@ import path from "path";
 import fs from "fs"
 import { sendEmail } from "../../utils/sendEmail";
 import { contactUsEmailSendToAdmin } from "../../utils/contactUsEmailSendToAdmin";
+import { RealEstateAdvisor } from "../admin/admin.module";
 
 
 const createUserIntoDB = async (payload: TUser) => {
@@ -242,16 +243,24 @@ const sendEmailToAllUser = async (payload: any) => {
   return result;
 }
 
-const ContactUsService = async (payload: TContactUs) => {
 
+//==================================================================================
+//========================= Landing Pages All API ==================
+//==================================================================================
+
+const ContactUsService = async (payload: TContactUs) => {
   // const result = await ContactUs.create(payload);   // ================================>>>> if client wnat to add this data in data base then uncomment this line
   // if(result){
   //   await contactUsEmailSendToAdmin(payload.email, payload.message, payload.mobileNumber, payload.fullName)
   // }
-  // return result 
-  
+  // return result   
   await contactUsEmailSendToAdmin(payload.email, payload.message, payload.mobileNumber, payload.fullName)   // or comment / remove this line 
   return true
+}
+
+const getAdvisersDataFromDB = async ()=>{
+  const result = await RealEstateAdvisor.find()
+  return result
 }
 
 export const UserServices = {
@@ -266,5 +275,6 @@ export const UserServices = {
   resetPasswordIntoDB,
   refreshToken,
   sendEmailToAllUser,
-  ContactUsService
+  ContactUsService,
+  getAdvisersDataFromDB
 };

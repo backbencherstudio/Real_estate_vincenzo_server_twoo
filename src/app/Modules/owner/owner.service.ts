@@ -135,8 +135,10 @@ const deletePropertiesIntoDB = async (propertyId: string) => {
   if (!propertyData) {
     throw new AppError(httpStatus.NOT_FOUND, "Property Not Found")
   }
+
   if (propertyData.propertyImages && propertyData.propertyImages.length > 0) {
     propertyData.propertyImages.forEach((image) => {
+
       const filePath = path.resolve(__dirname, "..", "..", "..", "..", "uploads", path.basename(image));
       if (fs.existsSync(filePath)) {
         fs.unlink(filePath, (err) => {
@@ -148,7 +150,9 @@ const deletePropertiesIntoDB = async (propertyId: string) => {
         console.warn(61, filePath);
       }
     });
+    
   }
+
   const userData = await User.findById({ _id: propertyData.ownerId });
 
   if (userData) {
