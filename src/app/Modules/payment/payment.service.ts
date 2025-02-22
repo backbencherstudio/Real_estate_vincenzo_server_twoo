@@ -7,6 +7,7 @@ import { OwnerPayout, TenantPayment } from "./payment.module";
 import { TOwnerPayOut } from "./payment.interface";
 import config from "../../config";
 import { User } from "../User/user.model";
+import cron from "node-cron"
 
 const stripe = new Stripe(config.stripe_test_secret_key as string);
 
@@ -53,6 +54,12 @@ const createAllTenantsForPaymentFormDB = async () => {
     }
 };
 
+
+cron.schedule('1 0 1 * *', async () => {
+    await createAllTenantsForPaymentFormDB();
+});
+
+
 const getAllTenantPaymentDataFromDB = async () => {
     return await TenantPayment.find().sort({ createdAt: -1 }).lean();
 };
@@ -77,7 +84,6 @@ const createPayoutByOwnerIntoDB = async (payload: TOwnerPayOut) => {
 const getPayoutDataFromDBbyAdmin = async () => {
     return await OwnerPayout.find().sort({ createdAt: -1 }).lean();
 };
-
 
  const createConnectedAccount = async (email: string) => {
     try {
@@ -114,7 +120,6 @@ const getPayoutDataFromDBbyAdmin = async () => {
 
 const sendPayoutRequestByOwnerToStripe = async (data: any) => {
     try {
-        console.log("🚀 Processing payout request:", data);
         const {email} = data;
         const  connectedAccount = await createConnectedAccount(email);
         const onboardingUrl = await createOnboardingLink(connectedAccount?.id);        
@@ -124,8 +129,6 @@ const sendPayoutRequestByOwnerToStripe = async (data: any) => {
         return { success: false, message: "❌ Error processing payout", error: error.message };
     }
 };
-
-
 
 // const sendPayoutRequestByOwnerToStripe = async (data: any) => {
 //     try {
@@ -217,6 +220,7 @@ const sendPayoutRequestByOwnerToStripe = async (data: any) => {
 //         return { success: false, message: "❌ Error processing payout", error: error.message };
 //     }
 // };
+
 
 const sendPayoutRequestByAdminToStripe = async (data: any) => {
     try {

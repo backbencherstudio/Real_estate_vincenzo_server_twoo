@@ -148,11 +148,18 @@ const updateUserDataIntoDB = async (payload: Partial<TUser>) => {
   }
 };
 
-const getAllUserFromDB = async (query : Record< string, unknown >) => {  
+const getAllUserFromDB = async (query: Record<string, unknown>) => {
+  if (query.subscriptionStatus === "nonSubscriber") {
+    return await User.find({
+      role: query.role,
+      subscriptionStatus: { $exists: false } 
+    });
+  }
   const userQuery = new QueryBuilder(User.find(), query)
-  .filter()
-  const result = await userQuery.modelQuery;  
-  return result;
+    .search(["name", "email"])
+    .filter();
+
+  return await userQuery.modelQuery; 
 };
 
 const getSingleUserFromDB = async (email : string) =>{  
@@ -199,6 +206,7 @@ const refreshToken = async (token: string) => {
     throw new AppError(httpStatus.UNAUTHORIZED, 'You are not authorize!');
   }
   const decoded = verifyToken(token, config.jwt_refresh_secret as string);
+  
   const { email } = decoded;
 
   const userData = await User.findOne({email});
@@ -209,9 +217,10 @@ const refreshToken = async (token: string) => {
 
   const jwtPayload = {
     email: userData.email,
-    name: userData.name ,
     role : userData.role,
-    userId : userData._id
+    userId : userData._id,
+    customerId : userData?.customerId && userData?.customerId,
+    subscriptionStatus : userData.subscriptionStatus
   };
 
   const accessToken = createToken(

@@ -1,17 +1,26 @@
 
 /* eslint-disable no-useless-catch */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Query } from "mongoose";
+// import { Query } from "mongoose";
 import { Properties, Tenant, Unit } from "../owner/owner.module"
 import { User } from "../User/user.model";
 import { OverviewData, TPlanDetails } from "./admin.interface";
 import { PlanDetails } from "./admin.module";
 
 
-const getALlPropertiesFromDB = async () =>{
-    const result = await Properties.find().sort({createdAt : -1});
+const getALlPropertiesFromDB = async (selectedDate : string) =>{    
+    if (!selectedDate) {
+        const result = await Properties.find().sort({createdAt : -1});
+        return result
+    }
+    const [year, month] = selectedDate.split('-').map(Number);
+        const startDate = new Date(year, month - 1, 1);
+        const endDate = new Date(year, month, 0);
+    
+    const result = await Properties.find({createdAt: { $gte: startDate, $lte: endDate }}).sort({createdAt : -1});
     return result
 }
+
 
 const getSinglePropertiesAllUnitsFromDB = async(id : string ) =>{
     const property = await Properties.findById({_id : id}).populate("ownerId");
@@ -24,7 +33,7 @@ const getSinglePropertiesAllUnitsFromDB = async(id : string ) =>{
 }
 
 const getALlTenantsFormDB = async () =>{
-    const result = await Tenant.find().populate([{path : "userId"}, {path : "propertyId"}, {path : "unitId"}]);
+    const result = await Tenant.find().populate([{path : "userId"}, {path : "propertyId"}, { path: "ownerId" }, {path : "unitId"}]);
     return result
   }
   
@@ -43,17 +52,108 @@ const getSingleOwnerAllPropertiesWithOwnerInfoFromDB = async(id : string ) =>{
 }
 
 
-const getAllDataOverviewByAdminFromDB = async (): Promise<OverviewData> => {
+// const getAllDataOverviewByAdminFromDB = async (selectedDate : any): Promise<OverviewData> => {
+//     console.log(selectedDate);
+    
+//     try {
+//         const queries: { key: keyof Omit<OverviewData, 'monthlyProperties' | 'monthlyTenants'>; query: Query<number, any> }[] = [
+//             { key: "propertyLength", query: Properties.countDocuments() },
+//             { key: "tenantLength", query: Tenant.countDocuments() },
+//             // { key: "unitsLength", query: Unit.countDocuments() },   // ==========================>>> if client need this data the we will show it
+//             { key: "ownersLength", query: User.countDocuments({ role: "owner" }) }
+//         ];
+//         const results = await Promise.all(queries.map(item => item.query));
+
+//         const monthlyProperties = await Properties.aggregate([
+//             {
+//                 $group: {
+//                     _id: { $dateToString: { format: "%Y-%m", date: "$createdAt" } },
+//                     count: { $sum: 1 }
+//                 }
+//             },
+//             { $sort: { _id: 1 } }
+//         ]);
+
+//         const monthlyPropertiesData = monthlyProperties.map(item => ({
+//             date: item._id, 
+//             count: item.count
+//         }));
+
+//         const monthlyTenants = await Tenant.aggregate([
+//             {
+//                 $group: {
+//                     _id: { $dateToString: { format: "%Y-%m", date: "$createdAt" } },
+//                     count: { $sum: 1 }
+//                 }
+//             },
+//             { $sort: { _id: 1 } }
+//         ]);
+
+//         const monthlyTenantsData = monthlyTenants.map(item => ({
+//             date: item._id, 
+//             count: item.count
+//         }));
+
+//         const overview = queries.reduce((acc, item, index) => {
+//             acc[item.key] = results[index];
+//             return acc;
+//         }, {} as Omit<OverviewData, 'monthlyProperties' | 'monthlyTenants'>);
+
+//         return { ...overview, monthlyProperties: monthlyPropertiesData, monthlyTenants: monthlyTenantsData };
+//     } catch (error) {
+//         console.error("Error fetching data overview:", error);
+//         throw error;
+//     }
+// };
+
+const getAllDataOverviewByAdminFromDB = async (selectedDate: string): Promise<OverviewData> => {
     try {
-        const queries: { key: keyof Omit<OverviewData, 'monthlyProperties' | 'monthlyTenants'>; query: Query<number, any> }[] = [
-            { key: "propertyLength", query: Properties.countDocuments() },
-            { key: "tenantLength", query: Tenant.countDocuments() },
-            // { key: "unitsLength", query: Unit.countDocuments() },   // ==========================>>> if client need this data the we will show it
-            { key: "ownersLength", query: User.countDocuments({ role: "owner" }) }
+        const [year, month] = selectedDate.split('-').map(Number);
+        const startDate = new Date(year, month - 1, 1);
+        const endDate = new Date(year, month, 0);
+
+        const queries = [
+            {
+                key: "propertyLength",
+                query: Properties.countDocuments()
+            },
+            {
+                key: "tenantLength",
+                query: Tenant.countDocuments()
+            },
+            {
+                key: "ownersLength",
+                query: User.countDocuments({ role: "owner", subscriptionStatus : "active" })
+            },
+            {
+                key: "unitsLength",
+                query: Unit.countDocuments()
+            }
         ];
+
         const results = await Promise.all(queries.map(item => item.query));
 
         const monthlyProperties = await Properties.aggregate([
+            {
+                $match: {
+                    createdAt: { $gte: startDate, $lte: endDate }
+                }
+            },
+            {
+                $group: {
+                    _id: { $dateToString: { format: "%Y-%m", date: "$createdAt" } },
+                    count: { $sum: 1 }
+                }
+            },
+            { $sort: { _id: 1 } }
+        ]);
+
+        const monthlyTenants = await Tenant.aggregate([
+            {
+                $match: {
+                    createdAt: { $gte: startDate, $lte: endDate }
+                }
+            },
             {
                 $group: {
                     _id: { $dateToString: { format: "%Y-%m", date: "$createdAt" } },
@@ -64,31 +164,26 @@ const getAllDataOverviewByAdminFromDB = async (): Promise<OverviewData> => {
         ]);
 
         const monthlyPropertiesData = monthlyProperties.map(item => ({
-            date: item._id, 
+            date: item._id,
             count: item.count
         }));
-
-        const monthlyTenants = await Tenant.aggregate([
-            {
-                $group: {
-                    _id: { $dateToString: { format: "%Y-%m", date: "$createdAt" } },
-                    count: { $sum: 1 }
-                }
-            },
-            { $sort: { _id: 1 } }
-        ]);
 
         const monthlyTenantsData = monthlyTenants.map(item => ({
-            date: item._id, 
+            date: item._id,
             count: item.count
         }));
 
-        const overview = queries.reduce((acc, item, index) => {
-            acc[item.key] = results[index];
-            return acc;
-        }, {} as Omit<OverviewData, 'monthlyProperties' | 'monthlyTenants'>);
+        // 🔥 Fixed TypeScript Error by Ensuring All Required Properties
+        const overview: OverviewData = {
+            propertyLength: results[0] || 0,
+            tenantLength: results[1] || 0,
+            ownersLength: results[2] || 0,
+            unitsLength: results[3] || 0,
+            monthlyProperties: monthlyPropertiesData,
+            monthlyTenants: monthlyTenantsData
+        };
 
-        return { ...overview, monthlyProperties: monthlyPropertiesData, monthlyTenants: monthlyTenantsData };
+        return overview;
     } catch (error) {
         console.error("Error fetching data overview:", error);
         throw error;
@@ -107,6 +202,11 @@ const getPlanFromDB = async ( ) =>{
 }
 
 
+const deleteNoSubscriberOwnerFormDB = (id : string) =>{
+    const result = User.findByIdAndDelete({_id : id})
+    return result
+}
+
  
 
 
@@ -118,5 +218,6 @@ export const AdminService = {
     getSingleOwnerAllPropertiesWithOwnerInfoFromDB,
     getAllDataOverviewByAdminFromDB,
     createPlanIntoDB,
-    getPlanFromDB
+    getPlanFromDB,
+    deleteNoSubscriberOwnerFormDB
 }

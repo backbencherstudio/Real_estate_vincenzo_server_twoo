@@ -5,7 +5,8 @@ import sendResponse from "../../utils/sendResponse";
 
 
 const getALlProperties = catchAsync(async (req, res) => {
-    const result = await AdminService.getALlPropertiesFromDB()  
+  const {selectedDate} = req.query
+    const result = await AdminService.getALlPropertiesFromDB(selectedDate as string )  
     sendResponse(res, {
       statusCode: httpStatus.OK,
       success: true,
@@ -57,7 +58,8 @@ const getALlProperties = catchAsync(async (req, res) => {
 
 
   const getAllDataOverviewByAdmin = catchAsync(async (req, res) => {
-    const result = await AdminService.getAllDataOverviewByAdminFromDB();  
+    const {selectedDate} = req.query;
+    const result = await AdminService.getAllDataOverviewByAdminFromDB(selectedDate as string);  
     sendResponse(res, {
       statusCode: httpStatus.OK,
       success: true,
@@ -86,6 +88,16 @@ const getALlProperties = catchAsync(async (req, res) => {
     });
   });
 
+  const deleteNoSubscriberOwner = catchAsync(async (req, res) => {    
+    const result = await AdminService.deleteNoSubscriberOwnerFormDB(req.params.ownerId);  
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'Non Subscriber user delete successfully',
+      data: result,  
+    });
+  });
+
 
  
 
@@ -97,5 +109,6 @@ export const AdminController = {
     getSingleOwnerAllPropertiesWithOwnerInfo,
     getAllDataOverviewByAdmin,
     createPlan,
-    getPlan
+    getPlan,
+    deleteNoSubscriberOwner
 }

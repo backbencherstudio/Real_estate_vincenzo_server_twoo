@@ -131,6 +131,9 @@ const userSchema = new Schema<TUser>(
     paidAmount: {
       type: Number
     },
+    cancelRequest: {
+      type: Boolean
+    },
   },
   {
     timestamps: true,

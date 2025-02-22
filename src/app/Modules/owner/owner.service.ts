@@ -1,3 +1,5 @@
+/* eslint-disable no-undef */
+import path from 'path';
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import mongoose, { Query, Types } from "mongoose";
 import { User } from "../User/user.model";
@@ -10,10 +12,10 @@ import { Maintenance } from "../maintenance/maintenance.module";
 import { OverviewData } from "../admin/admin.interface";
 import { TenantPayment } from "../payment/payment.module";
 import { Document } from "../document/document.module";
+import fs from 'fs';
 
 
 const createPropertiesDB = async (payload: TProperties) => {
-
   const result = await Properties.create(payload);
   const userData = await User.findById({ _id: payload.ownerId });
   if (userData) {
@@ -28,6 +30,141 @@ const createPropertiesDB = async (payload: TProperties) => {
   }
   return result;
 };
+
+
+const updatePorpertyIntoDB = async(payload : any, id : string)=>{   
+  const propertyData = await Properties.findById({ _id: id });
+  if (!propertyData) {
+    throw new AppError(httpStatus.NOT_FOUND, "Property Not Found")
+  }
+  
+  if (payload.propertyImages && propertyData.propertyImages && propertyData.propertyImages.length > 0) {
+    propertyData.propertyImages.forEach((image) => {
+      const filePath = path.resolve(__dirname, "..", "..", "..", "..", "uploads", path.basename(image));
+      if (fs.existsSync(filePath)) {
+        fs.unlink(filePath, (err) => {
+          if (err) {
+            console.error("Error deleting audio file:", err);
+          }
+        });
+      } else {
+        console.warn(61, filePath);
+      }
+    });
+  }
+  const result = await Properties.findByIdAndUpdate({ _id : id },  { $set: payload }, {runValidators : true, new : true} )
+  return result  
+}
+
+
+// const updatePorpertyIntoDB = async (payload: any, id: string) => { 
+//   const propertyData = await Properties.findById(id);
+//   if (!propertyData) {
+//     throw new AppError(httpStatus.NOT_FOUND, "Property Not Found");
+//   }
+
+//   if (payload.propertyImages && propertyData.propertyImages && propertyData.propertyImages.length > 0) {
+//     propertyData.propertyImages.forEach((image) => {
+//       const filePath = path.resolve(__dirname, "..", "..", "..", "..", "uploads", path.basename(image));
+//       if (fs.existsSync(filePath)) {
+//         fs.unlink(filePath, (err) => {
+//           if (err) console.error("Error deleting image file:", err);
+//         });
+//       }
+//     });
+//   }
+
+
+//   console.log(93, payload);
+  
+
+
+//   const result = await Properties.findByIdAndUpdate(id, payload, {
+//     runValidators: true,
+//     new: true,
+//   });
+
+//   return result;
+// };
+
+// const updatePorpertyIntoDB = async (payload: any, id: string) => {
+//   console.log("Updating Property:", payload);
+
+//   const propertyData = await Properties.findById(id);
+//   if (!propertyData) {
+//     throw new AppError(httpStatus.NOT_FOUND, "Property Not Found");
+//   }
+
+//   // Handle propertyImages deletion before updating
+//   if (payload.propertyImages && propertyData.propertyImages && propertyData.propertyImages.length > 0) {
+//     propertyData.propertyImages.forEach((image) => {
+//       const filePath = path.resolve(__dirname, "..", "..", "..", "..", "uploads", path.basename(image));
+//       if (fs.existsSync(filePath)) {
+//         fs.unlink(filePath, (err) => {
+//           if (err) console.error("Error deleting image file:", err);
+//         });
+//       }
+//     });
+//   }
+
+//   // Merge propertyLocation if it exists, else use the existing one
+//   const updatedData = {
+//     ...propertyData.toObject(),
+//     ...payload,
+//     propertyLocation: payload.propertyLocation ? {
+//       ...propertyData.propertyLocation,
+//       ...payload.propertyLocation, // Merging the propertyLocation fields
+//     } : propertyData.propertyLocation,  // Use the existing propertyLocation if no update
+//   };
+
+//   console.log("Final Updated Data:", updatedData);
+
+//   // Update and return the result
+//   const result = await Properties.findByIdAndUpdate(id, updatedData, {
+//     runValidators: true,
+//     new: true,
+//   });
+
+//   return result;
+// };
+
+
+
+const deletePropertiesIntoDB = async (propertyId: string) => {
+  const propertyData = await Properties.findById({ _id: propertyId });
+  if (!propertyData) {
+    throw new AppError(httpStatus.NOT_FOUND, "Property Not Found")
+  }
+  if (propertyData.propertyImages && propertyData.propertyImages.length > 0) {
+    propertyData.propertyImages.forEach((image) => {
+      const filePath = path.resolve(__dirname, "..", "..", "..", "..", "uploads", path.basename(image));
+      if (fs.existsSync(filePath)) {
+        fs.unlink(filePath, (err) => {
+          if (err) {
+            console.error("Error deleting audio file:", err);
+          }
+        });
+      } else {
+        console.warn(61, filePath);
+      }
+    });
+  }
+  const userData = await User.findById({ _id: propertyData.ownerId });
+
+  if (userData) {
+    await User.findByIdAndUpdate(
+      { _id: propertyData.ownerId },
+      {
+        $set: {
+          numberOfProperty: (userData?.numberOfProperty || 0) - 1,
+        },
+      }
+    );
+  }
+  const result = await Properties.findByIdAndDelete({ _id: propertyId });
+  return result;
+};
+
 
 const getSingleOwnerAllPropertiesFromDB = async (id: string) => {
   const result = await Properties.find({ ownerId: id }).sort({ createdAt: -1 })
@@ -89,34 +226,169 @@ const createUnitIntoDB = async (payload: TUnits) => {
 };
 
 //=========================================================>>>>>>>>>>>>>>>>>>  Unit delete not work perfectly 
-const deleteUnitFormDB = async (unitId : string )=>{
-  const unitData = await Unit.findById({_id : unitId})
+const deleteUnitFormDB = async (unitId: string) => {
+  const unitData = await Unit.findById({ _id: unitId })
   const ownerId = unitData?.ownerId  //=====  ( numberOfTotalUnits - 1,,, totalRentAmount - unitData.rent )
   const propertyId = unitData?.propertyId  //=====  ( totalRent - unitData.rent,,, numberOfUnits - 1 )
 
-  if(!unitData){
+  if (!unitData) {
     throw new AppError(httpStatus.NOT_FOUND, "Unit Not Found")
   }
 
-  const ownerData = await User.findById({_id : ownerId})
-  const propertyData = await Properties.findById({_id : propertyId})
+  const ownerData = await User.findById({ _id: ownerId })
+  const propertyData = await Properties.findById({ _id: propertyId })
 
-  await User.findByIdAndUpdate({_id : ownerId}, { 
-    totalAmount : ownerData?.totalAmount as number - unitData.rent,
-    numberOfTotalUnits : ownerData?.numberOfTotalUnits as number - 1
-   }, { new : true, runValidators : true } )
+  await User.findByIdAndUpdate({ _id: ownerId }, {
+    totalAmount: ownerData?.totalAmount as number - unitData.rent,
+    numberOfTotalUnits: ownerData?.numberOfTotalUnits as number - 1
+  }, { new: true, runValidators: true })
 
-   await Properties.findByIdAndUpdate({_id : propertyId } , {
-    totalRent : propertyData?.totalRent as number - unitData?.rent as number,
-    numberOfUnits : propertyData?.numberOfUnits as number - 1
-   }, { new : true, runValidators : true } ) 
+  await Properties.findByIdAndUpdate({ _id: propertyId }, {
+    totalRent: propertyData?.totalRent as number - unitData?.rent as number,
+    numberOfUnits: propertyData?.numberOfUnits as number - 1
+  }, { new: true, runValidators: true })
 
-   await Unit.findByIdAndDelete({_id : unitId})
+  await Unit.findByIdAndDelete({ _id: unitId })
 
-   return true
+  return true
 
 }
 
+
+// const updateUnitIntoDB = async (payload: any) => {  
+//   const {unitId, ...data} = payload
+//   const unitData = await Unit.findById({_id : unitId})
+//   try {
+//       const res = await Unit.findByIdAndUpdate(
+//           unitId, 
+//           { $set: data }, 
+//           { new: true, runValidators: true } 
+//       );
+//       if (!res) {
+//           throw new Error("Unit not found or update failed.");
+//       }
+//       if(unitData && payload?.rent){
+//         const propertyData = await Properties.findById({_id : unitData.propertyId})
+//         const ownerData = await User.findById({_id : unitData.ownerId})       
+//         if(!propertyData || !ownerData){
+//           throw new AppError(httpStatus.NOT_FOUND, "Not Found")
+//         }
+//         if( unitData?.rent < payload?.rent ){
+//           const rent = payload.rent - unitData.rent;
+//           await User.findByIdAndUpdate({_id : unitData.ownerId}, { totalAmount : ownerData?.totalAmount as number + rent })
+//           await Properties.findByIdAndUpdate({_id : unitData.propertyId}, { totalRent : propertyData?.totalRent as number + rent })          
+//         }
+//         else if( unitData?.rent > payload?.rent ){
+//           const rent =  unitData.rent - payload.rent;
+//           await User.findByIdAndUpdate({_id : unitData.ownerId}, { totalAmount : ownerData?.totalAmount as number - rent })
+//           await Properties.findByIdAndUpdate({_id : unitData.propertyId}, { totalRent : propertyData?.totalRent as number - rent })
+//         }        
+//       }
+//       return res;
+
+//   } catch (error) {
+//       console.error("Error updating unit:", error);
+//       throw error;
+//   }
+// };
+
+const updateUnitIntoDB = async (payload: any) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
+  try {
+    const { unitId, ...data } = payload;
+    const unitData = await Unit.findById({ _id: unitId }).session(session);
+
+    const res = await Unit.findByIdAndUpdate(
+      unitId,
+      { $set: data },
+      { new: true, runValidators: true, session }
+    );
+
+    if (!res) {
+      throw new Error("Unit not found or update failed.");
+    }
+
+    if (unitData && payload?.rent) {
+      const propertyData = await Properties.findById({ _id: unitData.propertyId }).session(session);
+      const ownerData = await User.findById({ _id: unitData.ownerId }).session(session);
+
+      if (!propertyData || !ownerData) {
+        throw new AppError(httpStatus.NOT_FOUND, "Not Found");
+      }
+
+
+      if (unitData?.rent < payload?.rent) {
+
+        const rent = payload.rent - unitData.rent;
+        await User.findByIdAndUpdate(
+          { _id: unitData.ownerId },
+          { totalAmount: ownerData?.totalAmount as number + rent },
+          { session }
+        );
+        await Properties.findByIdAndUpdate(
+          { _id: unitData.propertyId },
+          { totalRent: propertyData?.totalRent as number + rent },
+          { session }
+        );
+
+        if (unitData.booked) {
+          await User.findByIdAndUpdate(
+            { _id: unitData.ownerId },
+            { totalRentAmount: ownerData?.totalRentAmount as number + rent },
+            { session }
+          );
+          await Properties.findByIdAndUpdate(
+            { _id: unitData.propertyId },
+            { totalBookedRent: propertyData?.totalBookedRent as number + rent },
+            { session }
+          );
+        }
+
+
+      } else if (unitData?.rent > payload?.rent) {
+        const rent = unitData.rent - payload.rent;
+        await User.findByIdAndUpdate(
+          { _id: unitData.ownerId },
+          { totalAmount: ownerData?.totalAmount as number - rent },
+          { session }
+        );
+        await Properties.findByIdAndUpdate(
+          { _id: unitData.propertyId },
+          { totalRent: propertyData?.totalRent as number - rent },
+          { session }
+        );
+
+        if (unitData.booked) {
+
+          await User.findByIdAndUpdate(
+            { _id: unitData.ownerId },
+            { totalRentAmount: ownerData?.totalRentAmount as number - rent },
+            { session }
+          );
+
+          await Properties.findByIdAndUpdate(
+            { _id: unitData.propertyId },
+            { totalBookedRent: propertyData?.totalBookedRent as number - rent },
+            { session }
+          );
+
+        }
+      }
+    }
+
+    await session.commitTransaction();
+    session.endSession();
+    return res;
+
+  } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
+    console.error("Error updating unit:", error);
+    throw error;
+  }
+};
 
 const getSinglePropertiesAllUnitsFromDB = async (id: string) => {
   const property = await Properties.findById({ _id: id });
@@ -207,44 +479,6 @@ const createTenantIntoDB = async (payload: any) => {
   }
 };
 
-// const deleteTenantIntoDB = async (id: string) => {
-//   const tenantData = await Tenant.findById({ _id: id })
-//   if (!tenantData) {
-//     throw new AppError(httpStatus.NOT_FOUND, "Tenant Not Found")
-//   }
-
-//   const unitId = tenantData.unitId;   //( booked : false )
-//   const ownerId = tenantData.ownerId;  // ( bookedUnitNumber - 1,,, totalRentAmount - unit.rent )
-//   const userId = tenantData.userId;     // ( delete user --->> Tenant )
-//   const propertyId = tenantData.propertyId;  // ( numberOfBookedUnits - 1,,,  totalBookedRent - unit.rent )
-
-//   const unitData = await Unit.findById({ _id: unitId })
-//   const ownerData = await User.findById({ _id: ownerId })
-//   const propertyData = await Properties.findById({ _id: propertyId })
-
-//   await User.findByIdAndUpdate({ _id: ownerId }, {
-//     bookedUnitNumber: (ownerData?.bookedUnitNumber as number) - 1,
-//     totalRentAmount: (ownerData?.totalRentAmount as number) - (unitData?.rent as number)
-//   })
-
-
-//   await Unit.findByIdAndUpdate({ _id: unitId }, { booked: false });
-//   await Properties.findByIdAndUpdate({ _id: propertyId }, {
-//     numberOfBookedUnits: (propertyData?.numberOfBookedUnits as number) - 1,
-//     totalBookedRent: (propertyData?.totalBookedRent as number) - (unitData?.rent as number)
-//   });
-  
-//   await User.findByIdAndDelete({ _id: userId })
-//   await TenantPayment.deleteMany({ userId })
-//   await Document.deleteMany({ userId })
-//   await Maintenance.deleteMany({ userId })
-//   await Tenant.findOneAndDelete({ userId })
-
-
-
-//   return true
-
-// }
 
 const deleteTenantIntoDB = async (id: string) => {
   const session = await mongoose.startSession();
@@ -396,6 +630,7 @@ const getResentPaymentDataByOwnerFromDB = async (ownerId: string, status: string
 }
 
 const getPaymentDataOverviewByOwnerFromDB = async (ownerId: string, selectedDate: string) => {
+
   const [year, month] = selectedDate.split("-").map(Number);
   const payments: PopulatedPayment[] = await TenantPayment.find({
     ownerId,
@@ -423,6 +658,7 @@ const getPaymentDataOverviewByOwnerFromDB = async (ownerId: string, selectedDate
     totalDueRentAmount,
     totalPaidRentAmount
   };
+  
 };
 
 const getAllTenantsForMessageFromDB = async (id: string) => {
@@ -433,12 +669,20 @@ const getAllTenantsForMessageFromDB = async (id: string) => {
 };
 
 
+const isOwnerActiveOrNot = async (email : string) => {
+  const resutl = await User.findOne({email}).select("subscriptionStatus role")
+  return resutl
+}
+
 
 export const OwnerServices = {
   createPropertiesDB,
+  updatePorpertyIntoDB,
+  deletePropertiesIntoDB,
   getSingleOwnerAllPropertiesFromDB,
   createUnitIntoDB,
   deleteUnitFormDB,
+  updateUnitIntoDB,
   getSinglePropertiesAllUnitsFromDB,
   getSingleUnitFormDB,
   createTenantIntoDB,
@@ -451,5 +695,6 @@ export const OwnerServices = {
   getAllDataOverviewByOwnerFromDB,
   getResentPaymentDataByOwnerFromDB,
   getPaymentDataOverviewByOwnerFromDB,
-  getAllTenantsForMessageFromDB
+  getAllTenantsForMessageFromDB,
+  isOwnerActiveOrNot
 };

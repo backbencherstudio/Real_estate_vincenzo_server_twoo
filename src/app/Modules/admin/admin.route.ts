@@ -5,7 +5,10 @@ import { User_Role } from '../User/user.constent';
 
 const router = express.Router()
 
-router.get("/getAllProterties" , Auth(User_Role.admin), AdminController.getALlProperties );
+router.get("/getAllProterties",
+    Auth(User_Role.admin),
+    AdminController.getALlProperties
+);
 
 router.get(
     '/propertie-units/:id',
@@ -46,6 +49,10 @@ router.post(
 router.get(
     '/getPlan',
     AdminController.getPlan,
+);
+router.delete(
+    '/deleteNoSubscriberOwner/:ownerId',
+    AdminController.deleteNoSubscriberOwner,
 );
 
 
