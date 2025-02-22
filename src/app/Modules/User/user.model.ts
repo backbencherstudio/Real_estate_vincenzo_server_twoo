@@ -1,6 +1,6 @@
 import { model, Schema } from "mongoose";
 import bcrypt from 'bcrypt';
-import { TUser } from "./user.interface";
+import { TContactUs, TUser } from "./user.interface";
 
 // const presentAddressSchema = new Schema
 
@@ -140,6 +140,17 @@ const userSchema = new Schema<TUser>(
   }
 );
 
+const ContactUsSchema = new Schema<TContactUs>(
+  {
+    fullName : String ,
+    email : String,
+    mobileNumber : String,
+    message : String
+  },
+  {
+    timestamps : true
+  }
+)
 
 
 userSchema.statics.isPasswordMatched = async function (
@@ -150,3 +161,4 @@ userSchema.statics.isPasswordMatched = async function (
 };
 
 export const User = model<TUser>('User', userSchema);
+export const ContactUs = model<TContactUs>('ContactUs', ContactUsSchema);

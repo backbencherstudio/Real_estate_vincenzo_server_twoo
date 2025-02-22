@@ -1,11 +1,15 @@
-
+/* eslint-disable no-undef */
 /* eslint-disable no-useless-catch */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // import { Query } from "mongoose";
+import path from "path";
+import  fs from 'fs';
 import { Properties, Tenant, Unit } from "../owner/owner.module"
 import { User } from "../User/user.model";
-import { OverviewData, TPlanDetails } from "./admin.interface";
-import { PlanDetails } from "./admin.module";
+import { OverviewData, TPlanDetails, TRealEstateAdvisor } from "./admin.interface";
+import { PlanDetails, RealEstateAdvisor } from "./admin.module";
+import { AppError } from "../../errors/AppErrors";
+import httpStatus from "http-status";
 
 
 const getALlPropertiesFromDB = async (selectedDate : string) =>{    
@@ -21,7 +25,6 @@ const getALlPropertiesFromDB = async (selectedDate : string) =>{
     return result
 }
 
-
 const getSinglePropertiesAllUnitsFromDB = async(id : string ) =>{
     const property = await Properties.findById({_id : id}).populate("ownerId");
     const allUnits = await Unit.find({propertyId : id });
@@ -35,7 +38,7 @@ const getSinglePropertiesAllUnitsFromDB = async(id : string ) =>{
 const getALlTenantsFormDB = async () =>{
     const result = await Tenant.find().populate([{path : "userId"}, {path : "propertyId"}, { path: "ownerId" }, {path : "unitId"}]);
     return result
-  }
+}
   
 const getSingleTenantDetailseFromDB = async (id : string ) =>{
     const result = await Tenant.findById({_id : id}).populate([{path : "userId"}, {path : "propertyId"}, {path : "unitId"}]);
@@ -190,7 +193,6 @@ const getAllDataOverviewByAdminFromDB = async (selectedDate: string): Promise<Ov
     }
 };
 
-
 const createPlanIntoDB = async (payload : TPlanDetails ) =>{
     await PlanDetails.deleteMany({}); 
     const result = await PlanDetails.create(payload)
@@ -201,12 +203,39 @@ const getPlanFromDB = async ( ) =>{
     return result    
 }
 
+const deleteNoSubscriberOwnerFormDB = async (id : string) =>{
+    const result = await User.findByIdAndDelete({_id : id})
+    return result
+}
+ 
 
-const deleteNoSubscriberOwnerFormDB = (id : string) =>{
-    const result = User.findByIdAndDelete({_id : id})
+const RealEstateAdvisorIntoDB =  async (payload : TRealEstateAdvisor)=>{
+    const result = await RealEstateAdvisor.create(payload)
     return result
 }
 
+const RealEstateAdvisordeleteIntoDB =  async (id : string)=>{
+    const adviserData = await RealEstateAdvisor.findById({_id : id})  
+    if(!adviserData){
+        throw new AppError(httpStatus.NOT_FOUND, "data not found")
+    }  
+    if (adviserData?.image && adviserData.image.length > 0) {
+        adviserData.image.forEach((image) => {    
+          const filePath = path.resolve(__dirname, "..", "..", "..", "..", "uploads", path.basename(image));
+          if (fs.existsSync(filePath)) {
+            fs.unlink(filePath, (err: any) => {
+              if (err) {
+                console.error("Error deleting audio file:", err);
+              }
+            });
+          } else {
+            console.warn(61, filePath);
+          }
+        });        
+      }
+    const result = await RealEstateAdvisor.findByIdAndDelete({_id : id})
+    return result
+}
  
 
 
@@ -219,5 +248,7 @@ export const AdminService = {
     getAllDataOverviewByAdminFromDB,
     createPlanIntoDB,
     getPlanFromDB,
-    deleteNoSubscriberOwnerFormDB
+    deleteNoSubscriberOwnerFormDB,
+    RealEstateAdvisorIntoDB,
+    RealEstateAdvisordeleteIntoDB
 }
