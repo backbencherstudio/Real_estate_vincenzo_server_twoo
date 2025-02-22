@@ -193,8 +193,17 @@ const userDelete = catchAsync(async (req, res) => {
 
 
 const sendEmailToUser = catchAsync(async (req, res) => {
-  const result = await UserServices.sendEmailToAllUser(req.body);
- 
+  const result = await UserServices.sendEmailToAllUser(req.body); 
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Email send  successfully',
+    data: result,
+  });
+});
+
+const ContactUsController = catchAsync(async (req, res) => {
+  const result = await UserServices.ContactUsService(req.body); 
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
@@ -215,5 +224,6 @@ export const userController = {
   refreshToken,
   resetPassword,
   verifyOtpForResetPassword,
-  sendEmailToUser
+  sendEmailToUser,
+  ContactUsController
 };

@@ -52,6 +52,13 @@ export type TLoginUser = {
   password: string;
 };
 
+export type TContactUs = {
+  fullName : string;
+  email : string;
+  mobileNumber : string;
+  message : string
+}
+
 
 export interface UserModel extends Model<TUser> {
   isUserExistsByCustomeId(id: string): Promise<TUser>;

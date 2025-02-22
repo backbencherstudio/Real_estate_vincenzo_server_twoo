@@ -64,6 +64,11 @@ router.post(
   userController.sendEmailToUser,
 );
 
+router.post(
+  '/contactUs',
+  userController.ContactUsController,
+);
+
 
 
 export const UserRouter = router;

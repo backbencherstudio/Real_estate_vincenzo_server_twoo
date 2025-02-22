@@ -21,7 +21,6 @@ const getALlPropertiesFromDB = async (selectedDate : string) =>{
     return result
 }
 
-
 const getSinglePropertiesAllUnitsFromDB = async(id : string ) =>{
     const property = await Properties.findById({_id : id}).populate("ownerId");
     const allUnits = await Unit.find({propertyId : id });
@@ -35,7 +34,7 @@ const getSinglePropertiesAllUnitsFromDB = async(id : string ) =>{
 const getALlTenantsFormDB = async () =>{
     const result = await Tenant.find().populate([{path : "userId"}, {path : "propertyId"}, { path: "ownerId" }, {path : "unitId"}]);
     return result
-  }
+}
   
 const getSingleTenantDetailseFromDB = async (id : string ) =>{
     const result = await Tenant.findById({_id : id}).populate([{path : "userId"}, {path : "propertyId"}, {path : "unitId"}]);
@@ -190,7 +189,6 @@ const getAllDataOverviewByAdminFromDB = async (selectedDate: string): Promise<Ov
     }
 };
 
-
 const createPlanIntoDB = async (payload : TPlanDetails ) =>{
     await PlanDetails.deleteMany({}); 
     const result = await PlanDetails.create(payload)
@@ -206,7 +204,7 @@ const deleteNoSubscriberOwnerFormDB = (id : string) =>{
     const result = User.findByIdAndDelete({_id : id})
     return result
 }
-
+ 
  
 
 
