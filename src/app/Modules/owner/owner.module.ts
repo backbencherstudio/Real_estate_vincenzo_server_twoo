@@ -184,6 +184,7 @@ const ReviewFromOwnerSchema = new Schema<TReviewFromOwner>({
   message : {type : String},
   designation : {type : String},
   name : {type : String},
+  email : {type : String},
   image : {type : String},
   reating : {type : Number},
   status : {type : Boolean}

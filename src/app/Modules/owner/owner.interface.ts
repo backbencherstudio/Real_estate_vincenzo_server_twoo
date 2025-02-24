@@ -71,6 +71,7 @@ export type TReviewFromOwner = {
   reating : number,
   image : string,
   name : string,
+  email : string,
   designation : string;
   status : boolean
-}
+} 

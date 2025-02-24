@@ -144,12 +144,32 @@ const getALlProperties = catchAsync(async (req, res) => {
 });
 
 
-  const realEstateAdvisordelete = catchAsync(async (req, res) => {
+ const realEstateAdvisordelete = catchAsync(async (req, res) => {
     const result = await AdminService.RealEstateAdvisordeleteIntoDB(req.params.id);
     sendResponse(res, {
         statusCode: httpStatus.OK,
         success: true,
         message: 'Real Estate Advisor Delete successfully',
+        data: result,
+    });
+});
+
+  const getAllReview = catchAsync(async (req, res) => {
+    const result = await AdminService.getReviewFromDB();
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: 'Get all review successfully',
+        data: result,
+    });
+});
+
+  const deleteReviewByAdmin = catchAsync(async (req, res) => {
+    const result = await AdminService.deleteReviewByAdminIntoDB(req.params.reviewId);
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: 'Review delete successfully',
         data: result,
     });
 });
@@ -168,5 +188,7 @@ export const AdminController = {
     getPlan,
     deleteNoSubscriberOwner,
     realEstateAdvisor,
-    realEstateAdvisordelete
+    realEstateAdvisordelete,
+    getAllReview,
+    deleteReviewByAdmin
 }

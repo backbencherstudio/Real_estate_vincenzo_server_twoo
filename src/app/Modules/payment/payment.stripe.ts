@@ -806,7 +806,7 @@ const handleAccountUpdated = async (account: Stripe.Account) => {
 
 const handleTransferSucceeded = async (transfer: Stripe.Transfer) => {
   try {
-      console.log(706, "✅ Payout Succeeded Webhook Triggered:", transfer);
+      console.log(706, "✅ transfer Succeeded Webhook Triggered:", transfer);
 
       const transferId = transfer.id;
       const amount = transfer.amount / 100;
