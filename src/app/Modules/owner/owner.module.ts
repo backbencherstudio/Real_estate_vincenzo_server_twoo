@@ -188,7 +188,7 @@ const ReviewFromOwnerSchema = new Schema<TReviewFromOwner>({
   image : {type : String},
   reating : {type : Number},
   status : {type : Boolean}
-})
+}, {timestamps : true})
 
 export const Tenant = model('Tenant', createTenantSchema);
 export const Properties = model<TProperties>('Property', propertiesSchema);

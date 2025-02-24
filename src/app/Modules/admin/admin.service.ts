@@ -240,10 +240,10 @@ const RealEstateAdvisordeleteIntoDB =  async (id : string)=>{
  
 
 const getReviewFromDB = async () => {
-    const result = await ReviewFromOwner.find()
-        .sort({ status: 1, createdAt: -1 }); 
+    const result = await ReviewFromOwner.find().sort({ createdAt: -1 }).lean();
     return result;
 };
+
 
 const deleteReviewByAdminIntoDB = async (id : string) =>{
     const result = await ReviewFromOwner.findByIdAndDelete({_id : id})

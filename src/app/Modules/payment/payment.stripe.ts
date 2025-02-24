@@ -382,7 +382,7 @@ ${invoice_pdf
       `
             : `
         <p style="font-size: 16px; color: #777; text-align: center;">
-          No invoice is available at the moment. If you have any questions, please contact support.
+          Your subscription has been successfully renewed for this month. If you have any questions or need assistance, please contact our support team.
         </p>
       `
           }
