@@ -65,3 +65,12 @@ export interface PopulatedPayment {
   unitId?: { rent?: number }; 
   paidAmount?: number;
 }
+
+export type TReviewFromOwner = {
+  message : string,
+  reating : number,
+  image : string,
+  name : string,
+  designation : string;
+  status : boolean
+}

@@ -1,9 +1,10 @@
+import { ReviewFromOwner } from './owner.module';
 /* eslint-disable no-undef */
 import path from 'path';
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import mongoose, { Query, Types } from "mongoose";
 import { User } from "../User/user.model";
-import { PopulatedPayment, TProperties, TUnits } from "./owner.interface";
+import { PopulatedPayment, TProperties, TReviewFromOwner, TUnits } from "./owner.interface";
 import { Properties, Tenant, Unit } from "./owner.module";
 import bcrypt from 'bcrypt';
 import { AppError } from "../../errors/AppErrors";
@@ -258,7 +259,6 @@ const deleteUnitFormDB = async (unitId: string) => {
 
 }
 
-
 // const updateUnitIntoDB = async (payload: any) => {  
 //   const {unitId, ...data} = payload
 //   const unitData = await Unit.findById({_id : unitId})
@@ -483,7 +483,6 @@ const createTenantIntoDB = async (payload: any) => {
   }
 };
 
-
 const deleteTenantIntoDB = async (id: string) => {
   const session = await mongoose.startSession();
   session.startTransaction();
@@ -678,6 +677,11 @@ const isOwnerActiveOrNot = async (email : string) => {
   return resutl
 }
 
+const CreateReviewFromOwnerIntoDB = async (payload : TReviewFromOwner) => {
+  const resutl = await ReviewFromOwner.create(payload)
+  return resutl
+}
+
 
 export const OwnerServices = {
   createPropertiesDB,
@@ -700,5 +704,6 @@ export const OwnerServices = {
   getResentPaymentDataByOwnerFromDB,
   getPaymentDataOverviewByOwnerFromDB,
   getAllTenantsForMessageFromDB,
-  isOwnerActiveOrNot
+  isOwnerActiveOrNot,
+  CreateReviewFromOwnerIntoDB
 };
