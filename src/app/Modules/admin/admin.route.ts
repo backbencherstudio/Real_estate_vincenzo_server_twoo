@@ -66,6 +66,15 @@ router.delete(
     AdminController.realEstateAdvisordelete,
 );
 
+router.get(
+    '/getAllReview',
+    AdminController.getAllReview,
+);
+router.delete(
+    '/deleteReviewByAdmin/:reviewId',
+    AdminController.deleteReviewByAdmin,
+);
+
 
 
 export const AdminRouter = router

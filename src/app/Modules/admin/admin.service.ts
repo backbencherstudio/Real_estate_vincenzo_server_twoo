@@ -4,7 +4,7 @@
 // import { Query } from "mongoose";
 import path from "path";
 import  fs from 'fs';
-import { Properties, Tenant, Unit } from "../owner/owner.module"
+import { Properties, ReviewFromOwner, Tenant, Unit } from "../owner/owner.module"
 import { User } from "../User/user.model";
 import { OverviewData, TPlanDetails, TRealEstateAdvisor } from "./admin.interface";
 import { PlanDetails, RealEstateAdvisor } from "./admin.module";
@@ -198,6 +198,7 @@ const createPlanIntoDB = async (payload : TPlanDetails ) =>{
     const result = await PlanDetails.create(payload)
     return result    
 }
+
 const getPlanFromDB = async ( ) =>{
     const result = await PlanDetails.find()
     return result    
@@ -238,6 +239,18 @@ const RealEstateAdvisordeleteIntoDB =  async (id : string)=>{
 }
  
 
+const getReviewFromDB = async () => {
+    const result = await ReviewFromOwner.find()
+        .sort({ status: 1, createdAt: -1 }); 
+    return result;
+};
+
+const deleteReviewByAdminIntoDB = async (id : string) =>{
+    const result = await ReviewFromOwner.findByIdAndDelete({_id : id})
+    return result
+}
+
+
 
 export const AdminService = {
     getALlPropertiesFromDB,
@@ -250,5 +263,7 @@ export const AdminService = {
     getPlanFromDB,
     deleteNoSubscriberOwnerFormDB,
     RealEstateAdvisorIntoDB,
-    RealEstateAdvisordeleteIntoDB
+    RealEstateAdvisordeleteIntoDB,
+    getReviewFromDB,
+    deleteReviewByAdminIntoDB
 }
