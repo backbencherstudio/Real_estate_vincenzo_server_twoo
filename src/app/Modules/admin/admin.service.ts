@@ -255,6 +255,11 @@ const getAllEmailCollectionDataGetFromDB = async ()=>{
     return result
 }
 
+const deleteEmailCollectionDataGetIntoDB = async (id : string)=>{
+    const result = await EmailCollection.findByIdAndDelete({_id : id})
+    return result
+}
+
 
 export const AdminService = {
     getALlPropertiesFromDB,
@@ -270,5 +275,6 @@ export const AdminService = {
     RealEstateAdvisordeleteIntoDB,
     getReviewFromDB,
     deleteReviewByAdminIntoDB,
-    getAllEmailCollectionDataGetFromDB
+    getAllEmailCollectionDataGetFromDB,
+    deleteEmailCollectionDataGetIntoDB
 }
