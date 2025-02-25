@@ -58,7 +58,7 @@ router.delete(
 
 router.post(
     '/realEstateAdvisor',
-     upload.array('image', 10),
+     upload.array('image', 1),
     AdminController.realEstateAdvisor,
 );
 router.delete(
