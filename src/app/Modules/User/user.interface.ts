@@ -69,3 +69,7 @@ export interface UserModel extends Model<TUser> {
 }
 
 export type TUserRole = keyof typeof User_Role;
+
+export type TEmailCollection = {
+  email : string
+}
