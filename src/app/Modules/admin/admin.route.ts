@@ -74,6 +74,11 @@ router.delete(
     '/deleteReviewByAdmin/:reviewId',
     AdminController.deleteReviewByAdmin,
 );
+router.get(
+    '/getAllEmailCollectionData',
+    Auth(User_Role.admin),
+    AdminController.getAllEmailCollectionData,
+);
 
 
 

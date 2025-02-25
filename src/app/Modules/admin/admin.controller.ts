@@ -174,6 +174,16 @@ const getALlProperties = catchAsync(async (req, res) => {
     });
 });
 
+  const getAllEmailCollectionData = catchAsync(async (req, res) => {
+    const result = await AdminService.getAllEmailCollectionDataGetFromDB();
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: 'Get all email data successfully',
+        data: result,
+    });
+});
+
 
  
 
@@ -190,5 +200,6 @@ export const AdminController = {
     realEstateAdvisor,
     realEstateAdvisordelete,
     getAllReview,
-    deleteReviewByAdmin
+    deleteReviewByAdmin,
+    getAllEmailCollectionData
 }

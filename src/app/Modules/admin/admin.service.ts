@@ -5,7 +5,7 @@
 import path from "path";
 import  fs from 'fs';
 import { Properties, ReviewFromOwner, Tenant, Unit } from "../owner/owner.module"
-import { User } from "../User/user.model";
+import { EmailCollection, User } from "../User/user.model";
 import { OverviewData, TPlanDetails, TRealEstateAdvisor } from "./admin.interface";
 import { PlanDetails, RealEstateAdvisor } from "./admin.module";
 import { AppError } from "../../errors/AppErrors";
@@ -250,6 +250,10 @@ const deleteReviewByAdminIntoDB = async (id : string) =>{
     return result
 }
 
+const getAllEmailCollectionDataGetFromDB = async ()=>{
+    const result = await EmailCollection.find()
+    return result
+}
 
 
 export const AdminService = {
@@ -265,5 +269,6 @@ export const AdminService = {
     RealEstateAdvisorIntoDB,
     RealEstateAdvisordeleteIntoDB,
     getReviewFromDB,
-    deleteReviewByAdminIntoDB
+    deleteReviewByAdminIntoDB,
+    getAllEmailCollectionDataGetFromDB
 }
