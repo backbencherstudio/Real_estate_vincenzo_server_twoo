@@ -19,7 +19,7 @@ const handelDuplicateError = (err: any): TGenericErrorResponse => {
   const statusCode = 400;
   return {
     statusCode,
-    message: 'this department is already exists',
+    message: 'this data is already exists',
     errorSources,
   };
 };

@@ -14,7 +14,7 @@ const httpServer = createServer(app);
 
 const io = new Server(httpServer, {
   cors: {
-    origin: ['http://localhost:5173'],
+    origin: ['http://localhost:5173', 'https://rentpadhomes.com', 'http://rentpadhomes.com'],
     credentials: true,
   },
 });
@@ -43,7 +43,7 @@ app.use((req, res, next) => {
 
 app.use(
   cors({
-    origin: ['http://localhost:5173'],  
+    origin: ['http://localhost:5173', 'https://rentpadhomes.com', 'http://rentpadhomes.com'],  
     credentials: true,
   })
 );
@@ -114,6 +114,7 @@ app.get('/messages/unread/:userId', async (req, res) => {
     res.status(500).json({ error: 'Error fetching unread messages' });
   }
 });
+
 
 app.get('/', async (req, res) => {
   const a = 'server running successfully';

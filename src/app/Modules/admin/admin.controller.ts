@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 import httpStatus from "http-status";
 import { catchAsync } from "../../utils/catchAsync";
 import { AdminService } from "./admin.service";
@@ -5,7 +6,8 @@ import sendResponse from "../../utils/sendResponse";
 
 
 const getALlProperties = catchAsync(async (req, res) => {
-    const result = await AdminService.getALlPropertiesFromDB()  
+  const {selectedDate} = req.query
+    const result = await AdminService.getALlPropertiesFromDB(selectedDate as string )  
     sendResponse(res, {
       statusCode: httpStatus.OK,
       success: true,
@@ -57,7 +59,8 @@ const getALlProperties = catchAsync(async (req, res) => {
 
 
   const getAllDataOverviewByAdmin = catchAsync(async (req, res) => {
-    const result = await AdminService.getAllDataOverviewByAdminFromDB();  
+    const {selectedDate} = req.query;
+    const result = await AdminService.getAllDataOverviewByAdminFromDB(selectedDate as string);  
     sendResponse(res, {
       statusCode: httpStatus.OK,
       success: true,
@@ -86,6 +89,71 @@ const getALlProperties = catchAsync(async (req, res) => {
     });
   });
 
+  const deleteNoSubscriberOwner = catchAsync(async (req, res) => {    
+    const result = await AdminService.deleteNoSubscriberOwnerFormDB(req.params.ownerId);  
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'Non Subscriber user delete successfully',
+      data: result,  
+    });
+  });
+
+  // const realEstateAdvisor = catchAsync(async (req, res) => {
+  //   if (!req.files || !Array.isArray(req.files)) {
+  //     return res.status(400).json({ message: 'No files uploaded or invalid format' });
+  //   }
+  //   const advisorData = {
+  //     ...req.body,
+  //     image: req.files.map((file: Express.Multer.File) => `/uploads/${file.filename}`),
+  //   };
+  //   const result = await AdminService.RealEstateAdvisorIntoDB(advisorData);  
+  //   sendResponse(res, {
+  //     statusCode: httpStatus.OK,
+  //     success: true,
+  //     message: 'Non Subscriber user delete successfully',
+  //     data: result,  
+  //   });
+  // });
+
+  const realEstateAdvisor = catchAsync(async (req, res) => {
+    if (!req.files || !Array.isArray(req.files) || req.files.length === 0) {
+        return res.status(400).json({ success: false, message: 'No files uploaded' });
+    }
+    const { name, designation, facebook, twitter, instagram, linkedin } = req.body;
+    if (!name || !designation) {
+        return res.status(400).json({ success: false, message: 'Name and Designation are required' });
+    }
+    const advisorData = {
+        name,
+        designation,
+        facebook,
+        twitter,
+        instagram,
+        linkedin,
+        image: req.files.map((file) => `/uploads/${file.filename}`),
+    };
+    const result = await AdminService.RealEstateAdvisorIntoDB(advisorData);
+
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: 'Real Estate Advisor added successfully',
+        data: result,
+    });
+});
+
+
+  const realEstateAdvisordelete = catchAsync(async (req, res) => {
+    const result = await AdminService.RealEstateAdvisordeleteIntoDB(req.params.id);
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: 'Real Estate Advisor Delete successfully',
+        data: result,
+    });
+});
+
 
  
 
@@ -97,5 +165,8 @@ export const AdminController = {
     getSingleOwnerAllPropertiesWithOwnerInfo,
     getAllDataOverviewByAdmin,
     createPlan,
-    getPlan
+    getPlan,
+    deleteNoSubscriberOwner,
+    realEstateAdvisor,
+    realEstateAdvisordelete
 }

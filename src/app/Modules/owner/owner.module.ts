@@ -1,5 +1,5 @@
 import { Schema, model } from "mongoose";
-import { TCreateTenant, TProperties, TUnits } from "./owner.interface";
+import { TCreateTenant, TProperties, TReviewFromOwner, TUnits } from "./owner.interface";
 
 // Property Location Schema
 const propertyLocationSchema = new Schema({
@@ -170,10 +170,6 @@ const createTenantSchema = new Schema<TCreateTenant>({
     required: [true, 'Owner ID is required'],
     ref: 'User',
   },
-  // isSecurityDepositPay: {
-  //   type: Boolean,
-  //   default: false,
-  // },
   isDeleted : {
     type : Boolean,
     default : false
@@ -184,6 +180,16 @@ const createTenantSchema = new Schema<TCreateTenant>({
 });
 
 
+const ReviewFromOwnerSchema = new Schema<TReviewFromOwner>({
+  message : {type : String},
+  designation : {type : String},
+  name : {type : String},
+  image : {type : String},
+  reating : {type : Number},
+  status : {type : Boolean}
+})
+
 export const Tenant = model('Tenant', createTenantSchema);
 export const Properties = model<TProperties>('Property', propertiesSchema);
 export const Unit = model<TUnits>('Unit', UnitSchema);
+export const ReviewFromOwner = model<TReviewFromOwner>('ReviewFromOwner', ReviewFromOwnerSchema);

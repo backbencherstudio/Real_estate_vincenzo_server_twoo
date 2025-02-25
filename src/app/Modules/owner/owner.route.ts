@@ -6,11 +6,30 @@ import { upload } from '../../middleware/upload';
 
 const router = express.Router();
 
+router.get(
+    '/isOwnerActive',
+    Auth(User_Role.owner),
+    propertyController.isOwnerActive,
+);
+
 router.post(
     '/create-properties',
     Auth(User_Role.owner),
     upload.array('propertyImages', 10), 
     propertyController.createProperties
+  );
+
+router.patch(
+    "/update-properties",
+    Auth(User_Role.owner),
+    upload.array('propertyImages', 10), 
+    propertyController.updatePorperty
+  );
+
+router.delete(
+    '/deleteProperties/:propertyId',
+    Auth(User_Role.owner),
+    propertyController.deleteProperties
   );
   
 router.get(
@@ -25,6 +44,18 @@ router.post(
     propertyController.createUnits,
 );
 
+router.delete(
+    '/delete-unit/:unitId',
+    Auth(User_Role.owner),
+    propertyController.deleteUnit,
+);
+
+router.patch(
+    '/update-unit/:unitId',
+    Auth(User_Role.owner),
+    propertyController.updateUnit,
+);
+
 // =================== admin and owner both can access this route
 router.get(
     '/propertie-units/:id',
@@ -36,6 +67,12 @@ router.post(
     '/create-tenant',
     Auth(User_Role.owner),
     propertyController.createTenant,
+);
+
+router.delete(
+    "/delete-tenant/:tenantId",
+    Auth(User_Role.owner),
+    propertyController.deleteTenant,
 );
 
 router.get( 
@@ -98,11 +135,13 @@ router.get(
     propertyController.getAllTenantsForMessage,
 );
 
-router.get(
-    '/getPayoutDataBySingleOwner/:ownerId',
+router.post(
+    '/createReviewFromOwner',
     Auth(User_Role.owner),
-    propertyController.getPayoutDataBySingleOwner,
+    propertyController.CreateReviewFromOwner,
 );
+
+
 
 
 export const OwnerRouter = router;

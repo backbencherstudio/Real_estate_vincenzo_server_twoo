@@ -24,5 +24,6 @@ export type TTenantPayment = {
     status: 'Accepted' | 'On progress' | 'Failed' | 'Paid' | 'Rejected' | 'Pending';  
     transactionId: string;
     Receipt: string
+    payoutId:string
   };
   

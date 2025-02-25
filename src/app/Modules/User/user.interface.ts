@@ -21,6 +21,8 @@ export type TPermanentAddress = {
 
 export interface TUser {
   userId : string;
+  accountConnect : boolean;
+  stripeAccountId : string;
   personalInfo : TPersonalInfo;
   permanentAddress : TPermanentAddress;
   profileImage:string;
@@ -40,6 +42,7 @@ export interface TUser {
   getTotalUnit : number;
   isSecurityDepositPay?:boolean;
   paidAmount ?: number;
+  cancelRequest : boolean
 }
 
 
@@ -48,6 +51,13 @@ export type TLoginUser = {
   email: string;
   password: string;
 };
+
+export type TContactUs = {
+  fullName : string;
+  email : string;
+  mobileNumber : string;
+  message : string
+}
 
 
 export interface UserModel extends Model<TUser> {

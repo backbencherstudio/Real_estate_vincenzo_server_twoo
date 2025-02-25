@@ -7,7 +7,7 @@ const hashPassword = async (pass: number) => {
 };
 
 export const seedAdmin = async () => {
-  const isSuperAdminExists = await User.findOne({ role: User_Role.admin });
+  const isSuperAdminExists = await User.findOne({ role: User_Role.admin , email : "fozlerabbi9790@gmail.com" });
 
   if (!isSuperAdminExists) {
     const admin = {
