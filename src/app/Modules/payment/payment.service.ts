@@ -86,6 +86,8 @@ const getPayoutDataFromDBbyAdmin = async () => {
 };
 
  const createConnectedAccount = async (email: string) => {
+    console.log(89, email);
+    
     try {
         const connectedAccount = await stripe.accounts.create({
             type: "express",
@@ -103,6 +105,8 @@ const getPayoutDataFromDBbyAdmin = async () => {
 };
 
  const createOnboardingLink = async (accountId: string) => {    
+    console.log(108, accountId);
+    
     try {
         const accountLink = await stripe.accountLinks.create({
             account: accountId,
@@ -120,9 +124,12 @@ const getPayoutDataFromDBbyAdmin = async () => {
 
 
 const sendPayoutRequestByOwnerToStripe = async (data: any) => {
+    console.log(123,  data?.email);
+    
     try {
         const {email} = data;
         const  connectedAccount = await createConnectedAccount(email);
+        
         const onboardingUrl = await createOnboardingLink(connectedAccount?.id);        
         return { success: true, result: {onboardingUrl}, message: "✅ Payout processed successfully!" };
     } catch (error: any) {
