@@ -118,6 +118,7 @@ const getPayoutDataFromDBbyAdmin = async () => {
     }
 };
 
+
 const sendPayoutRequestByOwnerToStripe = async (data: any) => {
     try {
         const {email} = data;
@@ -130,107 +131,13 @@ const sendPayoutRequestByOwnerToStripe = async (data: any) => {
     }
 };
 
-// const sendPayoutRequestByOwnerToStripe = async (data: any) => {
-//     try {
-//         console.log("🚀 Processing payout request:", data);
-//         const { email, amount, accountId, ownerId, key } = data.record;
-//         const selectedStatus = data.selectedStatus;
-
-//         if (selectedStatus !== "Accepted") {
-//             return { success: false, message: "❌ Payout request must be accepted first!" };
-//         }
-//         let connectedAccount;
-//         try {
-//             connectedAccount = await stripe.accounts.retrieve(accountId);
-//         } catch {
-//             console.log("⚠️ No existing connected account, creating a new one...");
-//             connectedAccount = await createConnectedAccount(email);
-//         }
-
-//         if (!connectedAccount.details_submitted) {
-//             console.log("⚠️ User needs to complete onboarding.");
-//             const onboardingUrl = await createOnboardingLink(connectedAccount.id);
-//             return { success: false, result: { onboardingUrl }, message: "⚠️ The account needs onboarding." };
-//         }
-
-//         const payout = await stripe.transfers.create({
-//             amount: Math.round(amount * 100), 
-//             currency: "usd",
-//             destination: connectedAccount.id, 
-//             metadata: {
-//                 ownerId, 
-//                 payoutKey: key, 
-//                 email,
-//             },
-//         });
-
-//         console.log(172, "✅ Payout Processed:", payout.id);
-
-//         return { success: true, result: { payoutId: payout.id }, message: "✅ Payout processed successfully!" };
-
-//     } catch (error: any) {
-//         console.error("🔥 Payout Error:", error);
-//         return { success: false, message: "❌ Error processing payout", error: error.message };
-//     }
-// };
-
-// const sendPayoutRequestByAdminToStripe = async (data: any) => {
-//     try {
-//         console.log("🚀 Processing payout request:", data);
-//         const { amount, ownerId, key } = data.record;
-//         const selectedStatus = data.selectedStatus;
-
-//         if (selectedStatus !== "Accepted") {
-//             return { success: false, message: "❌ Payout request must be accepted first!" };
-//         }
-
-//         // 1️⃣ Find the owner's Stripe account ID
-//         const owner = await User.findById(ownerId);
-//         if (!owner || !owner.stripeAccountId) {
-//             return { success: false, message: "❌ Owner's Stripe account not found!" };
-//         }
-
-//         const accountId = owner.stripeAccountId;
-//         console.log(`✅ Sending payout to Stripe account: ${accountId}`);
-
-//         // 2️⃣ Update `OwnerPayout` status to "On Progress"
-//         await OwnerPayout.findOneAndUpdate(
-//             { _id: key },
-//             { $set: { status: "On Progress" } }
-//         );
-
-//         // 3️⃣ Create Payout (Send Money)
-//         const payout = await stripe.transfers.create({
-//             amount: Math.round(amount * 100), // Convert dollars to cents
-//             currency: "usd",
-//             destination: accountId, // ✅ Send money to the connected Stripe account
-//             metadata: {
-//                 ownerId,  // ✅ Track ownerId
-//                 payoutKey: key,  // ✅ Track payout request
-//                 email: owner.email, // ✅ Track email for confirmation
-//             },
-//         });
-
-//         console.log("✅ Payout Processed:", payout.id);
-
-//         return { success: true, result: { payoutId: payout.id }, message: "✅ Payout processed successfully!" };
-
-//     } catch (error: any) {
-//         console.error("🔥 Payout Error:", error);
-//         return { success: false, message: "❌ Error processing payout", error: error.message };
-//     }
-// };
-
-
-//========================= stripe.transfer.create
-
 const sendPayoutRequestByAdminToStripe = async (data: any) => {
     try {
         console.log("🚀 Processing payout request:", data);
         const { amount, ownerId, key } = data.record;
         const selectedStatus = data.selectedStatus;
 
-        console.log(231, "ownerId", ownerId);        
+        console.log(231, "ownerId", ownerId);
 
         if (selectedStatus !== "Accepted") {
             await OwnerPayout.findOneAndUpdate(
@@ -268,7 +175,7 @@ const sendPayoutRequestByAdminToStripe = async (data: any) => {
             description: "Payout from Admin to Owner",
             metadata: {
                 ownerId,  
-                payoutKey: key, 
+                payoutKey: key, // this key is payout _id 
                 email: owner.email,
             },
         });

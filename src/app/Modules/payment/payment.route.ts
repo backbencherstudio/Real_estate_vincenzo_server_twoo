@@ -18,7 +18,7 @@ router.get("/getSingleUserAllPaymentData/:userId", paymentController.getSingleUs
 // =========================== Stripe Payment Handle API
 router.post("/stripe", stripePaymentService.stripePayment);
 router.post("/cancel-subscription/:customerId", stripePaymentService.cancelSubscription);
-router.post("/Webhook", bodyParser.raw({ type: "application/json" }), stripePaymentService.Webhook);
+router.post("/webhook", bodyParser.raw({ type: "application/json" }), stripePaymentService.Webhook);
 
 
 

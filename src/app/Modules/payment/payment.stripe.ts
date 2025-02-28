@@ -231,7 +231,8 @@ const cancelSubscription = async (req: Request, res: Response) => {
 
 
 const Webhook = async (req: Request, res: Response) => {
-  const webhookSecret = "whsec_8ab581e0ee7aa6de572d6db241f16b3c253172564e802c2a15e5f6a741fcf397";
+  // const webhookSecret = "whsec_8ab581e0ee7aa6de572d6db241f16b3c253172564e802c2a15e5f6a741fcf397";
+  const webhookSecret = config.stripe_webhook_secret_key as string ;
   const signature = req.headers["stripe-signature"];
   let event: Stripe.Event;
 
@@ -914,9 +915,6 @@ const handlePaymentCreated = async (payment: Stripe.PaymentIntent) => {
 const handleBalanceAvailable = async (balance: Stripe.Balance) => {
   console.log("💵 Stripe Balance Updated:", balance.available);
 };
-
-
-
 
 
 
