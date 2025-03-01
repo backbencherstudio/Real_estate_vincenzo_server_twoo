@@ -257,7 +257,7 @@ const Webhook = async (req: Request, res: Response) => {
     "charge.updated": handleChargeUpdated,
     "account.updated": handleAccountUpdated,
     // =================
-    "transfer.update": handleTransferSucceeded,
+    "transfer.updated": handleTransferSucceeded,
     "payout.paid": handlePayoutSucceeded,
     // "transfer.paid": handlePayoutSucceeded,
     "transfer.created": handleTransferCreated,
