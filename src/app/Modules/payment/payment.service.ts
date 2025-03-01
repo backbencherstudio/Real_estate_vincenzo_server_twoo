@@ -46,6 +46,9 @@ const createAllTenantsForPaymentFormDB = async () => {
             invoice: "Upcoming",
         }));
 
+        console.log(payments);
+        
+
         const result = await TenantPayment.insertMany(payments);
         return result;
     } catch (error) {

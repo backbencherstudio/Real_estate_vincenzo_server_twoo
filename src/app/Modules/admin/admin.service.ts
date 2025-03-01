@@ -109,11 +109,109 @@ const getSingleOwnerAllPropertiesWithOwnerInfoFromDB = async(id : string ) =>{
 //     }
 // };
 
+
+// ========================================================================================
+// ========================================================================================
+
+
+// const getAllDataOverviewByAdminFromDB = async (selectedDate: string): Promise<OverviewData> => {
+//     try {
+//         const [year, month] = selectedDate.split('-').map(Number);
+//         const startDate = new Date(year, month - 1, 1);
+//         const endDate = new Date(year, month, 0);
+
+//         console.log(selectedDate);
+        
+
+//         const queries = [
+//             {
+//                 key: "propertyLength",
+//                 query: Properties.countDocuments()
+//             },
+//             {
+//                 key: "tenantLength",
+//                 query: Tenant.countDocuments()
+//             },
+//             {
+//                 key: "ownersLength",
+//                 query: User.countDocuments({ role: "owner", subscriptionStatus : "active" })
+//             },
+//             {
+//                 key: "unitsLength",
+//                 query: Unit.countDocuments()
+//             }
+//         ];
+
+//         const results = await Promise.all(queries.map(item => item.query));
+
+//         const monthlyProperties = await Properties.aggregate([
+//             {
+//                 $match: {
+//                     createdAt: { $gte: startDate, $lte: endDate }
+//                 }
+//             },
+//             {
+//                 $group: {
+//                     _id: { $dateToString: { format: "%Y-%m", date: "$createdAt" } },
+//                     count: { $sum: 1 }
+//                 }
+//             },
+//             { $sort: { _id: 1 } }
+//         ]);
+
+//         const monthlyTenants = await Tenant.aggregate([
+//             {
+//                 $match: {
+//                     createdAt: { $gte: startDate, $lte: endDate }
+//                 }
+//             },
+//             {
+//                 $group: {
+//                     _id: { $dateToString: { format: "%Y-%m", date: "$createdAt" } },
+//                     count: { $sum: 1 }
+//                 }
+//             },
+//             { $sort: { _id: 1 } }
+//         ]);
+
+//         const monthlyPropertiesData = monthlyProperties.map(item => ({
+//             date: item._id,
+//             count: item.count
+//         }));
+
+//         const monthlyTenantsData = monthlyTenants.map(item => ({
+//             date: item._id,
+//             count: item.count
+//         }));
+
+//         // 🔥 Fixed TypeScript Error by Ensuring All Required Properties
+//         const overview: OverviewData = {
+//             propertyLength: results[0] || 0,
+//             tenantLength: results[1] || 0,
+//             ownersLength: results[2] || 0,
+//             unitsLength: results[3] || 0,
+//             monthlyProperties: monthlyPropertiesData,
+//             monthlyTenants: monthlyTenantsData
+//         };
+
+//         console.log(overview);
+        
+
+//         return overview;
+//     } catch (error) {
+//         console.error("Error fetching data overview:", error);
+//         throw error;
+//     }
+// };
+
+
 const getAllDataOverviewByAdminFromDB = async (selectedDate: string): Promise<OverviewData> => {
     try {
         const [year, month] = selectedDate.split('-').map(Number);
         const startDate = new Date(year, month - 1, 1);
-        const endDate = new Date(year, month, 0);
+        const endDate = new Date(year, month, 0, 23, 59, 59, 999); 
+
+        console.log(selectedDate);
 
         const queries = [
             {
@@ -126,7 +224,7 @@ const getAllDataOverviewByAdminFromDB = async (selectedDate: string): Promise<Ov
             },
             {
                 key: "ownersLength",
-                query: User.countDocuments({ role: "owner", subscriptionStatus : "active" })
+                query: User.countDocuments({ role: "owner", subscriptionStatus: "active" })
             },
             {
                 key: "unitsLength",
@@ -139,7 +237,7 @@ const getAllDataOverviewByAdminFromDB = async (selectedDate: string): Promise<Ov
         const monthlyProperties = await Properties.aggregate([
             {
                 $match: {
-                    createdAt: { $gte: startDate, $lte: endDate }
+                    createdAt: { $gte: startDate, $lt: endDate }
                 }
             },
             {
@@ -154,7 +252,7 @@ const getAllDataOverviewByAdminFromDB = async (selectedDate: string): Promise<Ov
         const monthlyTenants = await Tenant.aggregate([
             {
                 $match: {
-                    createdAt: { $gte: startDate, $lte: endDate }
+                    createdAt: { $gte: startDate, $lt: endDate }
                 }
             },
             {
@@ -186,12 +284,17 @@ const getAllDataOverviewByAdminFromDB = async (selectedDate: string): Promise<Ov
             monthlyTenants: monthlyTenantsData
         };
 
+        console.log(overview);
+
         return overview;
     } catch (error) {
         console.error("Error fetching data overview:", error);
         throw error;
     }
 };
+
+
+
 
 const createPlanIntoDB = async (payload : TPlanDetails ) =>{
     await PlanDetails.deleteMany({}); 
