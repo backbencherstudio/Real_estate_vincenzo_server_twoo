@@ -257,7 +257,7 @@ const Webhook = async (req: Request, res: Response) => {
     "charge.updated": handleChargeUpdated,
     "account.updated": handleAccountUpdated,
     // =================
-    "transfer.succeeded": handleTransferSucceeded,
+    "transfer.update": handleTransferSucceeded,
     "payout.paid": handlePayoutSucceeded,
     // "transfer.paid": handlePayoutSucceeded,
     "transfer.created": handleTransferCreated,
@@ -828,6 +828,7 @@ const handleTransferSucceeded = async (transfer: Stripe.Transfer) => {
     console.log("Payout Key:", payoutKey);
     console.log("Email:", email);
     console.log("Balance Transaction ID:", balanceTransactionId);
+
     if (!ownerId) {
       console.error(716, "❌ Missing ownerId in payout metadata.");
       return;
