@@ -37,7 +37,7 @@ router.get(
 
 // ============================ send Payout Request By owner
 router.post(
-    '/sendPayoutRequestByOwnerToStripe',
+    '/sendPayoutRequestByOwnerToStripe',   // eita owner admin er stripe er sathe connect korar jonno 
     Auth(User_Role.owner),
     paymentController.sendPayoutRequestByOwnerToStripe,
 );
@@ -47,7 +47,7 @@ router.post(
 router.post(
     '/sendPayoutRequestByAdmin',
     Auth(User_Role.admin),
-    paymentController.sendPayoutRequestByAdmin,
+    paymentController.sendPayoutRequestByAdmin,    // eita admin approve korar por request jabe stripe er kase 
 );
 
 
