@@ -262,7 +262,7 @@ const Webhook = async (req: Request, res: Response) => {
     // "transfer.paid": handlePayoutSucceeded,
     // "transfer.created": handleTransferCreated,
     "transfer.created": handleTransferSucceeded,
-    "payment.created": handlePaymentCreated,
+    // "payment.created": handlePaymentCreated,
     "balance.available": handleBalanceAvailable,
   };
 
@@ -1312,9 +1312,9 @@ const handleTransferCreated = async (transfer: Stripe.Transfer) => {
 
 
 
-const handlePaymentCreated = async (payment: Stripe.PaymentIntent) => {
-  console.log(`💰 New Payment Created: ${payment.id} → Amount: $${payment.amount / 100}`);
-};
+// const handlePaymentCreated = async (payment: Stripe.PaymentIntent) => {
+//   console.log(`💰 New Payment Created: ${payment.id} → Amount: $${payment.amount / 100}`);
+// };
 const handleBalanceAvailable = async (balance: Stripe.Balance) => {
   console.log("💵 Stripe Balance Updated:", balance.available);
 };
