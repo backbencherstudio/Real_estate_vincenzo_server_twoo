@@ -1254,11 +1254,7 @@ const handleTransferSucceeded = async (transfer: Stripe.Transfer) => {
           
           <p style="color: #333333; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
             The funds should reflect in your account within 2-7 business days, depending on your bank's processing time.
-          </p>
-          
-          <div style="text-align: center; margin: 30px 0;">
-            <a href="#" style="display: inline-block; background-color: #00c853; color: white; text-decoration: none; padding: 12px 25px; border-radius: 4px; font-weight: bold;">View Transaction History</a>
-          </div>
+          </p>          
           
           <div style="background-color: #fff8e1; padding: 15px; border-radius: 4px; font-size: 14px; margin: 25px 0 15px;">
             <p style="margin: 0;">If you have any questions or need further assistance, please don't hesitate to contact our support team at <a href="mailto:support@yourcompany.com" style="color: #00c853; text-decoration: none;">support@yourcompany.com</a>.</p>
@@ -1268,20 +1264,10 @@ const handleTransferSucceeded = async (transfer: Stripe.Transfer) => {
             Best regards,
           </p>
           <p style="color: #333333; font-size: 16px; line-height: 1.6; margin-bottom: 20px; font-weight: bold;">
-            Your Company Name
+            RentPad Homes
           </p>
         </div>
-        <div style="background-color: #f5f5f5; padding: 15px; text-align: center; border-radius: 0 0 8px 8px; font-size: 14px; color: #777777;">
-          <p style="margin: 0;">This is an automated email. Please do not reply.</p>
-          <p style="margin: 10px 0 0; padding-top: 10px; border-top: 1px solid #eeeeee;">
-            © ${new Date().getFullYear()} Your Company Name. All rights reserved.
-          </p>
-          <p style="margin: 10px 0 0;">
-            <a href="#" style="color: #00c853; text-decoration: none; margin: 0 5px;">Privacy Policy</a> | 
-            <a href="#" style="color: #00c853; text-decoration: none; margin: 0 5px;">Terms of Service</a> | 
-            <a href="#" style="color: #00c853; text-decoration: none; margin: 0 5px;">Unsubscribe</a>
-          </p>
-        </div>
+
       </div>
     `;
 
