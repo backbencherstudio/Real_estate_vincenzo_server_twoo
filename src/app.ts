@@ -43,7 +43,7 @@ app.use((req, res, next) => {
 
 app.use(
   cors({
-    origin: ['http://localhost:5173', 'https://rentpadhomes.com', 'http://rentpadhomes.com'],  
+    origin: ['http://localhost:5173', 'https://rentpadhomes.com', 'http://rentpadhomes.com', 'https://rentpadhomes.com'],  
     credentials: true,
   })
 );

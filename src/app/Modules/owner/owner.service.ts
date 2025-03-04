@@ -489,6 +489,8 @@ const deleteTenantIntoDB = async (id: string) => {
 
   try {
     const tenantData = await Tenant.findById({ _id: id }).session(session);
+    const userData = await User.findById({_id : tenantData?.userId});
+        
     if (!tenantData) {
       throw new AppError(httpStatus.NOT_FOUND, "Tenant Not Found");
     }
@@ -525,6 +527,19 @@ const deleteTenantIntoDB = async (id: string) => {
       },
       { session }
     );
+
+    if (userData?.profileImage) {  
+        const filePath = path.resolve(__dirname, "..", "..", "..", "..", "uploads", path.basename(userData?.profileImage));
+        if (fs.existsSync(filePath)) {
+          fs.unlink(filePath, (err) => {
+            if (err) {
+              console.error("Error deleting audio file:", err);
+            }
+          });
+        } else {
+          console.warn(61, filePath);
+        }      
+    }
 
     await User.findByIdAndDelete({ _id: userId }, { session });
     await TenantPayment.deleteMany({ userId }).session(session);

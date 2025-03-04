@@ -58,12 +58,32 @@ router.delete(
 
 router.post(
     '/realEstateAdvisor',
-     upload.array('image', 10),
+     upload.array('image', 1),
     AdminController.realEstateAdvisor,
 );
 router.delete(
     '/realEstateAdvisordelete/:id',
     AdminController.realEstateAdvisordelete,
+);
+
+router.get(
+    '/getAllReview',
+    AdminController.getAllReview,
+);
+router.delete(
+    '/deleteReviewByAdmin/:reviewId',
+    AdminController.deleteReviewByAdmin,
+);
+
+router.get(
+    '/getAllEmailCollectionData',
+    Auth(User_Role.admin),
+    AdminController.getAllEmailCollectionData,
+);
+router.delete(
+    '/deleteEmailCollectionData/:emailId',
+    Auth(User_Role.admin),
+    AdminController.deleteEmailCollectionData,
 );
 
 

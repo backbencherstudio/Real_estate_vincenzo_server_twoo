@@ -184,10 +184,11 @@ const ReviewFromOwnerSchema = new Schema<TReviewFromOwner>({
   message : {type : String},
   designation : {type : String},
   name : {type : String},
+  email : {type : String},
   image : {type : String},
   reating : {type : Number},
   status : {type : Boolean}
-})
+}, {timestamps : true})
 
 export const Tenant = model('Tenant', createTenantSchema);
 export const Properties = model<TProperties>('Property', propertiesSchema);

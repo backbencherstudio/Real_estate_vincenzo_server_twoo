@@ -222,6 +222,16 @@ const getAdvisersData = catchAsync(async (req, res) => {
   });
 });
 
+const emailCollection = catchAsync(async (req, res) => {
+  const result = await UserServices.emailCollectionIntoDB(req.body); 
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Your email has been successfully sent',
+    data: result,
+  });
+});
+
 
 export const userController = {
   getAllUser,
@@ -236,5 +246,6 @@ export const userController = {
   verifyOtpForResetPassword,
   sendEmailToUser,
   ContactUsController,
-  getAdvisersData
+  getAdvisersData,
+  emailCollection
 };

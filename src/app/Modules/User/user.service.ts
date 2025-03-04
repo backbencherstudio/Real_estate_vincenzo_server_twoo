@@ -7,8 +7,8 @@ import httpStatus from "http-status";
 import { AppError } from "../../errors/AppErrors";
 import bcrypt from 'bcrypt';
 import config from "../../config";
-import { ContactUs, User } from "./user.model";
-import { TContactUs, TLoginUser, TUser } from "./user.interface";
+import { ContactUs, EmailCollection, User } from "./user.model";
+import { TContactUs, TEmailCollection, TLoginUser, TUser } from "./user.interface";
 import { createToken, verifyToken } from "./user.utils";
 import { sendEmailToUser } from "../../utils/sendEmailToUser";
 import { filteredObject } from "../../utils/updateDataUtils";
@@ -263,6 +263,15 @@ const getAdvisersDataFromDB = async ()=>{
   return result
 }
 
+const emailCollectionIntoDB = async(email : TEmailCollection)=>{  
+  const isExists = await EmailCollection.findOne({email : email?.email})  
+  if (isExists) {  
+    throw new AppError( 400, "This email already exists in our system")
+  }
+  const res = await EmailCollection.create(email)
+  return res
+}
+
 export const UserServices = {
   getAllUserFromDB,
   getSingleUserFromDB,
@@ -276,5 +285,6 @@ export const UserServices = {
   refreshToken,
   sendEmailToAllUser,
   ContactUsService,
-  getAdvisersDataFromDB
+  getAdvisersDataFromDB,
+  emailCollectionIntoDB
 };

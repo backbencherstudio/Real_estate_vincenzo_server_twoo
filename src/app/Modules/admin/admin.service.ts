@@ -4,8 +4,8 @@
 // import { Query } from "mongoose";
 import path from "path";
 import  fs from 'fs';
-import { Properties, Tenant, Unit } from "../owner/owner.module"
-import { User } from "../User/user.model";
+import { Properties, ReviewFromOwner, Tenant, Unit } from "../owner/owner.module"
+import { EmailCollection, User } from "../User/user.model";
 import { OverviewData, TPlanDetails, TRealEstateAdvisor } from "./admin.interface";
 import { PlanDetails, RealEstateAdvisor } from "./admin.module";
 import { AppError } from "../../errors/AppErrors";
@@ -109,11 +109,107 @@ const getSingleOwnerAllPropertiesWithOwnerInfoFromDB = async(id : string ) =>{
 //     }
 // };
 
+
+// ========================================================================================
+// ========================================================================================
+
+
+// const getAllDataOverviewByAdminFromDB = async (selectedDate: string): Promise<OverviewData> => {
+//     try {
+//         const [year, month] = selectedDate.split('-').map(Number);
+//         const startDate = new Date(year, month - 1, 1);
+//         const endDate = new Date(year, month, 0);
+
+//         console.log(selectedDate);
+        
+
+//         const queries = [
+//             {
+//                 key: "propertyLength",
+//                 query: Properties.countDocuments()
+//             },
+//             {
+//                 key: "tenantLength",
+//                 query: Tenant.countDocuments()
+//             },
+//             {
+//                 key: "ownersLength",
+//                 query: User.countDocuments({ role: "owner", subscriptionStatus : "active" })
+//             },
+//             {
+//                 key: "unitsLength",
+//                 query: Unit.countDocuments()
+//             }
+//         ];
+
+//         const results = await Promise.all(queries.map(item => item.query));
+
+//         const monthlyProperties = await Properties.aggregate([
+//             {
+//                 $match: {
+//                     createdAt: { $gte: startDate, $lte: endDate }
+//                 }
+//             },
+//             {
+//                 $group: {
+//                     _id: { $dateToString: { format: "%Y-%m", date: "$createdAt" } },
+//                     count: { $sum: 1 }
+//                 }
+//             },
+//             { $sort: { _id: 1 } }
+//         ]);
+
+//         const monthlyTenants = await Tenant.aggregate([
+//             {
+//                 $match: {
+//                     createdAt: { $gte: startDate, $lte: endDate }
+//                 }
+//             },
+//             {
+//                 $group: {
+//                     _id: { $dateToString: { format: "%Y-%m", date: "$createdAt" } },
+//                     count: { $sum: 1 }
+//                 }
+//             },
+//             { $sort: { _id: 1 } }
+//         ]);
+
+//         const monthlyPropertiesData = monthlyProperties.map(item => ({
+//             date: item._id,
+//             count: item.count
+//         }));
+
+//         const monthlyTenantsData = monthlyTenants.map(item => ({
+//             date: item._id,
+//             count: item.count
+//         }));
+
+//         // 🔥 Fixed TypeScript Error by Ensuring All Required Properties
+//         const overview: OverviewData = {
+//             propertyLength: results[0] || 0,
+//             tenantLength: results[1] || 0,
+//             ownersLength: results[2] || 0,
+//             unitsLength: results[3] || 0,
+//             monthlyProperties: monthlyPropertiesData,
+//             monthlyTenants: monthlyTenantsData
+//         };
+
+//         console.log(overview);
+        
+
+//         return overview;
+//     } catch (error) {
+//         console.error("Error fetching data overview:", error);
+//         throw error;
+//     }
+// };
+
+
 const getAllDataOverviewByAdminFromDB = async (selectedDate: string): Promise<OverviewData> => {
     try {
         const [year, month] = selectedDate.split('-').map(Number);
         const startDate = new Date(year, month - 1, 1);
-        const endDate = new Date(year, month, 0);
+        const endDate = new Date(year, month, 0, 23, 59, 59, 999); 
 
         const queries = [
             {
@@ -126,7 +222,7 @@ const getAllDataOverviewByAdminFromDB = async (selectedDate: string): Promise<Ov
             },
             {
                 key: "ownersLength",
-                query: User.countDocuments({ role: "owner", subscriptionStatus : "active" })
+                query: User.countDocuments({ role: "owner", subscriptionStatus: "active" })
             },
             {
                 key: "unitsLength",
@@ -139,7 +235,7 @@ const getAllDataOverviewByAdminFromDB = async (selectedDate: string): Promise<Ov
         const monthlyProperties = await Properties.aggregate([
             {
                 $match: {
-                    createdAt: { $gte: startDate, $lte: endDate }
+                    createdAt: { $gte: startDate, $lt: endDate }
                 }
             },
             {
@@ -154,7 +250,7 @@ const getAllDataOverviewByAdminFromDB = async (selectedDate: string): Promise<Ov
         const monthlyTenants = await Tenant.aggregate([
             {
                 $match: {
-                    createdAt: { $gte: startDate, $lte: endDate }
+                    createdAt: { $gte: startDate, $lt: endDate }
                 }
             },
             {
@@ -186,6 +282,8 @@ const getAllDataOverviewByAdminFromDB = async (selectedDate: string): Promise<Ov
             monthlyTenants: monthlyTenantsData
         };
 
+        console.log(overview);
+
         return overview;
     } catch (error) {
         console.error("Error fetching data overview:", error);
@@ -193,11 +291,15 @@ const getAllDataOverviewByAdminFromDB = async (selectedDate: string): Promise<Ov
     }
 };
 
+
+
+
 const createPlanIntoDB = async (payload : TPlanDetails ) =>{
     await PlanDetails.deleteMany({}); 
     const result = await PlanDetails.create(payload)
     return result    
 }
+
 const getPlanFromDB = async ( ) =>{
     const result = await PlanDetails.find()
     return result    
@@ -238,6 +340,27 @@ const RealEstateAdvisordeleteIntoDB =  async (id : string)=>{
 }
  
 
+const getReviewFromDB = async () => {
+    const result = await ReviewFromOwner.find().sort({ createdAt: -1 }).lean();
+    return result;
+};
+
+
+const deleteReviewByAdminIntoDB = async (id : string) =>{
+    const result = await ReviewFromOwner.findByIdAndDelete({_id : id})
+    return result
+}
+
+const getAllEmailCollectionDataGetFromDB = async ()=>{
+    const result = await EmailCollection.find()
+    return result
+}
+
+const deleteEmailCollectionDataGetIntoDB = async (id : string)=>{
+    const result = await EmailCollection.findByIdAndDelete({_id : id})
+    return result
+}
+
 
 export const AdminService = {
     getALlPropertiesFromDB,
@@ -250,5 +373,9 @@ export const AdminService = {
     getPlanFromDB,
     deleteNoSubscriberOwnerFormDB,
     RealEstateAdvisorIntoDB,
-    RealEstateAdvisordeleteIntoDB
+    RealEstateAdvisordeleteIntoDB,
+    getReviewFromDB,
+    deleteReviewByAdminIntoDB,
+    getAllEmailCollectionDataGetFromDB,
+    deleteEmailCollectionDataGetIntoDB
 }

@@ -74,6 +74,11 @@ router.get(
   userController.getAdvisersData,
 );
 
+router.post(
+  '/emailCollection',
+  userController.emailCollection,
+);
+
 
 
 export const UserRouter = router;

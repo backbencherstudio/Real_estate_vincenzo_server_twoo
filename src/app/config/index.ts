@@ -18,9 +18,7 @@ export default {
   email_port:process.env.EMAIL_PORT,
   client_base_url:process.env.CLIENT_BASE_URL,
   stripe_test_secret_key:process.env.STRIPE_TEST_SECRET_KEY,
+  stripe_live_secret_key:process.env.STRIPE_LIVE_SECRET_KEY,
   stripe_webhook_secret_key:process.env.STRIPE_WEBHOOK_SECRET_KEY,
-  silver_plan_key:process.env.SILVER_PLAN,
-  golden_plan_key:process.env.GOLDEN_PLAN,
-  dimond_plan_key:process.env.DIMOND_PLAN,
   frontend_url:process.env.FRONTEND_URL
 };

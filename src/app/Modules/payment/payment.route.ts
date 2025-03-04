@@ -18,7 +18,7 @@ router.get("/getSingleUserAllPaymentData/:userId", paymentController.getSingleUs
 // =========================== Stripe Payment Handle API
 router.post("/stripe", stripePaymentService.stripePayment);
 router.post("/cancel-subscription/:customerId", stripePaymentService.cancelSubscription);
-router.post("/Webhook", bodyParser.raw({ type: "application/json" }), stripePaymentService.Webhook);
+router.post("/webhook", bodyParser.raw({ type: "application/json" }), stripePaymentService.Webhook);
 
 
 
@@ -37,7 +37,7 @@ router.get(
 
 // ============================ send Payout Request By owner
 router.post(
-    '/sendPayoutRequestByOwnerToStripe',
+    '/sendPayoutRequestByOwnerToStripe',  
     Auth(User_Role.owner),
     paymentController.sendPayoutRequestByOwnerToStripe,
 );
@@ -47,7 +47,7 @@ router.post(
 router.post(
     '/sendPayoutRequestByAdmin',
     Auth(User_Role.admin),
-    paymentController.sendPayoutRequestByAdmin,
+    paymentController.sendPayoutRequestByAdmin,  
 );
 
 
