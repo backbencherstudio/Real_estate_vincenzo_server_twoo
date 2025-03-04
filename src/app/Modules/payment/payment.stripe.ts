@@ -204,7 +204,7 @@ const cancelSubscription = async (req: Request, res: Response) => {
         </div>
         <div style="background-color: #f8f9fa; padding: 15px; text-align: center; border-radius: 0 0 8px 8px; font-size: 14px; color: #888888;">
           <p style="margin: 0;">
-            If you have any questions, feel free to <a href="mailto:support@example.com" style="color: #0d6efd; text-decoration: none;">contact us</a>.
+            If you have any questions, feel free to <a href="mailto:rentpadhomesteam@gmail.com" style="color: #0d6efd; text-decoration: none;">contact us</a>.
           </p>
           <p style="margin: 10px 0 0;">&copy; ${new Date().getFullYear()} The Team. All rights reserved.</p>
         </div>
@@ -393,7 +393,7 @@ ${invoice_pdf
     
     <div style="background-color: #f8f9fa; padding: 15px; text-align: center; border-radius: 0 0 8px 8px; font-size: 14px; color: #888888;">
     <p style="margin: 0;">
-      If you have any questions, feel free to <a href="mailto:support@example.com" style="color: #0d6efd; text-decoration: none;">contact us</a>.
+      If you have any questions, feel free to <a href="mailto:rentpadhomesteam@gmail.com" style="color: #0d6efd; text-decoration: none;">contact us</a>.
     </p>
     <p style="margin: 10px 0 0;">&copy; ${new Date().getFullYear()} The Team. All rights reserved.</p>
   </div>
@@ -531,7 +531,7 @@ Thank you for being a valued subscriber!
   <!-- Footer Section -->
   <div style="background-color: #f8f9fa; padding: 15px; text-align: center; border-radius: 0 0 8px 8px; font-size: 14px; color: #888888;">
     <p style="margin: 0;">
-      If you have any questions, feel free to <a href="mailto:support@example.com" style="color: #0d6efd; text-decoration: none;">contact us</a>.
+      If you have any questions, feel free to <a href="mailto:rentpadhomesteam@gmail.com" style="color: #0d6efd; text-decoration: none;">contact us</a>.
     </p>
     <p style="margin: 10px 0 0;">&copy; ${new Date().getFullYear()} The Team. All rights reserved.</p>
   </div>
@@ -655,7 +655,7 @@ const handleChargeUpdated = async (charge: Stripe.Charge) => {
           <!-- Footer Section -->
           <div style="background-color: #f8f9fa; padding: 15px; text-align: center; border-radius: 0 0 8px 8px; font-size: 14px; color: #888888;">
               <p style="margin: 0;">
-                  Need help? <a href="mailto:support@example.com" style="color: #2575fc; text-decoration: none;">Contact Support</a>
+                  Need help? <a href="mailto:rentpadhomesteam@gmail.com" style="color: #2575fc; text-decoration: none;">Contact Support</a>
               </p>
               <p style="margin: 10px 0 0;">&copy; ${new Date().getFullYear()} Your Company. All rights reserved.</p>
           </div>
@@ -1121,7 +1121,7 @@ const handleAccountUpdated = async (account: Stripe.Account) => {
 //       </div>
       
 //       <div class="note">
-//         If you have any questions or need further assistance, please don't hesitate to contact our support team at <a href="mailto:support@yourcompany.com">support@yourcompany.com</a>.
+//         If you have any questions or need further assistance, please don't hesitate to contact our support team at <a href="mailto:rentpadhomesteam@gmail.com">rentpadhomesteam@gmail.com</a>.
 //       </div>
       
 //       <p>Best regards,<br>
@@ -1257,7 +1257,7 @@ const handleTransferSucceeded = async (transfer: Stripe.Transfer) => {
           </p>          
           
           <div style="background-color: #fff8e1; padding: 15px; border-radius: 4px; font-size: 14px; margin: 25px 0 15px;">
-            <p style="margin: 0;">If you have any questions or need further assistance, please don't hesitate to contact our support team at <a href="mailto:support@yourcompany.com" style="color: #00c853; text-decoration: none;">support@yourcompany.com</a>.</p>
+            <p style="margin: 0;">If you have any questions or need further assistance, please don't hesitate to contact our support team at <a href="mailto:rentpadhomesteam@gmail.com" style="color: #00c853; text-decoration: none;">rentpadhomesteam@gmail.com</a>.</p>
           </div>
           
           <p style="color: #333333; font-size: 16px; line-height: 1.6; margin-bottom: 5px;">
