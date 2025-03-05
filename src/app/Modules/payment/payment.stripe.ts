@@ -467,9 +467,6 @@ const handleSubscriptionDeleted = async (subscription: Stripe.Subscription) => {
   console.log(`Subscription deleted for customerId: ${customerId}`);
 };
 
-/** 7) New Handler: Invoice Payment Succeeded
-    This fires whenever a recurring invoice is paid (e.g., monthly subscription). */
-
 const handleInvoicePaymentSucceeded = async (invoice: Stripe.Invoice) => {
   const email = invoice.customer_email;
   const amountPaid = (invoice.amount_paid ?? 0) / 100;
@@ -554,7 +551,6 @@ Thank you for being a valued subscriber!
   }
 
 };
-
 
 const handleChargeUpdated = async (charge: Stripe.Charge) => {
   const customerId = charge.customer as string;
