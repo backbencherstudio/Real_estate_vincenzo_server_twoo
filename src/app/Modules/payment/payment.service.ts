@@ -44,10 +44,7 @@ const createAllTenantsForPaymentFormDB = async () => {
             ...tenant,
             status: "Pending",
             invoice: "Upcoming",
-        }));
-
-        console.log(payments);
-        
+        }));       
 
         const result = await TenantPayment.insertMany(payments);
         return result;
@@ -58,9 +55,11 @@ const createAllTenantsForPaymentFormDB = async () => {
 };
 
 
-cron.schedule('1 0 1 * *', async () => {
+cron.schedule('0 0 1 * *', async () => {
     await createAllTenantsForPaymentFormDB();
 });
+
+
 
 
 const getAllTenantPaymentDataFromDB = async () => {
