@@ -1199,11 +1199,19 @@ const handleTransferSucceeded = async (transfer: Stripe.Transfer) => {
 
     const updatedPaidAmount = Math.max(0, (owner.paidAmount ?? 0) - amount);
 
-    await User.findByIdAndUpdate(
+    console.log(1202, amount);
+    console.log(1203, owner.paidAmount);
+    console.log(1204, updatedPaidAmount);
+    
+
+    const res = await User.findByIdAndUpdate(
       { _id: ownerId },
       { $set: { paidAmount: updatedPaidAmount } },
       { new: true, runValidators: true }
     );
+
+    console.log(1213, res);
+    
 
     console.log(`✅ Updated User's paidAmount for ownerId: ${ownerId}, new paidAmount: $${updatedPaidAmount}`);
 
