@@ -35,6 +35,10 @@ const stripeTenantPaymentFun = async (paymentData: any) => {
     }
 };
 
+
+
+
+
 const createAllTenantsForPaymentFormDB = async () => {
     try {
         const tenants = await Tenant.find({ isDeleted: false }).lean();
