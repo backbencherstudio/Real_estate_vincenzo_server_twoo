@@ -14,6 +14,16 @@ const stripeTenantPayment = catchAsync(async (req, res) => {
     });
 });
 
+const stripeTenantACHpayment = catchAsync(async (req, res) => {
+    const result = await paymentService.stripeTenantACHpaymentFun(req.body);
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: 'Payment for this month has been successfully processed. please wait a moment for receipt ',
+        data: result,
+    });
+});
+
 const createALlTenantsForPayment = catchAsync(async (req, res) => {    
     const result = await paymentService.createAllTenantsForPaymentFormDB();    
     sendResponse(res, {
@@ -101,6 +111,7 @@ const sendPayoutRequestByAdmin = catchAsync(async (req, res) => {
 
 export const paymentController = {
     stripeTenantPayment,
+    stripeTenantACHpayment,
     createALlTenantsForPayment,
     getAllTenantPaymentData,
     getSingleUserAllPaymentData,

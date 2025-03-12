@@ -10,6 +10,7 @@ import { User_Role } from "../User/user.constent";
 const router = Router()
 
 router.post("/stripeTenantPayment", paymentController.stripeTenantPayment);
+router.post("/stripeTenantACHpayment", paymentController.stripeTenantACHpayment);
 router.get("/tenantPayment", paymentController.createALlTenantsForPayment);  // running month payment create API
 router.get("/getAllTenantPaymentData", paymentController.getAllTenantPaymentData);
 router.get("/getSingleUserAllPaymentData/:userId", paymentController.getSingleUserAllPaymentData);

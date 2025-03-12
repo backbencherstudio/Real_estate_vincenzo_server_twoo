@@ -38,6 +38,176 @@ const stripeTenantPaymentFun = async (paymentData: any) => {
 
 
 
+// const stripeTenantACHpaymentFun = async (paymentData : any) =>{
+//     console.log(40, paymentData);
+    
+//     try {
+//         const { amount, accountHolder, accountNumber, routingNumber, email, monthlyPaymentId, ownerId, lateFee } = paymentData;
+
+//         const customer = await stripe.customers.create({
+//             email,
+//             name: accountHolder,
+//         });
+
+//         const bankAccount = await stripe.paymentMethods.create({
+//             type: "us_bank_account",
+//             us_bank_account: {
+//                 account_number: accountNumber,
+//                 routing_number: routingNumber,
+//                 account_holder_type: "individual",
+//             },
+//         });
+
+//         await stripe.paymentMethods.attach(bankAccount.id, { customer: customer.id });
+
+//         const paymentIntent = await stripe.paymentIntents.create({
+//             amount: Math.round(amount * 100), 
+//             currency: "usd",
+//             customer: customer.id,
+//             payment_method: bankAccount.id,
+//             payment_method_types: ["us_bank_account"],
+//             confirm: true,
+//             metadata: {
+//                 monthlyPaymentId,
+//                 ownerId,
+//                 lateFee,
+//             },
+//         });
+
+//         return paymentIntent
+//     } catch (error) {
+//         console.error("Error processing payment:", error);
+//         // res.status(500).json({ success: false, message: error.message });
+//     } 
+// }
+
+
+// const stripeTenantACHpaymentFun = async (paymentData: any) => {
+//     console.log(40, paymentData);
+
+//     try {
+//         const { amount, accountHolder, accountNumber, routingNumber, email, monthlyPaymentId, ownerId, lateFee } = paymentData;
+
+//         const customer = await stripe.customers.create({
+//             email,
+//             name: accountHolder,
+//         });
+
+//         console.log(customer);
+        
+
+//         // 2️⃣ Create a US Bank Account Payment Method
+//         const bankAccount = await stripe.paymentMethods.create({
+//             type: "us_bank_account",
+//             us_bank_account: {
+//                 account_number: accountNumber,
+//                 routing_number: routingNumber,
+//                 account_holder_type: "individual",
+//             },
+//             billing_details: {
+//                 name: accountHolder,
+//                 email: email,
+//             },
+//         });
+
+//         // 3️⃣ Attach the bank account to the customer
+//         await stripe.paymentMethods.attach(bankAccount.id, { customer: customer.id });
+
+//         // 4️⃣ Create a Payment Intent
+//         const paymentIntent = await stripe.paymentIntents.create({
+//             amount: Math.round(amount * 100), // Convert to cents
+//             currency: "usd",
+//             customer: customer.id,
+//             payment_method: bankAccount.id,
+//             payment_method_types: ["us_bank_account"],
+//             confirm: true,
+//             metadata: {
+//                 monthlyPaymentId,
+//                 ownerId,
+//                 lateFee,
+//             },
+//         });
+
+//         console.log(130, paymentIntent);
+        
+
+//         return paymentIntent;
+//     } catch (error) {
+//         console.error("Error processing payment:", error);
+//     }
+// };
+
+
+
+const stripeTenantACHpaymentFun = async (paymentData: any) => {
+    console.log(40, paymentData);
+
+    try {
+        const { amount, accountHolder, accountNumber, routingNumber, email, monthlyPaymentId, ownerId, lateFee } = paymentData;
+
+        // Step 1: Create a Customer
+        const customer = await stripe.customers.create({
+            email,
+            name: accountHolder,
+        });
+        console.log(customer);
+
+        // Step 2: Create a US Bank Account Payment Method
+        const bankAccount = await stripe.paymentMethods.create({
+            type: "us_bank_account",
+            us_bank_account: {
+                account_number: accountNumber,
+                routing_number: routingNumber,
+                account_holder_type: "individual",
+            },
+            billing_details: {
+                name: accountHolder,
+                email: email,
+            },
+        });
+
+        // Step 3: Create a Setup Intent and allow us_bank_account as a payment method type
+        const setupIntent = await stripe.setupIntents.create({
+            customer: customer.id,
+            payment_method: bankAccount.id,
+            payment_method_types: ["us_bank_account"], // Explicitly allow ACH payments
+            confirm: true,
+        });
+
+        console.log(177, "Setup Intent created:", setupIntent);
+
+        // Step 4: Once verified (micro-deposits confirmed), you can attach the payment method to the customer
+        await stripe.paymentMethods.attach(bankAccount.id, { customer: customer.id });
+
+        // Step 5: Create a Payment Intent and confirm the payment
+        const paymentIntent = await stripe.paymentIntents.create({
+            amount: Math.round(amount * 100), // Convert to cents
+            currency: "usd",
+            customer: customer.id,
+            payment_method: bankAccount.id,
+            payment_method_types: ["us_bank_account"],
+            confirm: true,
+            metadata: {
+                monthlyPaymentId,
+                ownerId,
+                lateFee,
+            },
+        });
+
+        console.log(197, paymentIntent);
+        
+        return paymentIntent;
+    } catch (error) {
+        console.error("Error processing payment:", error);
+    }
+};
+
+
+
+
+
+
+
 
 const createAllTenantsForPaymentFormDB = async () => {
     try {
@@ -276,6 +446,7 @@ const sendPayoutRequestByAdminToStripe = async (data: any) => {
 
 export const paymentService = {
     stripeTenantPaymentFun,
+    stripeTenantACHpaymentFun,
     createAllTenantsForPaymentFormDB,
     getAllTenantPaymentDataFromDB,
     getSingleUserAllPaymentDataFromDB,

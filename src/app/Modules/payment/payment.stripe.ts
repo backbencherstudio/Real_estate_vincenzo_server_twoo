@@ -261,7 +261,7 @@ const Webhook = async (req: Request, res: Response) => {
     // "payout.paid": handlePayoutSucceeded,
     // "transfer.paid": handlePayoutSucceeded,
     // "transfer.created": handleTransferCreated,
-    "transfer.created": handleTransferSucceeded,
+    "transfer.created": handleTransferCreated,
     // "payment.created": handlePaymentCreated,
     "balance.available": handleBalanceAvailable,
   };
@@ -322,7 +322,38 @@ const handlePaymentFailed = async (invoice: Stripe.Invoice) => {
       await sendEmail(
         email,
         "Payment Failed",
-        `Your payment of $${amountDue} for your subscription has failed. Please update your payment method.`
+        `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px; background-color: #f9f9f9;">
+  <h2 style="color: #d9534f; text-align: center;">🚨 Payment Failed Alert</h2>
+  <p style="font-size: 16px; color: #555; text-align: center;">
+    Unfortunately, we were unable to process your payment of <strong style="color: #d9534f;">$${amountDue}</strong> for your subscription.
+  </p>
+
+  <div style="text-align: center; margin-top: 20px;">
+    <img src="https://w7.pngwing.com/pngs/475/632/png-transparent-failure-computer-icons-payment-non-mainstream-miscellaneous-text-trademark-thumbnail.png" alt="Payment Failed" width="100">
+  </div>
+
+  <p style="font-size: 16px; color: #777; text-align: center; margin-top: 20px;">
+    This may be due to insufficient funds, an expired card, or a declined transaction.
+  </p>
+
+
+  <p style="font-size: 14px; color: #888; text-align: center; margin-top: 20px;">
+    If this was a mistake, please update your payment details within <strong>48 hours</strong> to avoid service interruption.
+  </p>
+
+  <hr style="border: 0; height: 1px; background: #ddd; margin: 20px 0;">
+
+  <div style="background-color: #f8f9fa; padding: 15px; text-align: center; border-radius: 0 0 8px 8px; font-size: 14px; color: #888888;">
+    <p style="margin: 0;">
+      Need help? <a href="mailto:rentpadhomesteam@gmail.com" style="color: #0d6efd; text-decoration: none;">Contact Support</a>.
+    </p>
+    <p style="margin: 10px 0 0;">&copy; ${new Date().getFullYear()} Your Company. All rights reserved.</p>
+  </div>
+</div>
+
+        `
+        // `Your payment of $${amountDue} for your subscription has failed. Please update your payment method.`
       );
       console.log(`Payment failed email sent to ${email}`);
     } catch (error) {
@@ -668,6 +699,8 @@ const handleChargeUpdated = async (charge: Stripe.Charge) => {
   }
 };
 
+
+
 const handleAccountUpdated = async (account: Stripe.Account) => {
   try {
     console.log("✅ Stripe Account Updated:", account);
@@ -702,7 +735,11 @@ const handleAccountUpdated = async (account: Stripe.Account) => {
   }
 };
 
-const handleTransferSucceeded = async (transfer: Stripe.Transfer) => {
+
+
+
+
+const handleTransferCreated = async (transfer: Stripe.Transfer) => {
   try {
     const transferId = transfer.id;
     const amount = transfer.amount / 100;
@@ -807,7 +844,7 @@ const handleTransferSucceeded = async (transfer: Stripe.Transfer) => {
       textContent,
       htmlContent
     );
-    
+
     console.log(`✅ Success email sent to: ${email}`);
 
   } catch (error) {
