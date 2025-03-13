@@ -14,12 +14,12 @@ const stripeTenantPayment = catchAsync(async (req, res) => {
     });
 });
 
-const stripeTenantACHpayment = catchAsync(async (req, res) => {
-    const result = await paymentService.stripeTenantACHpaymentFun(req.body);
+const createCustomerForACHpayment = catchAsync(async (req, res) => {
+    const result = await paymentService.createCustomerService(req.body);
     sendResponse(res, {
         statusCode: httpStatus.OK,
         success: true,
-        message: 'Payment for this month has been successfully processed. please wait a moment for receipt ',
+        message: 'Customer create successfully',
         data: result,
     });
 });
@@ -111,7 +111,7 @@ const sendPayoutRequestByAdmin = catchAsync(async (req, res) => {
 
 export const paymentController = {
     stripeTenantPayment,
-    stripeTenantACHpayment,
+    createCustomerForACHpayment,
     createALlTenantsForPayment,
     getAllTenantPaymentData,
     getSingleUserAllPaymentData,

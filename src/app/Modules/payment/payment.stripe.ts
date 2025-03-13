@@ -264,6 +264,7 @@ const Webhook = async (req: Request, res: Response) => {
     "transfer.created": handleTransferCreated,
     // "payment.created": handlePaymentCreated,
     "balance.available": handleBalanceAvailable,
+    "charge.succeeded" : ACHTransferHandler,
   };
 
 
@@ -280,6 +281,43 @@ const Webhook = async (req: Request, res: Response) => {
     console.log(`Unhandled event type: ${event.type}`);
   }
   res.status(200).send({ received: true });
+};
+
+interface ChargeMetadata {
+  rent_month: string;
+  user_id: string;
+  payment_id: string;
+}
+
+const ACHTransferHandler = async (charge: any): Promise<void> => {
+  try {
+    // Ensure charge has metadata
+    if (!charge.metadata) {
+      console.error("Charge metadata is missing.");
+      return;
+    }
+
+    const metadata: ChargeMetadata = charge.metadata;
+    console.log(metadata);
+    
+    const { rent_month, user_id, payment_id } = metadata;
+
+    if (!user_id || !rent_month) {
+      console.error("Invalid metadata in charge:", metadata);
+      return;
+    }
+
+    // Update Rent Payment Record in MongoDB
+    // const updatedRent = await RentPayment.findOneAndUpdate(
+    //   { user_id, rent_month, property_id },
+    //   { status: "Paid", payment_id: charge.id, updated_at: new Date() },
+    //   { new: true, upsert: true }
+    // );
+
+    // console.log("Database Updated:", updatedRent);
+  } catch (error) {
+    console.error("Database Update Error:", error);
+  }
 };
 
 const handleInvoiceUpcoming = async (invoice: Stripe.Invoice) => {
@@ -734,9 +772,6 @@ const handleAccountUpdated = async (account: Stripe.Account) => {
     console.error("❌ Error handling account updated webhook:", error);
   }
 };
-
-
-
 
 
 const handleTransferCreated = async (transfer: Stripe.Transfer) => {
