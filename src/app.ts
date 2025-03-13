@@ -115,7 +115,15 @@ app.post('/pay-rent', async (req, res) => {
   console.log(req.body);
   
   try {
-    const { customerId, amount, bankAccountId } = req.body;
+    // const { customerId, amount, bankAccountId } = req.body;
+    const { 
+      customerId,
+      bankAccountId,
+      amount,
+      lateFee,
+      monthlyPaymentId,
+      ownerId,
+     } = req.body;
 
     const charge = await stripe.charges.create({
       amount: amount * 100, 
@@ -125,8 +133,9 @@ app.post('/pay-rent', async (req, res) => {
       description: 'Monthly Rent Payment',
       metadata: {
         rent_month: amount,
-        user_id: "123456",
-        payment_id: "789987899"
+        ownerId,
+        payment_id: monthlyPaymentId,
+        lateFee
       }
     });    
 
