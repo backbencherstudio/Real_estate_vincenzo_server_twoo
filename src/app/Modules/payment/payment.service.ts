@@ -47,6 +47,42 @@ const createCustomerService = async (payload : any)=>{
       }
 }
 
+const createBankTokenService = async (payload : any)=>{
+    try {
+        const { account_number, routing_number, account_holder_name } = payload;
+    
+        const bankToken = await stripe.tokens.create({
+          bank_account: {
+            country: 'US',
+            currency: 'usd',
+            account_holder_name,
+            account_holder_type: 'individual',
+            routing_number,
+            account_number,
+          },
+        });
+    
+        return({ bankToken: bankToken.id });
+      } catch (error : any) {
+        return({ error: error.message });
+      }
+}
+
+
+const attachACHbankAccountService = async (payload : any)=>{
+
+    console.log(74, payload);
+    
+    try {
+        const { customerId, bankToken } = payload;
+        const bankAccount = await stripe.customers.createSource(customerId, { source: bankToken });
+        console.log(79, bankAccount);
+        
+        return(bankAccount);
+      } catch (error : any) {
+        return({ error: error.message });
+      }
+}
 
 
 
@@ -288,6 +324,8 @@ const sendPayoutRequestByAdminToStripe = async (data: any) => {
 export const paymentService = {
     stripeTenantPaymentFun,
     createCustomerService,
+    createBankTokenService,
+    attachACHbankAccountService,
     createAllTenantsForPaymentFormDB,
     getAllTenantPaymentDataFromDB,
     getSingleUserAllPaymentDataFromDB,

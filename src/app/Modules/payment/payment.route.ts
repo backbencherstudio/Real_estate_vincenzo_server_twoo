@@ -17,6 +17,8 @@ router.get("/getSingleUserAllPaymentData/:userId", paymentController.getSingleUs
 
 // =========================== ACH Payment For Tenant ========================
 router.post("/createCustomerForACHpayment", paymentController.createCustomerForACHpayment);
+router.post("/createBankTokenForACHpayment", paymentController.createBankTokenForACHpayment);
+router.post("/attachACHbankAccount", paymentController.attachACHbankAccount);
 
 
 

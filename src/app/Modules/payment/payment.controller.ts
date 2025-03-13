@@ -24,6 +24,27 @@ const createCustomerForACHpayment = catchAsync(async (req, res) => {
     });
 });
 
+const createBankTokenForACHpayment = catchAsync(async (req, res) => {
+    const result = await paymentService.createBankTokenService(req.body);
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: 'Token crate successfully',
+        data: result,
+    });
+});
+
+const attachACHbankAccount = catchAsync(async (req, res) => {
+    const result = await paymentService.attachACHbankAccountService(req.body);
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: 'Bank attach successfully',
+        data: result,
+    });
+});
+
+
 const createALlTenantsForPayment = catchAsync(async (req, res) => {    
     const result = await paymentService.createAllTenantsForPaymentFormDB();    
     sendResponse(res, {
@@ -112,6 +133,8 @@ const sendPayoutRequestByAdmin = catchAsync(async (req, res) => {
 export const paymentController = {
     stripeTenantPayment,
     createCustomerForACHpayment,
+    createBankTokenForACHpayment,
+    attachACHbankAccount,
     createALlTenantsForPayment,
     getAllTenantPaymentData,
     getSingleUserAllPaymentData,
