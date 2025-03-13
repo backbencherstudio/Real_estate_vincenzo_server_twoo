@@ -44,6 +44,16 @@ const attachACHbankAccount = catchAsync(async (req, res) => {
     });
 });
 
+const verifyBankAccount = catchAsync(async (req, res) => {    
+    const result = await paymentService.verifyBankAccountService(req.body);
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: 'Verify Bank successfully',
+        data: result,
+    });
+});
+
 
 const createALlTenantsForPayment = catchAsync(async (req, res) => {    
     const result = await paymentService.createAllTenantsForPaymentFormDB();    
@@ -135,6 +145,7 @@ export const paymentController = {
     createCustomerForACHpayment,
     createBankTokenForACHpayment,
     attachACHbankAccount,
+    verifyBankAccount,
     createALlTenantsForPayment,
     getAllTenantPaymentData,
     getSingleUserAllPaymentData,

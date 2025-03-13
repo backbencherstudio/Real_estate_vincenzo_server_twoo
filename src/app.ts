@@ -111,28 +111,22 @@ app.post('/verify-bank-account', async (req, res) => {
 });
 
 // Step 5: Charge ACH Payment (Rent Payment)
-app.post('/pay-rent', async (req, res) => {
-  console.log(req.body);
-  
+app.post('/pay-rent', async (req, res) => {  
   try {
     const { customerId, amount, bankAccountId } = req.body;
 
     const charge = await stripe.charges.create({
-      amount: amount * 100, // Convert to cents
+      amount: amount * 100, 
       currency: 'usd',
       customer: customerId,
       source: bankAccountId,
       description: 'Monthly Rent Payment',
-      // transfer_data: { destination: "acct_1Qj3DaLdWMYlebBQ" }, // Admin receives the rent
       metadata: {
         rent_month: amount,
         user_id: "123456",
         payment_id: "789987899"
       }
-    });
-
-    console.log(charge);
-    
+    });    
 
     res.json(charge);
   } catch (error : any ) {

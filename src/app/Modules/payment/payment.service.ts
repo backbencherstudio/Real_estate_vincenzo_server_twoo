@@ -68,12 +68,25 @@ const createBankTokenService = async (payload : any)=>{
       }
 }
 
-
 const attachACHbankAccountService = async (payload : any)=>{
     try {
         const { customerId, bankToken } = payload;
     const bankAccount = await stripe.customers.createSource(customerId, { source: bankToken });
         return(bankAccount);
+      } catch (error : any) {
+        return({ error: error.message });
+      }
+}
+
+const verifyBankAccountService = async(payload : any)=>{
+    try {
+        const { customerId, bankAccountId, amounts } = payload;
+        
+        const verification = await stripe.customers.verifySource(customerId, bankAccountId, {
+          amounts,
+        });
+    
+        return({ verification });
       } catch (error : any) {
         return({ error: error.message });
       }
@@ -320,6 +333,7 @@ export const paymentService = {
     stripeTenantPaymentFun,
     createCustomerService,
     createBankTokenService,
+    verifyBankAccountService,
     attachACHbankAccountService,
     createAllTenantsForPaymentFormDB,
     getAllTenantPaymentDataFromDB,

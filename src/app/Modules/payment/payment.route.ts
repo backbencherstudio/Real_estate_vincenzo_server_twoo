@@ -19,6 +19,7 @@ router.get("/getSingleUserAllPaymentData/:userId", paymentController.getSingleUs
 router.post("/createCustomerForACHpayment", paymentController.createCustomerForACHpayment);
 router.post("/createBankTokenForACHpayment", paymentController.createBankTokenForACHpayment);
 router.post("/attachACHbankAccount", paymentController.attachACHbankAccount);
+router.post("/verifyBankAccount", paymentController.verifyBankAccount);
 
 
 
