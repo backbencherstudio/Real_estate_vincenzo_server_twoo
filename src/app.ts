@@ -112,6 +112,8 @@ app.post('/verify-bank-account', async (req, res) => {
 
 // Step 5: Charge ACH Payment (Rent Payment)
 app.post('/pay-rent', async (req, res) => {  
+  console.log(req.body);
+  
   try {
     const { customerId, amount, bankAccountId } = req.body;
 
