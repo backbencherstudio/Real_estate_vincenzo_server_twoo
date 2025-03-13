@@ -34,7 +34,7 @@ const createBankTokenForACHpayment = catchAsync(async (req, res) => {
     });
 });
 
-const attachACHbankAccount = catchAsync(async (req, res) => {
+const attachACHbankAccount = catchAsync(async (req, res) => {    
     const result = await paymentService.attachACHbankAccountService(req.body);
     sendResponse(res, {
         statusCode: httpStatus.OK,

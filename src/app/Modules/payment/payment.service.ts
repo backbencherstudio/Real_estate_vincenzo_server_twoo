@@ -70,14 +70,9 @@ const createBankTokenService = async (payload : any)=>{
 
 
 const attachACHbankAccountService = async (payload : any)=>{
-
-    console.log(74, payload);
-    
     try {
         const { customerId, bankToken } = payload;
-        const bankAccount = await stripe.customers.createSource(customerId, { source: bankToken });
-        console.log(79, bankAccount);
-        
+    const bankAccount = await stripe.customers.createSource(customerId, { source: bankToken });
         return(bankAccount);
       } catch (error : any) {
         return({ error: error.message });
