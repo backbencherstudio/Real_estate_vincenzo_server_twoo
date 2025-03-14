@@ -9,7 +9,7 @@ const stripeTenantPayment = catchAsync(async (req, res) => {
     sendResponse(res, {
         statusCode: httpStatus.OK,
         success: true,
-        message: 'Payment for this month has been successfully processed. please wait a moment for receipt ',
+        message: 'Payment for this month has been successfully processed. please wait a moment for receipt',
         data: result,
     });
 });
@@ -39,7 +39,7 @@ const attachACHbankAccount = catchAsync(async (req, res) => {
     sendResponse(res, {
         statusCode: httpStatus.OK,
         success: true,
-        message: 'Bank attach successfully',
+        message: 'Your bank has been successfully linked. Please allow up to some moment or 1-2 business days for the verification amount to be sent for confirmation. Thank you for your patience.',
         data: result,
     });
 });
@@ -50,6 +50,16 @@ const verifyBankAccount = catchAsync(async (req, res) => {
         statusCode: httpStatus.OK,
         success: true,
         message: 'Verify Bank successfully',
+        data: result,
+    });
+});
+
+const payRentUserACHcontroller = catchAsync(async (req, res) => {    
+    const result = await paymentService.payRentService(req.body);
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: 'Payment for this month has been successfully processed. please wait a moment for receipt',
         data: result,
     });
 });
@@ -146,6 +156,7 @@ export const paymentController = {
     createBankTokenForACHpayment,
     attachACHbankAccount,
     verifyBankAccount,
+    payRentUserACHcontroller,
     createALlTenantsForPayment,
     getAllTenantPaymentData,
     getSingleUserAllPaymentData,

@@ -35,7 +35,6 @@ const stripeTenantPaymentFun = async (paymentData: any) => {
     }
 };
 
-
 // ============================= ACH Payment ==============================
 const createCustomerService = async (payload : any)=>{
     try {
@@ -92,6 +91,29 @@ const verifyBankAccountService = async(payload : any)=>{
       }
 }
 
+const payRentService = async (payload : any)=>{
+    try {
+        const { customerId,bankAccountId, amount, lateFee, monthlyPaymentId, ownerId } = payload;
+    
+        const charge = await stripe.charges.create({
+          amount: amount * 100, 
+          currency: 'usd',
+          customer: customerId,
+          source: bankAccountId,
+          description: 'Monthly Rent Payment',
+          metadata: {
+            rent_month: amount,
+            ownerId,
+            payment_id: monthlyPaymentId,
+            lateFee
+          }
+        });    
+    
+        return(charge);
+      } catch (error : any ) {
+        return({ error: error.message });
+      }
+}
 
 
 
@@ -335,6 +357,7 @@ export const paymentService = {
     createBankTokenService,
     verifyBankAccountService,
     attachACHbankAccountService,
+    payRentService,
     createAllTenantsForPaymentFormDB,
     getAllTenantPaymentDataFromDB,
     getSingleUserAllPaymentDataFromDB,
