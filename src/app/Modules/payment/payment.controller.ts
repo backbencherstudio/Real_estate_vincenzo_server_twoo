@@ -146,6 +146,17 @@ const sendPayoutRequestByAdmin = catchAsync(async (req, res) => {
       data: result?.result,
     });
   });
+
+  
+const planController = catchAsync(async (req, res) => {  
+    const result = await paymentService.planService(req.body); 
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message:"Plan placed successfully",
+      data: result,
+    });
+  });
   
 
 
@@ -164,5 +175,6 @@ export const paymentController = {
     getPayoutDataByAdmin,
     getPayoutDataBySingleOwner,
     sendPayoutRequestByOwnerToStripe,
-    sendPayoutRequestByAdmin
+    sendPayoutRequestByAdmin,
+    planController
 }

@@ -24,11 +24,9 @@ const userSchema = new Schema<TUser>(
     },
     routingNumber: {
       type: String,
-      required: [true, "Routing Number is required"],
     },
     bankAccountNumber: {
       type: String,
-      required: [true, "Bank Account Number is required"],
     },
     role: {
       type: String,
@@ -105,6 +103,12 @@ const userSchema = new Schema<TUser>(
     },
     cancelRequest: {
       type: Boolean
+    },
+planName: {
+      type: String
+    },
+    percentage: {
+      type: Number
     },
   },
   {

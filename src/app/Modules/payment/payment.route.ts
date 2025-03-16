@@ -60,4 +60,12 @@ router.post(
 );
 
 
+// ================================= plan 
+router.post(
+    '/planController',
+    Auth(User_Role.owner),
+    paymentController.planController,  
+);
+
+
 export const StripePaymentRoutes = router

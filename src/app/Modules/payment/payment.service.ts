@@ -116,8 +116,6 @@ const payRentService = async (payload : any)=>{
 }
 
 
-
-
 const createAllTenantsForPaymentFormDB = async () => {
     try {
         const tenants = await Tenant.find({ isDeleted: false }).lean();
@@ -288,6 +286,17 @@ const sendPayoutRequestByAdminToStripe = async (data: any) => {
     }
 };
 
+const planService = async (planData: any) => {
+    const { email, ...data } = planData;
+    const result = await User.findOneAndUpdate(
+        { email },
+        { $set: data },
+        { new: true, runValidators: true }
+    );
+    return result;
+}
+
+
 
 // const sendPayoutRequestByAdminToStripe = async (data: any) => {
 //     try {
@@ -365,5 +374,6 @@ export const paymentService = {
     createPayoutByOwnerIntoDB,
     getPayoutDataFromDBbyAdmin,
     sendPayoutRequestByOwnerToStripe,
-    sendPayoutRequestByAdminToStripe
+    sendPayoutRequestByAdminToStripe,
+    planService
 };

@@ -43,7 +43,9 @@ export interface TUser {
   getTotalUnit : number;
   isSecurityDepositPay?:boolean;
   paidAmount ?: number;
-  cancelRequest : boolean
+  cancelRequest : boolean;
+  percentage:number;
+  planName: string
 }
 
 
