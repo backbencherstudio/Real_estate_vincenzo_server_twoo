@@ -9,6 +9,8 @@ import globalErrorHandler from './app/middleware/globalErrorHandlear';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import MessageModel from './app/Modules/messages/message.module';
+import Stripe from 'stripe';
+import config from './app/config';
 const app: Application = express();
 const httpServer = createServer(app);
 
@@ -47,6 +49,105 @@ app.use(
     credentials: true,
   })
 );
+
+const stripe = new Stripe(config.stripe_test_secret_key as string);
+
+app.post('/create-customer', async (req, res) => {
+  try {
+    const { name, email } = req.body;
+    const customer = await stripe.customers.create({ name, email });
+    res.json({ customerId: customer.id });
+  } catch (error : any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Step 2: Create Bank Account Token
+app.post('/create-bank-token', async (req, res) => {
+  try {
+    const { account_number, routing_number, account_holder_name } = req.body;
+
+    const bankToken = await stripe.tokens.create({
+      bank_account: {
+        country: 'US',
+        currency: 'usd',
+        account_holder_name,
+        account_holder_type: 'individual',
+        routing_number,
+        account_number,
+      },
+    });
+
+    res.json({ bankToken: bankToken.id });
+  } catch (error : any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Step 3: Attach Bank Account to Customer
+app.post('/attach-bank-account', async (req, res) => {
+  try {
+    const { customerId, bankToken } = req.body;
+    const bankAccount = await stripe.customers.createSource(customerId, { source: bankToken });
+    res.json(bankAccount);
+  } catch (error : any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Step 4: Verify Bank Account (Micro-deposit Verification)
+app.post('/verify-bank-account', async (req, res) => {
+  try {
+    const { customerId, bankAccountId, amounts } = req.body;
+    
+    const verification = await stripe.customers.verifySource(customerId, bankAccountId, {
+      amounts,
+    });
+
+    res.json({ verification });
+  } catch (error : any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Step 5: Charge ACH Payment (Rent Payment)
+app.post('/pay-rent', async (req, res) => {  
+  console.log(req.body);
+  
+  try {
+    // const { customerId, amount, bankAccountId } = req.body;
+    const { 
+      customerId,
+      bankAccountId,
+      amount,
+      lateFee,
+      monthlyPaymentId,
+      ownerId,
+     } = req.body;
+
+    const charge = await stripe.charges.create({
+      amount: amount * 100, 
+      currency: 'usd',
+      customer: customerId,
+      source: bankAccountId,
+      description: 'Monthly Rent Payment',
+      metadata: {
+        rent_month: amount,
+        ownerId,
+        payment_id: monthlyPaymentId,
+        lateFee
+      }
+    });    
+
+    res.json(charge);
+  } catch (error : any ) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+
+
+
 
 app.use("/api/v1", router);
 

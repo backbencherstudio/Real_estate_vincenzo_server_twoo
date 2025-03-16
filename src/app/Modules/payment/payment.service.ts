@@ -35,6 +35,89 @@ const stripeTenantPaymentFun = async (paymentData: any) => {
     }
 };
 
+// ============================= ACH Payment ==============================
+const createCustomerService = async (payload : any)=>{
+    try {
+        const { name, email } = payload;
+        const customer = await stripe.customers.create({ name, email });
+        return({ customerId: customer.id });
+      } catch (error : any) {
+        return({ error: error.message });
+      }
+}
+
+const createBankTokenService = async (payload : any)=>{
+    try {
+        const { account_number, routing_number, account_holder_name } = payload;
+    
+        const bankToken = await stripe.tokens.create({
+          bank_account: {
+            country: 'US',
+            currency: 'usd',
+            account_holder_name,
+            account_holder_type: 'individual',
+            routing_number,
+            account_number,
+          },
+        });
+    
+        return({ bankToken: bankToken.id });
+      } catch (error : any) {
+        return({ error: error.message });
+      }
+}
+
+const attachACHbankAccountService = async (payload : any)=>{
+    try {
+        const { customerId, bankToken } = payload;
+    const bankAccount = await stripe.customers.createSource(customerId, { source: bankToken });
+        return(bankAccount);
+      } catch (error : any) {
+        return({ error: error.message });
+      }
+}
+
+const verifyBankAccountService = async(payload : any)=>{
+    try {
+        const { customerId, bankAccountId, amounts } = payload;
+        
+        const verification = await stripe.customers.verifySource(customerId, bankAccountId, {
+          amounts,
+        });
+    
+        return({ verification });
+      } catch (error : any) {
+        return({ error: error.message });
+      }
+}
+
+const payRentService = async (payload : any)=>{
+    try {
+        const { customerId,bankAccountId, amount, lateFee, monthlyPaymentId, ownerId } = payload;
+    
+        const charge = await stripe.charges.create({
+          amount: amount * 100, 
+          currency: 'usd',
+          customer: customerId,
+          source: bankAccountId,
+          description: 'Monthly Rent Payment',
+          metadata: {
+            rent_month: amount,
+            ownerId,
+            payment_id: monthlyPaymentId,
+            lateFee
+          }
+        });    
+    
+        return(charge);
+      } catch (error : any ) {
+        return({ error: error.message });
+      }
+}
+
+
+
+
 const createAllTenantsForPaymentFormDB = async () => {
     try {
         const tenants = await Tenant.find({ isDeleted: false }).lean();
@@ -44,10 +127,7 @@ const createAllTenantsForPaymentFormDB = async () => {
             ...tenant,
             status: "Pending",
             invoice: "Upcoming",
-        }));
-
-        console.log(payments);
-        
+        }));       
 
         const result = await TenantPayment.insertMany(payments);
         return result;
@@ -58,7 +138,7 @@ const createAllTenantsForPaymentFormDB = async () => {
 };
 
 
-cron.schedule('1 0 1 * *', async () => {
+cron.schedule('0 0 1 * *', async () => {
     await createAllTenantsForPaymentFormDB();
 });
 
@@ -275,6 +355,11 @@ const sendPayoutRequestByAdminToStripe = async (data: any) => {
 
 export const paymentService = {
     stripeTenantPaymentFun,
+    createCustomerService,
+    createBankTokenService,
+    verifyBankAccountService,
+    attachACHbankAccountService,
+    payRentService,
     createAllTenantsForPaymentFormDB,
     getAllTenantPaymentDataFromDB,
     getSingleUserAllPaymentDataFromDB,

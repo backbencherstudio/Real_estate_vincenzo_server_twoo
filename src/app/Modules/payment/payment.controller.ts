@@ -9,10 +9,61 @@ const stripeTenantPayment = catchAsync(async (req, res) => {
     sendResponse(res, {
         statusCode: httpStatus.OK,
         success: true,
-        message: 'Payment for this month has been successfully processed. please wait a moment for receipt ',
+        message: 'Payment for this month has been successfully processed. please wait a moment for receipt',
         data: result,
     });
 });
+
+const createCustomerForACHpayment = catchAsync(async (req, res) => {
+    const result = await paymentService.createCustomerService(req.body);
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: 'Customer create successfully',
+        data: result,
+    });
+});
+
+const createBankTokenForACHpayment = catchAsync(async (req, res) => {
+    const result = await paymentService.createBankTokenService(req.body);
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: 'Token crate successfully',
+        data: result,
+    });
+});
+
+const attachACHbankAccount = catchAsync(async (req, res) => {    
+    const result = await paymentService.attachACHbankAccountService(req.body);
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: 'Your bank has been successfully linked. Please allow up to some moment or 1-2 business days for the verification amount to be sent for confirmation. Thank you for your patience.',
+        data: result,
+    });
+});
+
+const verifyBankAccount = catchAsync(async (req, res) => {    
+    const result = await paymentService.verifyBankAccountService(req.body);
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: 'Verify Bank successfully',
+        data: result,
+    });
+});
+
+const payRentUserACHcontroller = catchAsync(async (req, res) => {    
+    const result = await paymentService.payRentService(req.body);
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: 'Payment for this month has been successfully processed. please wait a moment for receipt',
+        data: result,
+    });
+});
+
 
 const createALlTenantsForPayment = catchAsync(async (req, res) => {    
     const result = await paymentService.createAllTenantsForPaymentFormDB();    
@@ -101,6 +152,11 @@ const sendPayoutRequestByAdmin = catchAsync(async (req, res) => {
 
 export const paymentController = {
     stripeTenantPayment,
+    createCustomerForACHpayment,
+    createBankTokenForACHpayment,
+    attachACHbankAccount,
+    verifyBankAccount,
+    payRentUserACHcontroller,
     createALlTenantsForPayment,
     getAllTenantPaymentData,
     getSingleUserAllPaymentData,

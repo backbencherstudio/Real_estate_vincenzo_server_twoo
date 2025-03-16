@@ -261,9 +261,10 @@ const Webhook = async (req: Request, res: Response) => {
     // "payout.paid": handlePayoutSucceeded,
     // "transfer.paid": handlePayoutSucceeded,
     // "transfer.created": handleTransferCreated,
-    "transfer.created": handleTransferSucceeded,
+    "transfer.created": handleTransferCreated,
     // "payment.created": handlePaymentCreated,
     "balance.available": handleBalanceAvailable,
+    "charge.succeeded" : ACHTransferHandler,
   };
 
 
@@ -280,6 +281,43 @@ const Webhook = async (req: Request, res: Response) => {
     console.log(`Unhandled event type: ${event.type}`);
   }
   res.status(200).send({ received: true });
+};
+
+interface ChargeMetadata {
+  rent_month: string;
+  user_id: string;
+  payment_id: string;
+}
+
+const ACHTransferHandler = async (charge: any): Promise<void> => {
+  try {
+    // Ensure charge has metadata
+    if (!charge.metadata) {
+      console.error("Charge metadata is missing.");
+      return;
+    }
+
+    const metadata: ChargeMetadata = charge.metadata;
+    console.log(metadata);
+    
+    const { rent_month, user_id, payment_id } = metadata;
+
+    if (!user_id || !rent_month) {
+      console.error("Invalid metadata in charge:", metadata);
+      return;
+    }
+
+    // Update Rent Payment Record in MongoDB
+    // const updatedRent = await RentPayment.findOneAndUpdate(
+    //   { user_id, rent_month, property_id },
+    //   { status: "Paid", payment_id: charge.id, updated_at: new Date() },
+    //   { new: true, upsert: true }
+    // );
+
+    // console.log("Database Updated:", updatedRent);
+  } catch (error) {
+    console.error("Database Update Error:", error);
+  }
 };
 
 const handleInvoiceUpcoming = async (invoice: Stripe.Invoice) => {
@@ -322,7 +360,38 @@ const handlePaymentFailed = async (invoice: Stripe.Invoice) => {
       await sendEmail(
         email,
         "Payment Failed",
-        `Your payment of $${amountDue} for your subscription has failed. Please update your payment method.`
+        `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px; background-color: #f9f9f9;">
+  <h2 style="color: #d9534f; text-align: center;">🚨 Payment Failed Alert</h2>
+  <p style="font-size: 16px; color: #555; text-align: center;">
+    Unfortunately, we were unable to process your payment of <strong style="color: #d9534f;">$${amountDue}</strong> for your subscription.
+  </p>
+
+  <div style="text-align: center; margin-top: 20px;">
+    <img src="https://w7.pngwing.com/pngs/475/632/png-transparent-failure-computer-icons-payment-non-mainstream-miscellaneous-text-trademark-thumbnail.png" alt="Payment Failed" width="100">
+  </div>
+
+  <p style="font-size: 16px; color: #777; text-align: center; margin-top: 20px;">
+    This may be due to insufficient funds, an expired card, or a declined transaction.
+  </p>
+
+
+  <p style="font-size: 14px; color: #888; text-align: center; margin-top: 20px;">
+    If this was a mistake, please update your payment details within <strong>48 hours</strong> to avoid service interruption.
+  </p>
+
+  <hr style="border: 0; height: 1px; background: #ddd; margin: 20px 0;">
+
+  <div style="background-color: #f8f9fa; padding: 15px; text-align: center; border-radius: 0 0 8px 8px; font-size: 14px; color: #888888;">
+    <p style="margin: 0;">
+      Need help? <a href="mailto:rentpadhomesteam@gmail.com" style="color: #0d6efd; text-decoration: none;">Contact Support</a>.
+    </p>
+    <p style="margin: 10px 0 0;">&copy; ${new Date().getFullYear()} Your Company. All rights reserved.</p>
+  </div>
+</div>
+
+        `
+        // `Your payment of $${amountDue} for your subscription has failed. Please update your payment method.`
       );
       console.log(`Payment failed email sent to ${email}`);
     } catch (error) {
@@ -467,9 +536,6 @@ const handleSubscriptionDeleted = async (subscription: Stripe.Subscription) => {
   console.log(`Subscription deleted for customerId: ${customerId}`);
 };
 
-/** 7) New Handler: Invoice Payment Succeeded
-    This fires whenever a recurring invoice is paid (e.g., monthly subscription). */
-
 const handleInvoicePaymentSucceeded = async (invoice: Stripe.Invoice) => {
   const email = invoice.customer_email;
   const amountPaid = (invoice.amount_paid ?? 0) / 100;
@@ -554,7 +620,6 @@ Thank you for being a valued subscriber!
   }
 
 };
-
 
 const handleChargeUpdated = async (charge: Stripe.Charge) => {
   const customerId = charge.customer as string;
@@ -672,6 +737,8 @@ const handleChargeUpdated = async (charge: Stripe.Charge) => {
   }
 };
 
+
+
 const handleAccountUpdated = async (account: Stripe.Account) => {
   try {
     console.log("✅ Stripe Account Updated:", account);
@@ -707,462 +774,8 @@ const handleAccountUpdated = async (account: Stripe.Account) => {
 };
 
 
-// const handlePayoutSucceeded = async (transfer: Stripe.Transfer) => {
-//   try {
-//       console.log(706, "✅ Payout Succeeded Webhook Triggered:", transfer);
-
-//       const payoutId = transfer.id;
-//       const amount = transfer.amount / 100; 
-//       const ownerId = transfer.metadata.ownerId; 
-//       const payoutKey = transfer.metadata.payoutKey;  // payment data _id 
-//       const email = transfer.metadata.email;
-//       const balanceTransactionId = transfer.balance_transaction as string;
-
-//       console.log(715, payoutId);
-//       console.log(716, amount);
-//       console.log(717, ownerId);
-//       console.log(718, payoutKey);
-//       console.log(719, email);
-//       console.log(720, balanceTransactionId);
-
-
-//       if (!ownerId) {
-//           console.error(716, "❌ Missing ownerId in payout metadata.");
-//           return;
-//       }
-
-
-//     let receiptUrl: string | null = null;
-//     if (balanceTransactionId) {
-//       try {
-//         const balanceTransaction = await stripe.balanceTransactions.retrieve(balanceTransactionId);
-
-//         if (balanceTransaction.source && typeof balanceTransaction.source === "string") {
-//           const charge = await stripe.charges.retrieve(balanceTransaction.source);
-//           receiptUrl = charge.receipt_url || null;
-//         }
-//       } catch (err) {
-//         console.error(731, "❌ Error retrieving balance transaction:", err);
-//       }
-//     }
-
-//       await OwnerPayout.findByIdAndUpdate(
-//           { _id: payoutKey },  
-//           { $set: { status: "Paid", Receipt: receiptUrl  } },
-//           { new: true, runValidators: true }
-//       );
-
-//       console.log(`✅ OwnerPayout updated for key: ${payoutKey} → Paid`);
-
-//       const owner = await User.findById({_id : ownerId});
-//       if (!owner) {
-//           console.warn(`⚠ No owner found with ID: ${ownerId}`);
-//           return;
-//       }
-
-//       const updatedPaidAmount = Math.max(0, (owner.paidAmount ?? 0) - amount);
-
-//       await User.findByIdAndUpdate(
-//           {_id : ownerId},
-//           { $set: { paidAmount: updatedPaidAmount } },
-//           { new: true, runValidators: true }
-//       );
-
-//       console.log(`✅ Updated User's paidAmount for ownerId: ${ownerId}, new paidAmount: $${updatedPaidAmount}`);
-
-//       // await sendEmail(email, "Payout Successful", `Your payout of $${amount} has been successfully transferred.`);
-//       await sendEmail(
-//         email,
-//         "✨ Payout Confirmation - Funds Successfully Transferred",
-//         `
-//         <div style="font-family: Arial, sans-serif; padding: 20px; background-color: #f9f9f9; color: #333;">
-//           <div style="max-width: 600px; margin: auto; background: #ffffff; padding: 20px; border-radius: 8px; box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);">
-//             <h2 style="color: #4CAF50; text-align: center;">🎉 Payout Successful!</h2>
-//             <p>Dear <strong>${owner?.name}</strong>,</p>
-//             <p>We are pleased to inform you that your payout has been successfully processed. The details of your transaction are as follows:</p>
-
-//             <div style="background: #f3f3f3; padding: 15px; border-radius: 5px; margin: 15px 0;">
-//               <p><strong>💰 Amount:</strong> $${amount} USD</p>
-//               <p><strong>📅 Date:</strong> ${new Date().toLocaleDateString()}</p>
-//               <p><strong>🔗 Transaction ID:</strong> ${payoutId}</p>
-//             </div>
-
-//             <p>The funds should reflect in your account within 2-7 business days, depending on your bank's processing time.</p>
-
-//             <p>If you have any questions or need further assistance, feel free to reach out to our support team.</p>
-
-//             <p>Best regards,<br>
-//             <strong>Your Company Name</strong></p>
-
-//             <hr style="border: none; border-top: 1px solid #ddd;">
-//             <p style="text-align: center; font-size: 12px; color: #777;">This is an automated email. Please do not reply.</p>
-//           </div>
-//         </div>
-//         `
-//       );
-
-
-//   } catch (error) {
-//       console.error("❌ Error handling payout succeeded webhook:", error);
-//   }
-// };
-
-//=== handleTransferSucceeded change the name  handlePayoutSucceeded
-
-
-
-// const handleTransferSucceeded = async (transfer: Stripe.Transfer) => {
-//   try {
-//     console.log(706, "✅ transfer Succeeded Webhook Triggered:", transfer);
-
-//     const transferId = transfer.id;
-//     const amount = transfer.amount / 100;
-//     const metadata = transfer.metadata || {};
-//     const ownerId = metadata.ownerId || null;
-//     const payoutKey = metadata.payoutKey || null;
-//     const email = metadata.email;
-//     const balanceTransactionId = transfer.balance_transaction as string;
-
-//     console.log(826, "Transfer ID:", transferId);
-//     console.log(827,"Amount:", amount);
-//     console.log(828, "Owner ID:", ownerId);
-//     console.log(829, "Payout Key:", payoutKey);
-//     console.log(830, "Email:", email);
-//     console.log(831, "Balance Transaction ID:", balanceTransactionId);
-
-//     if (!ownerId) {
-//       console.error(716, "❌ Missing ownerId in payout metadata.");
-//       return;
-//     }
-
-//     await OwnerPayout.findByIdAndUpdate(
-//       { _id: payoutKey },
-//       { $set: { status: "Paid" } },
-//       { new: true, runValidators: true }
-//     );
-
-//     console.log(`✅ OwnerPayout updated for key: ${payoutKey} → Paid`);
-
-//     const owner = await User.findById({ _id: ownerId });
-//     if (!owner) {
-//       console.warn(`⚠ No owner found with ID: ${ownerId}`);
-//       return;
-//     }
-
-//     const updatedPaidAmount = Math.max(0, (owner.paidAmount ?? 0) - amount);
-
-//     await User.findByIdAndUpdate(
-//       { _id: ownerId },
-//       { $set: { paidAmount: updatedPaidAmount } },
-//       { new: true, runValidators: true }
-//     );
-
-//     console.log(`✅ Updated User's paidAmount for ownerId: ${ownerId}, new paidAmount: $${updatedPaidAmount}`);
-
-//     await sendEmail(
-//       email,
-//       "✨ Payout Confirmation - Funds Successfully Transferred",
-//       `
-//         <div style="font-family: Arial, sans-serif; padding: 20px; background-color: #f9f9f9; color: #333;">
-//   <div style="max-width: 600px; margin: auto; background: #ffffff; padding: 20px; border-radius: 8px; box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);">
-//     <h2 style="color: #4CAF50; text-align: center; margin-bottom: 20px;">🎉 Payout Successful!</h2>
-//     <p style="margin: 0 0 15px;">Dear <strong>${owner?.name}</strong>,</p>
-//     <p style="margin: 0 0 15px;">We are pleased to inform you that your payout has been successfully processed. The details of your transaction are as follows:</p>
-
-//     <div style="background: #f3f3f3; padding: 15px; border-radius: 5px; margin: 15px 0;">
-//       <p style="margin: 0 0 10px;"><strong>💰 Amount:</strong> $${amount} USD</p>
-//       <p style="margin: 0 0 10px;"><strong>📅 Date:</strong> ${new Date().toLocaleDateString()}</p>
-//       <p style="margin: 0;"><strong>🔗 Transaction ID:</strong> ${transferId}</p>
-//     </div>
-
-//     <p style="margin: 0 0 15px;">The funds should reflect in your account within 2-7 business days, depending on your bank's processing time.</p>
-//     <p style="margin: 0 0 15px;">If you have any questions or need further assistance, feel free to reach out to our support team.</p>
-
-//     <p style="margin: 0 0 15px;">Best regards,<br>
-//       <strong>Your Company Name</strong>
-//     </p>
-
-//     <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
-//     <p style="text-align: center; font-size: 12px; color: #777; margin: 0;">This is an automated email. Please do not reply.</p>
-//   </div>
-// </div>
-
-//         `
-//     );
-//   } catch (error) {
-//     console.error("❌ Error handling payout succeeded webhook:", error);
-//   }
-// };
-
-
-// const handleTransferSucceeded = async (transfer: Stripe.Transfer) => {
-//   try {
-//     console.log(706, "✅ transfer Succeeded Webhook Triggered:", transfer);
-
-//     const transferId = transfer.id;
-//     const amount = transfer.amount / 100;
-//     const metadata = transfer.metadata || {};
-//     const ownerId = metadata.ownerId || null;
-//     const payoutKey = metadata.payoutKey || null;
-//     const email = metadata.email;
-//     const balanceTransactionId = transfer.balance_transaction as string;
-
-//     console.log(826, "Transfer ID:", transferId);
-//     console.log(827, "Amount:", amount);
-//     console.log(828, "Owner ID:", ownerId);
-//     console.log(829, "Payout Key:", payoutKey);
-//     console.log(830, "Email:", email);
-//     console.log(831, "Balance Transaction ID:", balanceTransactionId);
-
-//     if (!ownerId) {
-//       console.error(716, "❌ Missing ownerId in payout metadata.");
-//       return;
-//     }
-
-//     await OwnerPayout.findByIdAndUpdate(
-//       { _id: payoutKey },
-//       { $set: { status: "Paid" } },
-//       { new: true, runValidators: true }
-//     );
-
-//     console.log(`✅ OwnerPayout updated for key: ${payoutKey} → Paid`);
-
-//     const owner = await User.findById({ _id: ownerId });
-//     if (!owner) {
-//       console.warn(`⚠ No owner found with ID: ${ownerId}`);
-//       return;
-//     }
-
-//     const updatedPaidAmount = Math.max(0, (owner.paidAmount ?? 0) - amount);
-
-//     await User.findByIdAndUpdate(
-//       { _id: ownerId },
-//       { $set: { paidAmount: updatedPaidAmount } },
-//       { new: true, runValidators: true }
-//     );
-
-//     console.log(`✅ Updated User's paidAmount for ownerId: ${ownerId}, new paidAmount: $${updatedPaidAmount}`);
-
-//     const emailTemplate = `
-// <!DOCTYPE html>
-// <html>
-// <head>
-//   <meta charset="UTF-8">
-//   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-//   <title>Payout Confirmation</title>
-//   <style type="text/css">
-//     /* Base styles */
-//     body, html {
-//       margin: 0;
-//       padding: 0;
-//       font-family: 'Segoe UI', Arial, sans-serif;
-//       line-height: 1.6;
-//       color: #333333;
-//       background-color: #f5f5f5;
-//     }
-    
-//     /* Wrapper */
-//     .email-container {
-//       max-width: 600px;
-//       margin: 0 auto;
-//       background-color: #ffffff;
-//       border-radius: 12px;
-//       overflow: hidden;
-//       box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
-//     }
-    
-//     /* Header */
-//     .header {
-//       padding: 30px 20px;
-//       background: linear-gradient(135deg, #00c853, #64dd17);
-//       text-align: center;
-//       color: white;
-//     }
-    
-//     .header h1 {
-//       margin: 0;
-//       font-size: 26px;
-//       font-weight: 700;
-//       text-transform: uppercase;
-//       letter-spacing: 1px;
-//     }
-    
-//     /* Content */
-//     .content {
-//       padding: 30px;
-//     }
-    
-//     .greeting {
-//       font-size: 18px;
-//       margin-bottom: 15px;
-//     }
-    
-//     .message {
-//       margin-bottom: 25px;
-//     }
-    
-//     /* Transaction details */
-//     .transaction-details {
-//       background-color: #f9f9f9;
-//       border-left: 4px solid #00c853;
-//       padding: 20px;
-//       border-radius: 4px;
-//       margin: 25px 0;
-//     }
-    
-//     .transaction-item {
-//       display: flex;
-//       padding: 10px 0;
-//       border-bottom: 1px solid #eeeeee;
-//     }
-    
-//     .transaction-item:last-child {
-//       border-bottom: none;
-//     }
-    
-//     .transaction-label {
-//       font-weight: bold;
-//       width: 40%;
-//     }
-    
-//     .transaction-value {
-//       width: 60%;
-//     }
-    
-//     /* Footer */
-//     .footer {
-//       background-color: #f5f5f5;
-//       padding: 20px;
-//       text-align: center;
-//       font-size: 13px;
-//       color: #777777;
-//       border-top: 1px solid #eeeeee;
-//     }
-    
-//     .company-info {
-//       margin-top: 15px;
-//       padding-top: 15px;
-//       border-top: 1px solid #eeeeee;
-//     }
-    
-//     /* Utilities */
-//     .emoji {
-//       font-size: 18px;
-//       margin-right: 5px;
-//     }
-    
-//     .button {
-//       display: inline-block;
-//       background-color: #00c853;
-//       color: white;
-//       text-decoration: none;
-//       padding: 12px 25px;
-//       border-radius: 4px;
-//       font-weight: bold;
-//       margin: 20px 0;
-//     }
-    
-//     .note {
-//       background-color: #fff8e1;
-//       padding: 15px;
-//       border-radius: 4px;
-//       font-size: 14px;
-//       margin: 25px 0 15px;
-//     }
-    
-//     /* Responsive */
-//     @media screen and (max-width: 600px) {
-//       .transaction-item {
-//         flex-direction: column;
-//       }
-      
-//       .transaction-label, .transaction-value {
-//         width: 100%;
-//       }
-      
-//       .transaction-label {
-//         margin-bottom: 5px;
-//       }
-//     }
-//   </style>
-// </head>
-// <body>
-//   <div class="email-container">
-//     <div class="header">
-//       <h1>✨ Payout Successful ✨</h1>
-//     </div>
-    
-//     <div class="content">
-//       <p class="greeting">Dear <strong>${owner?.name}</strong>,</p>
-      
-//       <p class="message">We're pleased to inform you that your payout has been successfully processed. Here are the details of your transaction:</p>
-      
-//       <div class="transaction-details">
-//         <div class="transaction-item">
-//           <div class="transaction-label"><span class="emoji">💰</span> Amount</div>
-//           <div class="transaction-value">$${amount} USD</div>
-//         </div>
-        
-//         <div class="transaction-item">
-//           <div class="transaction-label"><span class="emoji">📅</span> Date</div>
-//           <div class="transaction-value">${new Date().toLocaleDateString()}</div>
-//         </div>
-        
-//         <div class="transaction-item">
-//           <div class="transaction-label"><span class="emoji">🔗</span> Transaction ID</div>
-//           <div class="transaction-value">${transferId}</div>
-//         </div>
-//       </div>
-      
-//       <p>The funds should reflect in your account within 2-7 business days, depending on your bank's processing time.</p>
-      
-//       <div style="text-align: center;">
-//         <a href="#" class="button">View Transaction History</a>
-//       </div>
-      
-//       <div class="note">
-//         If you have any questions or need further assistance, please don't hesitate to contact our support team at <a href="mailto:rentpadhomesteam@gmail.com">rentpadhomesteam@gmail.com</a>.
-//       </div>
-      
-//       <p>Best regards,<br>
-//       <strong>Your Company Name</strong></p>
-//     </div>
-    
-//     <div class="footer">
-//       <p>This is an automated email. Please do not reply.</p>
-      
-//       <div class="company-info">
-//         <p>© 2025 Your Company Name. All rights reserved.</p>
-//         <p>
-//           <a href="#">Privacy Policy</a> | 
-//           <a href="#">Terms of Service</a> | 
-//           <a href="#">Unsubscribe</a>
-//         </p>
-//       </div>
-//     </div>
-//   </div>
-// </body>
-// </html>
-//     `;
-
-//     await sendEmail(
-//       email,
-//       "✨ Payout Confirmation - Funds Successfully Transferred",
-//       emailTemplate,
-//     );
-
-//     console.log(`✅ Success email sent to: ${email}`);
-
-//   } catch (error) {
-//     console.error("❌ Error handling payout succeeded webhook:", error);
-//   }
-// };
-
-
-const handleTransferSucceeded = async (transfer: Stripe.Transfer) => {
+const handleTransferCreated = async (transfer: Stripe.Transfer) => {
   try {
-    console.log(706, "✅ transfer Succeeded Webhook Triggered:", transfer);
-
     const transferId = transfer.id;
     const amount = transfer.amount / 100;
     const metadata = transfer.metadata || {};
@@ -1170,26 +783,15 @@ const handleTransferSucceeded = async (transfer: Stripe.Transfer) => {
     const payoutKey = metadata.payoutKey || null;
     const email = metadata.email;
     const balanceTransactionId = transfer.balance_transaction as string;
-
-    console.log(826, "Transfer ID:", transferId);
-    console.log(827,"Amount:", amount);
-    console.log(828, "Owner ID:", ownerId);
-    console.log(829, "Payout Key:", payoutKey);
-    console.log(830, "Email:", email);
-    console.log(831, "Balance Transaction ID:", balanceTransactionId);
-
     if (!ownerId) {
       console.error(716, "❌ Missing ownerId in payout metadata.");
       return;
     }
-
     await OwnerPayout.findByIdAndUpdate(
       { _id: payoutKey },
       { $set: { status: "Paid" } },
       { new: true, runValidators: true }
     );
-
-    console.log(`✅ OwnerPayout updated for key: ${payoutKey} → Paid`);
 
     const owner = await User.findById({ _id: ownerId });
     if (!owner) {
@@ -1277,7 +879,7 @@ const handleTransferSucceeded = async (transfer: Stripe.Transfer) => {
       textContent,
       htmlContent
     );
-    
+
     console.log(`✅ Success email sent to: ${email}`);
 
   } catch (error) {
@@ -1285,36 +887,6 @@ const handleTransferSucceeded = async (transfer: Stripe.Transfer) => {
   }
 };
 
-
-const handleTransferCreated = async (transfer: Stripe.Transfer) => {
-  console.log(911, transfer);
-
-  const transferId = transfer.id;
-  const amount = transfer.amount / 100;
-  const metadata = transfer.metadata || {};
-  const ownerId = metadata.ownerId || null;
-  const payoutKey = metadata.payoutKey || null;
-  const email = metadata.email;
-  const balanceTransactionId = transfer.balance_transaction as string;
-
-
-  console.log(922, "Transfer ID:", transferId);
-  console.log(923, "Amount:", amount);
-  console.log(924, "Owner ID:", ownerId);
-  console.log(925, "Payout Key:", payoutKey);
-  console.log(926, "Email:", email);
-  console.log(927, "Balance Transaction ID:", balanceTransactionId);
-
-  console.log(`🔄 New Transfer Created: ${transfer.id} → Amount: $${transfer.amount / 100}`);
-
-
-};
-
-
-
-// const handlePaymentCreated = async (payment: Stripe.PaymentIntent) => {
-//   console.log(`💰 New Payment Created: ${payment.id} → Amount: $${payment.amount / 100}`);
-// };
 const handleBalanceAvailable = async (balance: Stripe.Balance) => {
   console.log("💵 Stripe Balance Updated:", balance.available);
 };

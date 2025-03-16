@@ -15,6 +15,15 @@ router.get("/getAllTenantPaymentData", paymentController.getAllTenantPaymentData
 router.get("/getSingleUserAllPaymentData/:userId", paymentController.getSingleUserAllPaymentData);
 
 
+// =========================== ACH Payment For Tenant ========================
+router.post("/createCustomerForACHpayment", paymentController.createCustomerForACHpayment);
+router.post("/createBankTokenForACHpayment", paymentController.createBankTokenForACHpayment);
+router.post("/attachACHbankAccount", paymentController.attachACHbankAccount);
+router.post("/verifyBankAccount", paymentController.verifyBankAccount);
+router.post("/payRentUserACHcontroller", paymentController.payRentUserACHcontroller);
+
+
+
 // =========================== Stripe Payment Handle API
 router.post("/stripe", stripePaymentService.stripePayment);
 router.post("/cancel-subscription/:customerId", stripePaymentService.cancelSubscription);
