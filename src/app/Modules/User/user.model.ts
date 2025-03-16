@@ -8,10 +8,6 @@ const userSchema = new Schema<TUser>(
     name: {
       type: String,
     },
-    accountConnect: {
-      type: Boolean,
-      default : false
-    },
     stripeAccountId: {
       type: String,
     },
@@ -25,6 +21,14 @@ const userSchema = new Schema<TUser>(
     password: {
       type: String,
       required: [true, "Password is required"],
+    },
+    routingNumber: {
+      type: String,
+      required: [true, "Routing Number is required"],
+    },
+    bankAccountNumber: {
+      type: String,
+      required: [true, "Bank Account Number is required"],
     },
     role: {
       type: String,

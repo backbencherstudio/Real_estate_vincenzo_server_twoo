@@ -21,13 +21,14 @@ export type TPermanentAddress = {
 
 export interface TUser {
   userId : string;
-  accountConnect : boolean;
   stripeAccountId : string;
   personalInfo : TPersonalInfo;
   permanentAddress : TPermanentAddress;
   profileImage:string;
   name: string;
   email: string;
+  bankAccountNumber: string;
+  routingNumber: string;
   role : "admin" | "owner" | "tenant"
   password: string;
   isDeleted: boolean;

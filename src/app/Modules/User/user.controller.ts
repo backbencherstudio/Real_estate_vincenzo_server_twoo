@@ -14,6 +14,8 @@ declare module 'express-session' {
       createdAt : number;
       name : string;
       email : string;
+      bankAccountNumber : string;
+      routingNumber : string;
       password : string;
       isDeleted : boolean;
       role : string
@@ -27,6 +29,8 @@ declare module 'express-session' {
       otp: string;
       email : string;
       password : string;
+      // bankAccountNumber: string;
+      // routingNumber: string;
     };
   }
 }
@@ -40,7 +44,9 @@ const createUser = catchAsync(async (req, res) => {
     otp: result.otp,
     name : result.name,
     email : result.email,
-    password: result.password ,
+    password: result.password,
+    bankAccountNumber: result.bankAccountNumber,
+    routingNumber: result.routingNumber,
     isDeleted : result.isDeleted,
     role:result.role,
     createdAt: Date.now(),  

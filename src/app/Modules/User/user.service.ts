@@ -26,7 +26,7 @@ const createUserIntoDB = async (payload: TUser) => {
   if (isStudentExistsInUser) {
     throw new AppError(400, 'User already exists');
   }
-  await sendEmail(payload?.email, otp);
+  await sendEmail(payload?.email, otp);  
   return {
     success: true,
     message: 'OTP sent to your email. Please verify to complete registration.',
@@ -34,6 +34,8 @@ const createUserIntoDB = async (payload: TUser) => {
     name: payload.name,
     email: payload.email,
     password: payload.password,
+    bankAccountNumber : payload.bankAccountNumber,
+    routingNumber : payload.routingNumber,
     isDeleted: payload.isDeleted,
     role: payload.role
   };

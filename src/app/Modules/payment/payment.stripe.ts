@@ -737,8 +737,6 @@ const handleChargeUpdated = async (charge: Stripe.Charge) => {
   }
 };
 
-
-
 const handleAccountUpdated = async (account: Stripe.Account) => {
   try {
     console.log("✅ Stripe Account Updated:", account);
@@ -772,7 +770,6 @@ const handleAccountUpdated = async (account: Stripe.Account) => {
     console.error("❌ Error handling account updated webhook:", error);
   }
 };
-
 
 const handleTransferCreated = async (transfer: Stripe.Transfer) => {
   try {
