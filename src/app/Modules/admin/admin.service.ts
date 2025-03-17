@@ -355,16 +355,14 @@ const deleteEmailCollectionDataGetIntoDB = async (id : string)=>{
 
 const addTransactionDataIntoDB = async (payload : TTransactionData )=>{
     const email = payload.email;
-
     const result = await TransactionData.create(payload);
     await sendTransfarNotificationEmailAdminToOwner(email, payload.amount , payload.name);
-
     return result
 }
 
 const getTransferDataFromDB = async (query : Record<string, unknown>)=>{
     console.log(query);
-    const result = await TransactionData.find();
+    const result = await TransactionData.find().sort({createdAt : -1});
     return result    
 }
 

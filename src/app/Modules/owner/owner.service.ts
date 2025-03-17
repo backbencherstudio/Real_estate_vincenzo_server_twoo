@@ -703,19 +703,53 @@ const getSingleOwnerPaymentHistoryFromDB = async (email : string)=>{
   return result
 }
 
-const changePaymentHistoryStatusIntoDB = async(id : string, status : string)=>{
-  const historyData = await TransactionData.findById({_id : id})
+// const changePaymentHistoryStatusIntoDB = async(id : string, status : string)=>{
+//   const historyData = await TransactionData.findById({_id : id})
+//   const userData = await User.findById({_id : id})
 
-  if(status === "Received"){
+//   if(status === "Received"){
+//     await TransactionData.findByIdAndUpdate({_id : id},{status}, {new : true, runValidators : true})
+//     return await User.findByIdAndUpdate({_id : historyData?.ownerId},{ paidAmount : userData?.paidAmount - historyData?.mainBalance }, {new : true, runValidators : true})
+   
+//   }
+//   else{
+//     return await TransactionData.findByIdAndUpdate({_id : id},{status}, {new : true, runValidators : true})
+//   }  
+// }
 
-    console.log(historyData);    
-    
+const changePaymentHistoryStatusIntoDB = async (id: string, status: string) => {
+  const historyData = await TransactionData.findById({ _id: id });
+  const userData = await User.findById({ _id: historyData?.ownerId }); // Use historyData?.ownerId to fetch correct user
+
+  if (!historyData || !userData) {
+    throw new Error("Transaction or User data not found.");
   }
-  
-  console.log(id);
-  console.log(status);
-  
-}
+
+  if (status === "Received") {
+    const updatedTransaction = await TransactionData.findByIdAndUpdate(
+      { _id: id },
+      { status },
+      { new: true, runValidators: true }
+    );
+
+    const newPaidAmount = (userData.paidAmount ?? 0) - (historyData.mainBalance ?? 0);
+
+    const updatedUser = await User.findByIdAndUpdate(
+      { _id: historyData.ownerId },
+      { paidAmount: newPaidAmount },
+      { new: true, runValidators: true }
+    );
+
+    return { updatedTransaction, updatedUser };
+  } else {
+    return await TransactionData.findByIdAndUpdate(
+      { _id: id },
+      { status },
+      { new: true, runValidators: true }
+    );
+  }
+};
+
 
 
 
