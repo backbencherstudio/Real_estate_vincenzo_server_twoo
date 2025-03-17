@@ -159,7 +159,6 @@ const getAllUserFromDB = async (query: Record<string, unknown>) => {
   //     subscriptionStatus: { $exists: false }
   //   });
   // }
-  console.log(query);
   
   const userQuery = new QueryBuilder(User.find(), query)
     .search(["name", "email"])

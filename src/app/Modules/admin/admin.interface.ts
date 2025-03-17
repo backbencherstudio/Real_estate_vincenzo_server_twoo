@@ -1,3 +1,4 @@
+import { Schema } from "mongoose";
 
 export interface OverviewData {
     propertyLength: number;
@@ -23,3 +24,14 @@ export interface TRealEstateAdvisor {
     instagram : string,
     linkedin : string,
 } 
+
+export interface TTransactionData {
+    ownerId: Schema.Types.ObjectId;
+    name : string,
+    email : string,
+    transactionId : string,
+    amount : number;
+    status : 'Send' | 'Received';
+    mainBalance : number;
+    percentage : number;
+}

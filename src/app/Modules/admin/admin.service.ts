@@ -6,11 +6,10 @@ import path from "path";
 import  fs from 'fs';
 import { Properties, ReviewFromOwner, Tenant, Unit } from "../owner/owner.module"
 import { EmailCollection, User } from "../User/user.model";
-import { OverviewData, TPlanDetails, TRealEstateAdvisor } from "./admin.interface";
-import { PlanDetails, RealEstateAdvisor } from "./admin.module";
+import { OverviewData, TPlanDetails, TRealEstateAdvisor, TTransactionData } from "./admin.interface";
+import { PlanDetails, RealEstateAdvisor, TransactionData } from "./admin.module";
 import { AppError } from "../../errors/AppErrors";
 import httpStatus from "http-status";
-
 
 const getALlPropertiesFromDB = async (selectedDate : string) =>{    
     if (!selectedDate) {
@@ -53,7 +52,6 @@ const getSingleOwnerAllPropertiesWithOwnerInfoFromDB = async(id : string ) =>{
         properties
     }
 }
-
 
 // const getAllDataOverviewByAdminFromDB = async (selectedDate : any): Promise<OverviewData> => {
 //     console.log(selectedDate);
@@ -204,7 +202,6 @@ const getSingleOwnerAllPropertiesWithOwnerInfoFromDB = async(id : string ) =>{
 //     }
 // };
 
-
 const getAllDataOverviewByAdminFromDB = async (selectedDate: string): Promise<OverviewData> => {
     try {
         const [year, month] = selectedDate.split('-').map(Number);
@@ -291,9 +288,6 @@ const getAllDataOverviewByAdminFromDB = async (selectedDate: string): Promise<Ov
     }
 };
 
-
-
-
 const createPlanIntoDB = async (payload : TPlanDetails ) =>{
     await PlanDetails.deleteMany({}); 
     const result = await PlanDetails.create(payload)
@@ -310,7 +304,6 @@ const deleteNoSubscriberOwnerFormDB = async (id : string) =>{
     return result
 }
  
-
 const RealEstateAdvisorIntoDB =  async (payload : TRealEstateAdvisor)=>{
     const result = await RealEstateAdvisor.create(payload)
     return result
@@ -339,12 +332,10 @@ const RealEstateAdvisordeleteIntoDB =  async (id : string)=>{
     return result
 }
  
-
 const getReviewFromDB = async () => {
     const result = await ReviewFromOwner.find().sort({ createdAt: -1 }).lean();
     return result;
 };
-
 
 const deleteReviewByAdminIntoDB = async (id : string) =>{
     const result = await ReviewFromOwner.findByIdAndDelete({_id : id})
@@ -360,6 +351,12 @@ const deleteEmailCollectionDataGetIntoDB = async (id : string)=>{
     const result = await EmailCollection.findByIdAndDelete({_id : id})
     return result
 }
+
+const addTransactionDataIntoDB = async (payload : TTransactionData )=>{    
+    const result = await TransactionData.create(payload);
+    return result
+}
+
 
 
 export const AdminService = {
@@ -377,5 +374,6 @@ export const AdminService = {
     getReviewFromDB,
     deleteReviewByAdminIntoDB,
     getAllEmailCollectionDataGetFromDB,
-    deleteEmailCollectionDataGetIntoDB
+    deleteEmailCollectionDataGetIntoDB,
+    addTransactionDataIntoDB
 }

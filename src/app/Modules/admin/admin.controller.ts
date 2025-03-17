@@ -194,6 +194,16 @@ const getALlProperties = catchAsync(async (req, res) => {
     });
 });
 
+  const addTransactionDataController = catchAsync(async (req, res) => {
+    const result = await AdminService.addTransactionDataIntoDB(req?.body);
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: 'Transaction Id Store Successfully',
+        data: result,
+    });
+});
+
 
  
 
@@ -212,5 +222,6 @@ export const AdminController = {
     getAllReview,
     deleteReviewByAdmin,
     getAllEmailCollectionData,
-    deleteEmailCollectionData
+    deleteEmailCollectionData,
+    addTransactionDataController
 }

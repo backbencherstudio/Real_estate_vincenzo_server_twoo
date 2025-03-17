@@ -86,6 +86,12 @@ router.delete(
     AdminController.deleteEmailCollectionData,
 );
 
+router.post(
+    '/addTransactionData',
+    Auth(User_Role.admin),
+    AdminController.addTransactionDataController,
+);
+
 
 
 export const AdminRouter = router
