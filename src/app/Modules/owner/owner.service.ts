@@ -703,6 +703,19 @@ const getSingleOwnerPaymentHistoryFromDB = async (email : string)=>{
   return result
 }
 
+const changePaymentHistoryStatusIntoDB = async(id : string, status : string)=>{
+  const historyData = await TransactionData.findById({_id : id})
+
+  if(status === "Received"){
+
+    console.log(historyData);    
+    
+  }
+  
+  console.log(id);
+  console.log(status);
+  
+}
 
 
 
@@ -729,5 +742,6 @@ export const OwnerServices = {
   getAllTenantsForMessageFromDB,
   isOwnerActiveOrNot,
   CreateReviewFromOwnerIntoDB,
-  getSingleOwnerPaymentHistoryFromDB
+  getSingleOwnerPaymentHistoryFromDB,
+  changePaymentHistoryStatusIntoDB
 };

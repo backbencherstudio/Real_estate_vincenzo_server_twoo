@@ -421,6 +421,17 @@ const getSingleOwnerPaymentHistory = catchAsync(async (req, res) => {
   });
 });
 
+const changePaymentHistoryStatus = catchAsync(async (req, res) => { 
+  const result = await OwnerServices.changePaymentHistoryStatusIntoDB(req.params.paymentHistoryId, req?.body.status);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Payment History Status Successfully",
+    data: result,
+  });
+});
+
+
 
 export const propertyController = {
   createProperties,
@@ -445,5 +456,6 @@ export const propertyController = {
   getAllTenantsForMessage,
   isOwnerActive,
   CreateReviewFromOwner,
-  getSingleOwnerPaymentHistory
+  getSingleOwnerPaymentHistory,
+  changePaymentHistoryStatus
 }

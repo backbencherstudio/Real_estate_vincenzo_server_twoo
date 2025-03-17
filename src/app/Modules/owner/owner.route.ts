@@ -149,6 +149,12 @@ router.post(
     propertyController.CreateReviewFromOwner,
 );
 
+router.patch(
+    '/changePaymentHistoryStatus/:paymentHistoryId',
+    Auth(User_Role.owner),
+    propertyController.changePaymentHistoryStatus,
+);
+
 
 
 
