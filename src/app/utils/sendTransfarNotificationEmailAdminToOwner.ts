@@ -16,14 +16,14 @@ export const sendTransfarNotificationEmailAdminToOwner = async (to: string, amou
   await transporter.sendMail({
     from: config.sender_email,
     to, 
-    subject: 'Transfer Amount Notification from RentPadHomes', 
+    subject: 'Transfer Amount from RentPadHomes', 
     text: '', 
     html: `
     <div style="text-align: center; font-family: 'Segoe UI', Arial, sans-serif; padding: 30px; border-radius: 12px; background: linear-gradient(to bottom, #f9f9f9, #f2f2f2); box-shadow: 0 5px 15px rgba(0,0,0,0.08); max-width: 600px; margin: 0 auto;">
         <!-- Header with logo space -->
         <div style="margin-bottom: 25px;">
             <div style="background-color: #0A5173; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
-                <h2 style="color: #ffffff; font-size: 26px; font-weight: bold; margin: 0;">Payment Transfer Notification</h2>
+                <h2 style="color: #ffffff; font-size: 26px; font-weight: bold; margin: 0;">Payment Transfer</h2>
             </div>
         </div>
         

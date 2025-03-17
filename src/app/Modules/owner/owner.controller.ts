@@ -411,6 +411,16 @@ const CreateReviewFromOwner = catchAsync(async (req, res) => {
   });
 });
 
+const getSingleOwnerPaymentHistory = catchAsync(async (req, res) => {  
+  const result = await OwnerServices.getSingleOwnerPaymentHistoryFromDB(req.query.email as string);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "get single owner all payment history successfully",
+    data: result,
+  });
+});
+
 
 export const propertyController = {
   createProperties,
@@ -434,5 +444,6 @@ export const propertyController = {
   getPaymentDataOverviewByOwner,
   getAllTenantsForMessage,
   isOwnerActive,
-  CreateReviewFromOwner
+  CreateReviewFromOwner,
+  getSingleOwnerPaymentHistory
 }

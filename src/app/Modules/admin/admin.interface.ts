@@ -31,7 +31,7 @@ export interface TTransactionData {
     email : string,
     transactionId : string,
     amount : number;
-    status : 'Send' | 'Received';
+    status : 'Send' | 'Received' | 'Not Get';
     mainBalance : number;
     percentage : number;
 }

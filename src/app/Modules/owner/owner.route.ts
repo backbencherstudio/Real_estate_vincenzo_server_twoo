@@ -6,6 +6,14 @@ import { upload } from '../../middleware/upload';
 
 const router = express.Router();
 
+
+router.get(
+    '/getSingleOwnerPaymentHistory',
+    Auth(User_Role.owner),
+    propertyController.getSingleOwnerPaymentHistory,
+);
+
+
 router.get(
     '/isOwnerActive',
     Auth(User_Role.owner),
@@ -140,6 +148,7 @@ router.post(
     Auth(User_Role.owner),
     propertyController.CreateReviewFromOwner,
 );
+
 
 
 

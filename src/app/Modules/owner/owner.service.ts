@@ -14,6 +14,7 @@ import { OverviewData } from "../admin/admin.interface";
 import { TenantPayment } from "../payment/payment.module";
 import { Document } from "../document/document.module";
 import fs from 'fs';
+import { TransactionData } from '../admin/admin.module';
 
 
 const createPropertiesDB = async (payload: TProperties) => {
@@ -697,6 +698,11 @@ const CreateReviewFromOwnerIntoDB = async (payload : TReviewFromOwner) => {
   return resutl
 }
 
+const getSingleOwnerPaymentHistoryFromDB = async (email : string)=>{
+  const result = await TransactionData.find({email}).sort({createdAt : -1})
+  return result
+}
+
 
 
 
@@ -722,5 +728,6 @@ export const OwnerServices = {
   getPaymentDataOverviewByOwnerFromDB,
   getAllTenantsForMessageFromDB,
   isOwnerActiveOrNot,
-  CreateReviewFromOwnerIntoDB
+  CreateReviewFromOwnerIntoDB,
+  getSingleOwnerPaymentHistoryFromDB
 };
