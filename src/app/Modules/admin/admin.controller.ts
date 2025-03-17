@@ -204,6 +204,16 @@ const getALlProperties = catchAsync(async (req, res) => {
     });
 });
 
+  const getTransferData = catchAsync(async (req, res) => {
+    const result = await AdminService.getTransferDataFromDB(req?.query);
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: 'Transaction data get Successfully',
+        data: result,
+    });
+});
+
 
  
 
@@ -223,5 +233,6 @@ export const AdminController = {
     deleteReviewByAdmin,
     getAllEmailCollectionData,
     deleteEmailCollectionData,
-    addTransactionDataController
+    addTransactionDataController,
+    getTransferData
 }

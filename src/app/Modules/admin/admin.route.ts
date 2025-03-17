@@ -92,6 +92,12 @@ router.post(
     AdminController.addTransactionDataController,
 );
 
+router.get(
+    '/payment-history',
+    Auth(User_Role.admin),
+    AdminController.getTransferData,
+);
+
 
 
 export const AdminRouter = router

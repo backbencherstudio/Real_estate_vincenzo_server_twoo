@@ -698,6 +698,8 @@ const CreateReviewFromOwnerIntoDB = async (payload : TReviewFromOwner) => {
 }
 
 
+
+
 export const OwnerServices = {
   createPropertiesDB,
   updatePorpertyIntoDB,

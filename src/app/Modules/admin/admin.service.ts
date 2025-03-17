@@ -10,6 +10,7 @@ import { OverviewData, TPlanDetails, TRealEstateAdvisor, TTransactionData } from
 import { PlanDetails, RealEstateAdvisor, TransactionData } from "./admin.module";
 import { AppError } from "../../errors/AppErrors";
 import httpStatus from "http-status";
+import { sendTransfarNotificationEmailAdminToOwner } from "../../utils/sendTransfarNotificationEmailAdminToOwner";
 
 const getALlPropertiesFromDB = async (selectedDate : string) =>{    
     if (!selectedDate) {
@@ -352,11 +353,20 @@ const deleteEmailCollectionDataGetIntoDB = async (id : string)=>{
     return result
 }
 
-const addTransactionDataIntoDB = async (payload : TTransactionData )=>{    
+const addTransactionDataIntoDB = async (payload : TTransactionData )=>{
+    const email = payload.email;
+
     const result = await TransactionData.create(payload);
+    await sendTransfarNotificationEmailAdminToOwner(email, payload.amount , payload.name);
+
     return result
 }
 
+const getTransferDataFromDB = async (query : Record<string, unknown>)=>{
+    console.log(query);
+    const result = await TransactionData.find();
+    return result    
+}
 
 
 export const AdminService = {
@@ -375,5 +385,6 @@ export const AdminService = {
     deleteReviewByAdminIntoDB,
     getAllEmailCollectionDataGetFromDB,
     deleteEmailCollectionDataGetIntoDB,
-    addTransactionDataIntoDB
+    addTransactionDataIntoDB,
+    getTransferDataFromDB
 }
