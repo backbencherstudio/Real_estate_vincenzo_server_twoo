@@ -92,10 +92,10 @@ const verifyBankAccountService = async(payload : any)=>{
 }
 
 const payRentService = async (payload : any)=>{
-    console.log(95, payload);
+    // console.log(95, payload);
     
     try {
-        const { customerId,bankAccountId, amount, lateFee, monthlyPaymentId, ownerId, userId } = payload;
+        const { customerId,bankAccountId, amount, lateFee, monthlyPaymentId, ownerId, email } = payload;
     
         const charge = await stripe.charges.create({
           amount: amount * 100, 
@@ -104,15 +104,15 @@ const payRentService = async (payload : any)=>{
           source: bankAccountId,
           description: 'Monthly Rent Payment',
           metadata: {
-            rent_month: amount,
+            monthlyPaymentId,
             ownerId,
-            payment_id: monthlyPaymentId,
             lateFee,
+            email
           }
         });
 
 
-        console.log(114,charge); //id
+        // console.log(114,charge); //id
         
     
         return(charge);

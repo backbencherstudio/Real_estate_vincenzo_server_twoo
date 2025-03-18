@@ -289,36 +289,246 @@ interface ChargeMetadata {
   payment_id: string;
 }
 
-const ACHTransferHandler = async (charge: any): Promise<void> => {
-  try {
-    // Ensure charge has metadata
-    if (!charge.metadata) {
-      console.error("Charge metadata is missing.");
-      return;
-    }
 
-    const metadata: ChargeMetadata = charge.metadata;
-    console.log(metadata);
+// const ACHTransferHandler = async (charge: any): Promise<void> => {
+  
+//   try {
+//     // Ensure charge has metadata
+//     if (!charge.metadata) {
+//       console.error("Charge metadata is missing.");
+//       return;
+//     }
+//     const metadata: ChargeMetadata = charge.metadata;    
+//     const { rent_month, user_id, payment_id } = metadata;
+
+//     if (!user_id || !rent_month) {
+//       console.error("Invalid metadata in charge:", metadata);
+//       return;
+//     }
     
-    const { rent_month, user_id, payment_id } = metadata;
+//   const invoice = charge?.receipt_url;  
+//     const result2 = await TenantPayment.findOneAndUpdate(
+//       { _id : payment_id },
+//       { status: "Paid", invoice },
+//       { new: true, upsert: true }
+//     );
 
-    if (!user_id || !rent_month) {
-      console.error("Invalid metadata in charge:", metadata);
+//   } catch (error) {
+//     console.error("Database Update Error:", error);
+//   }
+// };
+
+
+
+
+// const ACHTransferHandler = async (charge: Stripe.Charge) => {
+//   const customerId = charge.customer as string;
+//   const receiptUrl = charge.receipt_url;
+//   const paymentStatus = charge.status;
+//   const paymentIntentId = charge.payment_intent as string;
+//   const paymentMethodId = charge.payment_method as string;
+//   const amount = charge.amount / 100;
+
+//   console.log(332, charge);
+
+//   const { monthlyPaymentId,ownerId, lateFee } = charge.metadata;
+
+
+
+//   try {
+
+//     // const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+    
+
+//     // const monthlyPaymentId = charge.metadata.monthlyPaymentId;
+//     // const ownerId = charge.metadata.ownerId;
+//     // const lateFee = charge.metadata.lateFee;
+//     // const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+//     // const monthlyPaymentId = paymentIntent.metadata.monthlyPaymentId;
+//     // const ownerId = paymentIntent.metadata.ownerId;
+//     // const lateFee = paymentIntent.metadata.lateFee;
+//     console.log(349, monthlyPaymentId);
+//     console.log(350, ownerId);
+//     console.log(351, lateFee);
+    
+
+//     const tenantPayment = await TenantPayment.findOne({
+//       _id: monthlyPaymentId,
+//       status: "Pending",
+//     });
+
+
+
+//     if (!tenantPayment) {
+//       console.warn(`⚠ No matching payment found for monthlyPaymentId: ${monthlyPaymentId}`);
+//       return;
+//     }
+
+//     await User.findByIdAndUpdate(
+//       { _id: tenantPayment?.userId },
+//       { $set: { isSecurityDepositPay: true } },
+//       { new: true, runValidators: true }
+//     );
+
+//     await TenantPayment.findByIdAndUpdate(
+//       { _id: monthlyPaymentId },
+//       { $set: { invoice: receiptUrl, status: "Paid", paidAmount: amount, PaymentPlaced: new Date(), lateFee } },
+//       { new: true, runValidators: true }
+//     );
+
+//     const ownerData = await User.findById({ _id: ownerId })
+
+//     if (ownerData) {
+//       await User.findOneAndUpdate(
+//         { _id: ownerId },
+//         { paidAmount: (ownerData?.paidAmount ? parseInt(ownerData?.paidAmount.toString()) : 0) + parseInt(amount.toString()) },
+//         { new: true, runValidators: true }
+//       )
+//     }
+
+//     let email = null;
+//     if (paymentMethodId) {
+//       const paymentMethod = await stripe.paymentMethods.retrieve(paymentMethodId);
+//       email = paymentMethod?.billing_details?.email;
+//     }
+
+//     if (!email) {
+//       console.warn(`⚠ No email found. Payment ID: ${monthlyPaymentId}`);
+//       return;
+//     }
+
+//     if (receiptUrl) {
+//       const emailSubject = "📄 Payment Receipt for Your Rent";
+//       const emailText = `Hello, your rent payment has been successfully processed. You can view your receipt here: ${receiptUrl}.`;
+//       const emailHtml = `
+//       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 20px auto; padding: 20px; background-color: #ffffff; border: 1px solid #e0e0e0; border-radius: 8px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);">
+//           <!-- Header Section -->
+//           <div style="background: linear-gradient(135deg, #6a11cb, #2575fc); color: #ffffff; padding: 20px; border-radius: 8px 8px 0 0; text-align: center;">
+//               <h1 style="margin: 0; font-size: 24px; font-weight: bold;">🏠 Rent Payment Receipt</h1>
+//           </div>
+  
+//           <!-- Body Content -->
+//           <div style="padding: 20px;">
+//               <p style="color: #333333; font-size: 16px; line-height: 1.6;">
+//                   Hello,
+//               </p>
+//               <p style="color: #333333; font-size: 16px; line-height: 1.6;">
+//                   We are pleased to confirm that your rent payment has been successfully processed.
+//               </p>
+//               <p style="font-size: 20px; color: #2575fc; font-weight: bold; text-align: center; margin: 20px 0;">
+//                   Payment ID: <strong>${monthlyPaymentId}</strong>
+//               </p>
+//               <p style="color: #333333; font-size: 16px; line-height: 1.6;">
+//                   You can view and download your receipt by clicking the button below:
+//               </p>
+  
+//               <!-- Call to Action Button -->
+//               <div style="text-align: center; margin-bottom: 30px;">
+//                   <a href="${receiptUrl}" style="display: inline-block; padding: 14px 24px; background-color: #2575fc; color: #ffffff; text-decoration: none; font-size: 16px; font-weight: bold; border-radius: 6px; box-shadow: 0px 4px 10px rgba(37, 117, 252, 0.2);">
+//                       📄 View Receipt
+//                   </a>
+//               </div>
+  
+//               <p style="color: #333333; font-size: 16px; line-height: 1.6;">
+//                   Thank you for your payment! If you have any questions, please feel free to contact us.
+//               </p>
+//           </div>
+  
+//           <!-- Footer Section -->
+//           <div style="background-color: #f8f9fa; padding: 15px; text-align: center; border-radius: 0 0 8px 8px; font-size: 14px; color: #888888;">
+//               <p style="margin: 0;">
+//                   Need help? <a href="mailto:rentpadhomesteam@gmail.com" style="color: #2575fc; text-decoration: none;">Contact Support</a>
+//               </p>
+//               <p style="margin: 10px 0 0;">&copy; ${new Date().getFullYear()} Your Company. All rights reserved.</p>
+//           </div>
+//       </div>
+//       `;
+
+//       await sendEmail(email, emailSubject, emailText, emailHtml);
+//       console.log(`✅ Rent payment updated. Receipt sent to: ${email}`);
+//     }
+
+
+//   } catch (error) {
+//     console.error(`❌ Error handling charge update for customer: `, error);
+//   }
+// };
+
+
+const ACHTransferHandler = async (charge: Stripe.Charge) => {
+  const customerId = charge.customer as string;
+  const receiptUrl = charge.receipt_url;
+  const paymentStatus = charge.status;
+  const amount = charge.amount / 100;
+
+  // Get metadata directly from charge object
+  const monthlyPaymentId = charge.metadata?.monthlyPaymentId;
+  const ownerId = charge.metadata?.ownerId;
+  const lateFee = charge.metadata?.lateFee;
+  const email = charge.metadata?.email;
+
+  console.log(469, charge);
+  
+
+  if (!monthlyPaymentId || !ownerId) {
+    console.error("❌ Missing metadata fields. Charge metadata:", charge.metadata);
+    return;
+  }
+
+  console.log(349, monthlyPaymentId);
+  console.log(350, ownerId);
+  console.log(351, lateFee);
+
+  try {
+    const tenantPayment = await TenantPayment.findOne({
+      _id: monthlyPaymentId,
+      status: "Pending",
+    });
+
+    if (!tenantPayment) {
+      console.warn(`⚠ No matching payment found for monthlyPaymentId: ${monthlyPaymentId}`);
       return;
     }
 
-    // Update Rent Payment Record in MongoDB
-    // const updatedRent = await RentPayment.findOneAndUpdate(
-    //   { user_id, rent_month, property_id },
-    //   { status: "Paid", payment_id: charge.id, updated_at: new Date() },
-    //   { new: true, upsert: true }
-    // );
+    await TenantPayment.findByIdAndUpdate(
+      { _id: monthlyPaymentId },
+      { $set: { invoice: receiptUrl, status: "Paid", paidAmount: amount, PaymentPlaced: new Date(), lateFee } },
+      { new: true, runValidators: true }
+    );
 
-    // console.log("Database Updated:", updatedRent);
+    const ownerData = await User.findById({ _id: ownerId });
+
+    if (ownerData) {
+      await User.findByIdAndUpdate(
+        { _id: ownerId },
+        { $inc: { paidAmount: amount } }, // Increment instead of manually parsing and adding
+        { new: true, runValidators: true }
+      );
+    }
+
+    // const email = charge.billing_details?.email; // Use charge's billing details for email
+
+    if (!email) {
+      console.warn(`⚠ No email found. Payment ID: ${monthlyPaymentId}`);
+      return;
+    }
+
+    if (receiptUrl) {
+      const emailSubject = "📄 Payment Receipt for Your Rent";
+      const emailText = `Hello, your rent payment has been successfully processed. You can view your receipt here: ${receiptUrl}.`;
+
+      await sendEmail(email, emailSubject, emailText);
+      console.log(`✅ Rent payment updated. Receipt sent to: ${email}`);
+    }
+
   } catch (error) {
-    console.error("Database Update Error:", error);
+    console.error(`❌ Error handling charge update for customer: `, error);
   }
 };
+
+
+
+
 
 const handleInvoiceUpcoming = async (invoice: Stripe.Invoice) => {
   const email = invoice.customer_email;
