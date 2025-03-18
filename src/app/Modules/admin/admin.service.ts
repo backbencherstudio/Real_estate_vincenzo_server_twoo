@@ -11,6 +11,7 @@ import { PlanDetails, RealEstateAdvisor, TransactionData } from "./admin.module"
 import { AppError } from "../../errors/AppErrors";
 import httpStatus from "http-status";
 import { sendTransfarNotificationEmailAdminToOwner } from "../../utils/sendTransfarNotificationEmailAdminToOwner";
+import QueryBuilder from "../../builder/QueryBuilder";
 
 const getALlPropertiesFromDB = async (selectedDate : string) =>{    
     if (!selectedDate) {
@@ -220,7 +221,7 @@ const getAllDataOverviewByAdminFromDB = async (selectedDate: string): Promise<Ov
             },
             {
                 key: "ownersLength",
-                query: User.countDocuments({ role: "owner", subscriptionStatus: "active" })
+                query: User.countDocuments({ role: "owner" })
             },
             {
                 key: "unitsLength",
@@ -279,8 +280,6 @@ const getAllDataOverviewByAdminFromDB = async (selectedDate: string): Promise<Ov
             monthlyProperties: monthlyPropertiesData,
             monthlyTenants: monthlyTenantsData
         };
-
-        console.log(overview);
 
         return overview;
     } catch (error) {
@@ -354,16 +353,21 @@ const deleteEmailCollectionDataGetIntoDB = async (id : string)=>{
 }
 
 const addTransactionDataIntoDB = async (payload : TTransactionData )=>{
-    const email = payload.email;
+    const email = payload.email;    
+    const isExists = await TransactionData.findOne({ownerId : payload.ownerId, status : "Send"})    
+    if(isExists){
+        throw new  AppError(409, "A transaction has already been initiated. Please wait for the owner to confirm the current transaction before creating a new one.")
+    }
     const result = await TransactionData.create(payload);
     await sendTransfarNotificationEmailAdminToOwner(email, payload.amount , payload.name);
     return result
 }
 
+
 const getTransferDataFromDB = async (query : Record<string, unknown>)=>{
-    console.log(query);
-    const result = await TransactionData.find().sort({createdAt : -1});
-    return result    
+    const transactionDataQuery = new QueryBuilder(TransactionData.find(), query)
+    .search(["name", "email"])
+    return await transactionDataQuery.modelQuery
 }
 
 
