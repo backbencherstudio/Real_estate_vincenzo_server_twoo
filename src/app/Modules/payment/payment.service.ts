@@ -92,8 +92,10 @@ const verifyBankAccountService = async(payload : any)=>{
 }
 
 const payRentService = async (payload : any)=>{
+    console.log(95, payload);
+    
     try {
-        const { customerId,bankAccountId, amount, lateFee, monthlyPaymentId, ownerId } = payload;
+        const { customerId,bankAccountId, amount, lateFee, monthlyPaymentId, ownerId, userId } = payload;
     
         const charge = await stripe.charges.create({
           amount: amount * 100, 
@@ -105,15 +107,22 @@ const payRentService = async (payload : any)=>{
             rent_month: amount,
             ownerId,
             payment_id: monthlyPaymentId,
-            lateFee
+            lateFee,
           }
-        });    
+        });
+
+
+        console.log(114,charge); //id
+        
     
         return(charge);
       } catch (error : any ) {
         return({ error: error.message });
       }
 }
+
+// ============================= ACH Payment ==============================
+
 
 
 const createAllTenantsForPaymentFormDB = async () => {
