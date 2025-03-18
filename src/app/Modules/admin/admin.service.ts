@@ -366,7 +366,8 @@ const addTransactionDataIntoDB = async (payload : TTransactionData )=>{
 
 const getTransferDataFromDB = async (query : Record<string, unknown>)=>{
     const transactionDataQuery = new QueryBuilder(TransactionData.find(), query)
-    .search(["name", "email"])
+    .search(["name", "email", "status"])
+    .sort()
     return await transactionDataQuery.modelQuery
 }
 
