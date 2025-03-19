@@ -12,7 +12,7 @@ import cron from "node-cron"
 const stripe = new Stripe(config.stripe_test_secret_key as string);
 
 const stripeTenantPaymentFun = async (paymentData: any) => {
-    const { paymentMethodId, amount, lateFee, monthlyPaymentId, ownerId } = paymentData;
+    const { paymentMethodId, amount, lateFee, monthlyPaymentId, ownerId, cashPay } = paymentData;
 
     try {
         const paymentIntent = await stripe.paymentIntents.create({
@@ -25,6 +25,7 @@ const stripeTenantPaymentFun = async (paymentData: any) => {
                 monthlyPaymentId,
                 ownerId,
                 lateFee,
+                cashPay
             },
         });
 

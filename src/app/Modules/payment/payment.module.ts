@@ -60,7 +60,7 @@ const OwnerPayoutSchema = new Schema <TOwnerPayOut>({
     email: { type: String, required: true },
     status: {
       type: String,
-      enum: ['Pending', 'On progress', 'Failed', 'Paid', 'Accepted', 'Rejected'], 
+      enum: ['Pending', 'On progress', 'Failed', 'Paid', 'Paiddd', 'Accepted', 'Rejected', "Cash Pay"], 
       default: 'Pending',
     },
     transactionId: { type: String }, 
