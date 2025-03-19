@@ -426,7 +426,7 @@ const changePaymentHistoryStatus = catchAsync(async (req, res) => {
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
-    message: "Payment History Status Successfully",
+    message: "Thank You For Your Confarmation",
     data: result,
   });
 });

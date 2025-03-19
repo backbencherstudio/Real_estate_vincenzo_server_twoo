@@ -154,11 +154,17 @@ const getAllTenantPaymentDataFromDB = async () => {
     return await TenantPayment.find().sort({ createdAt: -1 }).lean();
 };
 
+// const getSingleUserAllPaymentDataFromDB = async (userId: string) => {
+//     return await TenantPayment.find({ userId })
+//         .populate([{ path: "userId" }, { path: "unitId" }, { path: "propertyId" }])
+//         .sort({ createdAt: -1})
+//         .lean();
+// };
+
 const getSingleUserAllPaymentDataFromDB = async (userId: string) => {
-    return await TenantPayment.find({ userId })
+     const result = await TenantPayment.find({ userId })
         .populate([{ path: "userId" }, { path: "unitId" }, { path: "propertyId" }])
-        .sort({ status: 1, updatedAt: -1, createdAt: -1 })
-        .lean();
+        return result.reverse()
 };
 
 // =========================== PAYOUT FUNCTIONS ===========================

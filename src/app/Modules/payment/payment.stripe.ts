@@ -496,6 +496,14 @@ const ACHTransferHandler = async (charge: Stripe.Charge) => {
       { new: true, runValidators: true }
     );
 
+    // const updatedPaidAmount = Math.max(0, (owner.paidAmount ?? 0) - amount);
+    
+    // await User.findByIdAndUpdate(
+    //   { _id: ownerId },
+    //   { $set: { paidAmount: updatedPaidAmount } },
+    //   { new: true, runValidators: true }
+    // );
+    
     const ownerData = await User.findById({ _id: ownerId });
 
     if (ownerData) {
