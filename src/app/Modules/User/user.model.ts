@@ -83,9 +83,6 @@ const userSchema = new Schema<TUser>(
         type: String,
       },
     },
-    customerId: {
-      type: String,
-    },
     subscriptionStatus: {
       type: String,
     },
@@ -104,7 +101,13 @@ const userSchema = new Schema<TUser>(
     cancelRequest: {
       type: Boolean
     },
-planName: {
+    planName: {
+      type: String
+    },
+    bankAccountId: {
+      type: String
+    },
+    customerId: {
       type: String
     },
     percentage: {

@@ -37,7 +37,6 @@ export interface TUser {
   totalAmount : number;
   totalRentAmount : number;
   bookedUnitNumber : number;
-  customerId : string;
   subscriptionStatus:string;
   invoice_pdf : string;
   getTotalUnit : number;
@@ -45,7 +44,9 @@ export interface TUser {
   paidAmount ?: number;
   cancelRequest : boolean;
   percentage:number;
-  planName: string
+  planName: string;
+  customerId: string;
+  bankAccountId: string
 }
 
 

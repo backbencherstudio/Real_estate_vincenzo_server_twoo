@@ -91,12 +91,9 @@ const verifyBankAccountService = async(payload : any)=>{
       }
 }
 
-const payRentService = async (payload : any)=>{
-    // console.log(95, payload);
-    
+const payRentService = async (payload : any)=>{    
     try {
-        const { customerId,bankAccountId, amount, lateFee, monthlyPaymentId, ownerId, email } = payload;
-    
+        const { customerId,bankAccountId, amount, lateFee, monthlyPaymentId, ownerId, email } = payload;    
         const charge = await stripe.charges.create({
           amount: amount * 100, 
           currency: 'usd',
@@ -110,11 +107,14 @@ const payRentService = async (payload : any)=>{
             email
           }
         });
-
-
-        // console.log(114,charge); //id
         
-    
+        if(charge?.id){            
+           await User.findOneAndUpdate(
+                { email },
+                { $set: { customerId, bankAccountId } },
+                { new: true, runValidators: true }
+            )
+        }      
         return(charge);
       } catch (error : any ) {
         return({ error: error.message });
