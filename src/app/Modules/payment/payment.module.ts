@@ -25,7 +25,7 @@ const TenantPaymentSchema = new Schema<TTenantPayment>({
     },
     status: {
         type: String,
-        enum: ["Pending", "Paid"],
+        enum: ["Pending", "Paid", "Cash Pay"],
         default: "Pending",
     },
     invoice: {
@@ -60,7 +60,7 @@ const OwnerPayoutSchema = new Schema <TOwnerPayOut>({
     email: { type: String, required: true },
     status: {
       type: String,
-      enum: ['Pending', 'On progress', 'Failed', 'Paid', 'Paiddd', 'Accepted', 'Rejected', "Cash Pay"], 
+      enum: ['Pending', 'On progress', 'Failed', 'Paid', 'Paiddd', 'Accepted', 'Rejected'], 
       default: 'Pending',
     },
     transactionId: { type: String }, 

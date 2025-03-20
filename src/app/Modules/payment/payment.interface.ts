@@ -6,7 +6,7 @@ export type TTenantPayment = {
     propertyId : Schema.Types.ObjectId;
     unitId : Schema.Types.ObjectId;
     ownerId : Schema.Types.ObjectId;
-    status : 'Pending' | "Paid";
+    status : 'Pending' | "Paid" | "Cash Pay";
     invoice : string;
     createdAt: Date;
     updatedAt: Date;
@@ -21,7 +21,7 @@ export type TTenantPayment = {
     amount: number;
     accountId: string;
     email: string;
-    status: 'Accepted' | 'On progress' | 'Failed' | 'Paid' | 'Paiddd' | 'Rejected' | 'Pending' | 'Cash Pay';  
+    status: 'Accepted' | 'On progress' | 'Failed' | 'Paid' | 'Paiddd' | 'Rejected' | 'Pending' ;  
     transactionId: string;
     Receipt: string
     payoutId:string
