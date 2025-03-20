@@ -47,7 +47,7 @@ const TransactionDataSchema: Schema = new Schema<TTransactionData>(
         amount : {type : Number},
         mainBalance : {type : Number},
         percentage : {type : Number},
-        status : { type : String, enum : ['Send' , 'Received'], default : 'Send' }
+        status : { type : String, enum : ['Send' , 'Received', 'Not Get'], default : 'Send' }
     },
     {
         timestamps: true,
