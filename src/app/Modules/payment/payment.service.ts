@@ -8,6 +8,7 @@ import { TOwnerPayOut } from "./payment.interface";
 import config from "../../config";
 import { User } from "../User/user.model";
 import cron from "node-cron"
+import { reminderEmailNotificationForDuePayment } from "../../utils/reminderEmailNotificationForDuePayment";
 
 const stripe = new Stripe(config.stripe_test_secret_key as string);
 
@@ -262,10 +263,17 @@ const remindersTenantDueRentEmailNotification = async () => {
     ]);
 
     const emails = result.map(user => user.email);
-
-    console.log(emails);
+    await reminderEmailNotificationForDuePayment(emails)
     return emails;
 };
+
+// cron.schedule('*/1 * * * *', async () => {
+//     await remindersTenantDueRentEmailNotification();
+// });
+
+cron.schedule('0 0 3 * *', async () => {
+    await remindersTenantDueRentEmailNotification();
+});
 
 
 
