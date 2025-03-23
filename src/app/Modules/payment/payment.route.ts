@@ -30,7 +30,7 @@ router.post("/cancel-subscription/:customerId", stripePaymentService.cancelSubsc
 router.post("/webhook", bodyParser.raw({ type: "application/json" }), stripePaymentService.Webhook);
 
 
-
+ 
 // ============================ Stripe PayOut API
 router.post("/placedPayoutData", paymentController.createPayoutByOwner);
 router.get("/payoutDataGetByAdmin", paymentController.getPayoutDataByAdmin);

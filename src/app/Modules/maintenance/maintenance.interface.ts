@@ -9,5 +9,6 @@ export type TMaintenance = {
     ownerId: Schema.Types.ObjectId ;
     propertyId: Schema.Types.ObjectId ;
     userId: Schema.Types.ObjectId ;
-    status : "Pending" | "Completed" | "In Progress"
+    status : "Pending" | "Completed" | "In Progress";
+    isEmergency : boolean
 }

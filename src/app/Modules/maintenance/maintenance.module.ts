@@ -16,6 +16,10 @@ const TMaintenanceSchema = new Schema<TMaintenance>(
         type : String,
         enum : ["Pending", "Completed", "In Progress"],
         default : "Pending"
+      },
+      isEmergency:{
+        type : Boolean,
+        default : false
       }
     },
     { timestamps: true, versionKey : false } 

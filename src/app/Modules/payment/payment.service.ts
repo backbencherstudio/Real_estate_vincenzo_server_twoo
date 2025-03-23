@@ -147,6 +147,50 @@ const createAllTenantsForPaymentFormDB = async () => {
     }
 };
 
+// const createAllTenantsForPaymentFormDB = async () => {
+//     try {
+//         const tenants = await Tenant.find({ isDeleted: false }).lean();
+//         if (!tenants.length) throw new Error("No tenants found");
+
+//         const currentDate = new Date();
+//         const nextMonthDate = new Date();
+//         nextMonthDate.setMonth(nextMonthDate.getMonth() + 1); 
+
+//         const formatDate = (date: Date) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+
+//         const payments = tenants.flatMap(({ _id, userId, propertyId, unitId, ownerId }) => [
+//             {
+//                 userId,
+//                 propertyId,
+//                 unitId,
+//                 ownerId,
+//                 status: "Pending",
+//                 invoice: "Upcoming",
+//                 currentDate: formatDate(currentDate),
+//                 createdAt: new Date(),
+//                 updatedAt: new Date(),
+//             },
+//             {
+//                 userId,
+//                 propertyId,
+//                 unitId,
+//                 ownerId,
+//                 status: "Pending",
+//                 invoice: "Upcoming",
+//                 nextMonthDate: formatDate(nextMonthDate),
+//                 createdAt: new Date(),
+//                 updatedAt: new Date(),
+//             }
+//         ]);
+
+//         const result = await TenantPayment.insertMany(payments);
+//         return result;
+//     } catch (error) {
+//         console.error("Error inserting tenant payments:", error);
+//         throw error;
+//     }
+// };
+
 
 cron.schedule('0 0 1 * *', async () => {
     await createAllTenantsForPaymentFormDB();
