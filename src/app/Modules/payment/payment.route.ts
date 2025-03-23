@@ -68,4 +68,11 @@ router.post(
 );
 
 
+// ================================= Due Reminder 
+router.get(
+    '/due-reminder-to-tenant',
+    paymentController.remindersTenantDueRentEmailNotificationController,  
+);
+
+
 export const StripePaymentRoutes = router

@@ -64,7 +64,6 @@ const payRentUserACHcontroller = catchAsync(async (req, res) => {
     });
 });
 
-
 const createALlTenantsForPayment = catchAsync(async (req, res) => {    
     const result = await paymentService.createAllTenantsForPaymentFormDB();    
     sendResponse(res, {
@@ -126,7 +125,6 @@ const getPayoutDataBySingleOwner = catchAsync(async (req, res) => {
     });
   });
 
-
 const sendPayoutRequestByOwnerToStripe = catchAsync(async (req, res) => {  
     const result = await paymentService.sendPayoutRequestByOwnerToStripe(req.body); 
     sendResponse(res, {
@@ -159,6 +157,17 @@ const planController = catchAsync(async (req, res) => {
   });
   
 
+const remindersTenantDueRentEmailNotificationController = catchAsync(async (req, res) => {  
+    const result = await paymentService.remindersTenantDueRentEmailNotification(); 
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message:"reminders Tenant Due Rent Email Notification send",
+      data: result,
+    });
+  });
+  
+
 
 
 export const paymentController = {
@@ -176,5 +185,6 @@ export const paymentController = {
     getPayoutDataBySingleOwner,
     sendPayoutRequestByOwnerToStripe,
     sendPayoutRequestByAdmin,
-    planController
+    planController,
+    remindersTenantDueRentEmailNotificationController
 }

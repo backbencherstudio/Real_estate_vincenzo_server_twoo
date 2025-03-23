@@ -147,6 +147,45 @@ const createAllTenantsForPaymentFormDB = async () => {
     }
 };
 
+
+cron.schedule('0 0 1 * *', async () => {
+    await createAllTenantsForPaymentFormDB();
+});
+
+
+// const remindersTenantDueRentEmailNotification = async()=>{
+//     // const result = await TenantPayment.find({status : "Pending"})
+
+//     const result = await TenantPayment.aggregate([
+//         {
+//             $match : {status : "Pending"}
+//         },
+//         {
+//             $group : {
+//                 _id : "$userId"
+//             }
+//         },
+//         {
+//             $lookup : {
+//                 from :"users",
+//                 localField : "-id",
+//                 foreignField :"_id",
+//                 as : "userDetails"
+//             }
+//         },
+//         {
+//             $unwind : "$userDetails"
+//         }
+//     ])
+
+//     console.log(result);
+    
+
+//     return result
+// }
+
+
+
 // const createAllTenantsForPaymentFormDB = async () => {
 //     try {
 //         const tenants = await Tenant.find({ isDeleted: false }).lean();
@@ -192,9 +231,42 @@ const createAllTenantsForPaymentFormDB = async () => {
 // };
 
 
-cron.schedule('0 0 1 * *', async () => {
-    await createAllTenantsForPaymentFormDB();
-});
+// cron.schedule('0 0 1 * *', async () => {
+//     await createAllTenantsForPaymentFormDB();
+// });
+
+const remindersTenantDueRentEmailNotification = async () => {
+    const result = await TenantPayment.aggregate([
+        {
+            $match: { status: "Pending" }
+        },
+        {
+            $group: {
+                _id: "$userId" 
+            }
+        },
+        {
+            $lookup: {
+                from: "users", 
+                localField: "_id", 
+                foreignField: "_id", 
+                as: "userDetails"
+            }
+        },
+        {
+            $unwind: "$userDetails" 
+        },
+        {
+            $project: { _id: 0, email: "$userDetails.email" } 
+        }
+    ]);
+
+    const emails = result.map(user => user.email);
+
+    console.log(emails);
+    return emails;
+};
+
 
 
 const getAllTenantPaymentDataFromDB = async () => {
@@ -228,9 +300,7 @@ const getPayoutDataFromDBbyAdmin = async () => {
     return await OwnerPayout.find().sort({ createdAt: -1 }).lean();
 };
 
- const createConnectedAccount = async (email: string) => {
-    console.log(89, email);
-    
+ const createConnectedAccount = async (email: string) => {    
     try {
         const connectedAccount = await stripe.accounts.create({
             type: "express",
@@ -247,9 +317,7 @@ const getPayoutDataFromDBbyAdmin = async () => {
     }
 };
 
- const createOnboardingLink = async (accountId: string) => {    
-    console.log(108, accountId);
-    
+ const createOnboardingLink = async (accountId: string) => {   
     try {
         const accountLink = await stripe.accountLinks.create({
             account: accountId,
@@ -266,9 +334,7 @@ const getPayoutDataFromDBbyAdmin = async () => {
 };
 
 
-const sendPayoutRequestByOwnerToStripe = async (data: any) => {
-    console.log(123,  data?.email);
-    
+const sendPayoutRequestByOwnerToStripe = async (data: any) => {    
     try {
         const {email} = data;
         const  connectedAccount = await createConnectedAccount(email);
@@ -283,12 +349,8 @@ const sendPayoutRequestByOwnerToStripe = async (data: any) => {
 
 const sendPayoutRequestByAdminToStripe = async (data: any) => {
     try {
-        console.log("🚀 Processing payout request:", data);
         const { amount, ownerId, key } = data.record;
         const selectedStatus = data.selectedStatus;
-
-        console.log(231, "ownerId", ownerId);
-
         if (selectedStatus !== "Accepted") {
             await OwnerPayout.findOneAndUpdate(
                 { _id: key },
@@ -437,5 +499,6 @@ export const paymentService = {
     getPayoutDataFromDBbyAdmin,
     sendPayoutRequestByOwnerToStripe,
     sendPayoutRequestByAdminToStripe,
-    planService
+    planService,
+    remindersTenantDueRentEmailNotification
 };
