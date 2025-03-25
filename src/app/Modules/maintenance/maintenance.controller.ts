@@ -15,6 +15,7 @@ const createMaintenance = catchAsync(async (req, res) => {
         ...req.body,
         image: image[0]
     }
+    
     const result = await MaintenanceService.createMaintenanceIntoDB(maintenanceData);
     sendResponse(res, {
         statusCode: httpStatus.OK,
@@ -23,6 +24,8 @@ const createMaintenance = catchAsync(async (req, res) => {
         data: result,
     })
 })
+
+
 
 const getAllMaintenanceRequest = catchAsync(async (req, res) => {
     const result = await MaintenanceService.getAllMaintenanceRequestFromDB(req.params.id);

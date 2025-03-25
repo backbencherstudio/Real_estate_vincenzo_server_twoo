@@ -10,5 +10,5 @@ export type TMaintenance = {
     propertyId: Schema.Types.ObjectId ;
     userId: Schema.Types.ObjectId ;
     status : "Pending" | "Completed" | "In Progress";
-    isEmergency : boolean
+    isEmergency : boolean | string
 }

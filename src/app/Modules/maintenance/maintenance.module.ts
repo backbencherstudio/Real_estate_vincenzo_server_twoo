@@ -18,7 +18,7 @@ const TMaintenanceSchema = new Schema<TMaintenance>(
         default : "Pending"
       },
       isEmergency:{
-        type : Boolean,
+        type : Boolean ,
         default : false
       }
     },

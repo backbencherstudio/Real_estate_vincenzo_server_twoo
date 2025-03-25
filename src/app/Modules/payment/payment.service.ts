@@ -429,7 +429,6 @@ const planService = async (planData: any) => {
 }
 
 
-
 export const paymentService = {
     stripeTenantPaymentFun,
     createCustomerService,
