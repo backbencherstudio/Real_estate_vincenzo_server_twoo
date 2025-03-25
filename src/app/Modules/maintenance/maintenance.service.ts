@@ -25,8 +25,6 @@ const getAllMaintenanceRequestFromDB = async (id : string)=>{
 
 
 
-
-
 export const MaintenanceService = {
     createMaintenanceIntoDB,
     getAllMaintenanceRequestFromDB
