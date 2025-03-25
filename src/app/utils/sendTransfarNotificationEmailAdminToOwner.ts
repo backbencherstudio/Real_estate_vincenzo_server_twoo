@@ -38,6 +38,8 @@ export const sendTransfarNotificationEmailAdminToOwner = async (to: string, amou
                 <p style="font-size: 28px; font-weight: bold; color: #0A5173; margin: 5px 0 0 0;">$${amount} USD</p>
             </div>
             
+            <p style="font-size: 17px; color: #333; line-height: 1.5;">Please be patient, and within <span style="font-weight: bold;">2 to 7 business days</span>, the funds will be reflected in your bank account.</p>
+            
             <p style="font-size: 17px; color: #333; line-height: 1.5;">Once the payment has been received, kindly update the payment history status for confirmation.</p>
             
             <p style="font-size: 17px; color: #333; line-height: 1.5; margin-top: 25px;">Thank you for being a valued part of the RentPadHomes family.</p>
