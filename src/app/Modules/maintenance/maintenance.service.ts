@@ -4,19 +4,6 @@ import { TMaintenance } from "./maintenance.interface";
 import { Maintenance } from "./maintenance.module";
 
 
-// const createMaintenanceIntoDB =  async (payload : TMaintenance )=>{   
-//     console.log(payload?.isEmergency);
-     
-//     if (payload?.isEmergency === true) {
-//         console.log("hiiiitttt");
-        
-//         const ownerData = await User.findById({_id : payload?.ownerId}).select('email')
-//         await emergencyMaintenanceRemainderEmail(ownerData?.email as string)
-//     }
-//     const result = await Maintenance.create(payload)
-//     return result
-// }
-
 const createMaintenanceIntoDB = async (payload: TMaintenance) => {
     if (payload?.isEmergency === true || payload?.isEmergency === "true") {        
         const ownerData = await User.findById(payload?.ownerId).select('email');

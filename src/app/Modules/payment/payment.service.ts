@@ -267,11 +267,8 @@ const remindersTenantDueRentEmailNotification = async () => {
     return emails;
 };
 
-// cron.schedule('*/2 * * * *', async () => {
-//     await remindersTenantDueRentEmailNotification();
-// });
 
-cron.schedule('0 0 3 * *', async () => {
+cron.schedule('0 0 0 3 * *', async () => { 
     await remindersTenantDueRentEmailNotification();
 });
 
