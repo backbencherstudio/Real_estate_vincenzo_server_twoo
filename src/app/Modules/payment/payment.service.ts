@@ -281,9 +281,8 @@ const createAllTenantsForPaymentFormDB = async (ownerId: string) => {
         const year = today.getFullYear();
         const month = today.getMonth(); 
 
-        const dueDay = ownerData.lastDueDateNumber;
-        const formattedDueDate = new Date(year, month, dueDay); 
-
+        const dueDay = ownerData.lastDueDateNumber;                
+        const formattedDueDate = new Date(Date.UTC(year, month, dueDay, 0, 0, 0));      
         const startOfMonth = new Date(year, month, 1);
         const endOfMonth = new Date(year, month + 1, 0, 23, 59, 59, 999);
 
