@@ -116,7 +116,7 @@ const updateUserData = catchAsync(async (req, res) => {
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
-    message: 'User update successfully',
+    message: 'User Data update successfully',
     data: result,
   });
 });

@@ -9,6 +9,7 @@ import config from "../../config";
 import { User } from "../User/user.model";
 import cron from "node-cron"
 import { reminderEmailNotificationForDuePayment } from "../../utils/reminderEmailNotificationForDuePayment";
+import { ObjectId } from "mongodb";
 
 const stripe = new Stripe(config.stripe_test_secret_key as string);
 
@@ -38,7 +39,7 @@ const stripeTenantPaymentFun = async (paymentData: any) => {
     }
 };
 
-// ============================= ACH Payment ==============================
+// ============================= ACH Payment Start ==============================
 const createCustomerService = async (payload : any)=>{
     try {
         const { name, email } = payload;
@@ -125,33 +126,69 @@ const payRentService = async (payload : any)=>{
       }
 }
 
-// ============================= ACH Payment ==============================
+// ============================= ACH Payment End ==============================
 
 
 
-const createAllTenantsForPaymentFormDB = async () => {
-    try {
-        const tenants = await Tenant.find({ isDeleted: false }).lean();
-        if (!tenants.length) throw new Error("No tenants found");        
+// const createAllTenantsForPaymentFormDB = async (ownerId: string) => {
+//     try {
+//         const ownerData = await User.findById({ _id: ownerId }).select("lastDueDateNumber");
+//         const tenants = await Tenant.find({ isDeleted: false, ownerId }).lean();
+        
+//         // const isExists = await TenantPayment.find({ownerId, lastDueDate})
 
-        const payments = tenants.map(({ _id, ...tenant }) => ({
-            ...tenant,
-            status: "Pending",
-            invoice: "Upcoming",
-        }));       
+//         if (!tenants.length) throw new Error("No tenants found");
+//         if (!ownerData?.lastDueDateNumber) throw new Error("At first set your last due date");
 
-        const result = await TenantPayment.insertMany(payments);
-        return result;
-    } catch (error) {
-        console.error("Error inserting tenant payments:", error);
-        throw error;
-    }
-};
+//         const today = new Date();
+//         const year = today.getFullYear();
+//         const month = today.getMonth() + 1; 
+//         const dueDay = ownerData?.lastDueDateNumber;
+
+//         const formattedDueDate = `${year}-${month.toString().padStart(2, '0')}-${dueDay.toString().padStart(2, '0')}`;
+
+//         const payments = tenants.map(({ _id, ...tenant }) => ({
+//             ...tenant,
+//             status: "Pending",
+//             invoice: "Upcoming",
+//             lastDueDate: new Date(formattedDueDate)
+//         }));
+//         const result = await TenantPayment.insertMany(payments);
+//         console.log(result);
+        
+//         return result;
+//     } catch (error) {
+//         console.error("Error inserting tenant payments:", error);
+//         throw error;
+//     }
+// };
 
 
-cron.schedule('0 0 1 * *', async () => {
-    await createAllTenantsForPaymentFormDB();
-});
+
+// const createAllTenantsForPaymentFormDB = async () => {
+//     try {
+//         const tenants = await Tenant.find({ isDeleted: false }).lean();
+//         if (!tenants.length) throw new Error("No tenants found");        
+
+//         const payments = tenants.map(({ _id, ...tenant }) => ({
+//             ...tenant,
+//             status: "Pending",
+//             invoice: "Upcoming",
+//         }));       
+
+//         const result = await TenantPayment.insertMany(payments);
+//         return result;
+//     } catch (error) {
+//         console.error("Error inserting tenant payments:", error);
+//         throw error;
+//     }
+// };
+
+
+
+// cron.schedule('0 0 1 * *', async () => {
+//     await createAllTenantsForPaymentFormDB();
+// });
 
 
 // const remindersTenantDueRentEmailNotification = async()=>{
@@ -232,14 +269,58 @@ cron.schedule('0 0 1 * *', async () => {
 // };
 
 
+const createAllTenantsForPaymentFormDB = async (ownerId: string) => {
+    try {
+        const ownerData = await User.findById({ _id: ownerId }).select("lastDueDateNumber");
+        const tenants = await Tenant.find({ isDeleted: false, ownerId }).lean();
+
+        if (!tenants.length) throw new Error("No tenants found");
+        if (!ownerData?.lastDueDateNumber) throw new Error("At first set your last due date");
+
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = today.getMonth(); 
+
+        const dueDay = ownerData.lastDueDateNumber;
+        const formattedDueDate = new Date(year, month, dueDay); 
+
+        const startOfMonth = new Date(year, month, 1);
+        const endOfMonth = new Date(year, month + 1, 0, 23, 59, 59, 999);
+
+        const existingPayments = await TenantPayment.find({
+            ownerId,
+            lastDueDate: { $gte: startOfMonth, $lte: endOfMonth }
+        });
+
+        if (existingPayments.length > 0) {
+            throw new Error("Payment data for this month already exists");
+        }
+
+        const payments = tenants.map(({ _id, ...tenant }) => ({
+            ...tenant,
+            ownerId,
+            status: "Pending",
+            invoice: "Upcoming",
+            lastDueDate: formattedDueDate,
+        }));
+
+        const result = await TenantPayment.insertMany(payments);
+        return result;
+    } catch (error) {
+        console.error("Error inserting tenant payments:", error);
+        throw error;
+    }
+};
+
+
 // cron.schedule('0 0 1 * *', async () => {
 //     await createAllTenantsForPaymentFormDB();
 // });
 
-const remindersTenantDueRentEmailNotification = async () => {
+const remindersTenantDueRentEmailNotification = async (ownerId : string) => {    
     const result = await TenantPayment.aggregate([
         {
-            $match: { status: "Pending" }
+            $match: { status: "Pending", ownerId: new ObjectId(ownerId) }
         },
         {
             $group: {
@@ -268,9 +349,10 @@ const remindersTenantDueRentEmailNotification = async () => {
 };
 
 
-cron.schedule('0 0 0 3 * *', async () => { 
-    await remindersTenantDueRentEmailNotification();
-});
+
+// cron.schedule('0 0 0 3 * *', async () => { 
+//     await remindersTenantDueRentEmailNotification();
+// });
 
 
 
@@ -278,12 +360,6 @@ const getAllTenantPaymentDataFromDB = async () => {
     return await TenantPayment.find().sort({ createdAt: -1 }).lean();
 };
 
-// const getSingleUserAllPaymentDataFromDB = async (userId: string) => {
-//     return await TenantPayment.find({ userId })
-//         .populate([{ path: "userId" }, { path: "unitId" }, { path: "propertyId" }])
-//         .sort({ createdAt: -1})
-//         .lean();
-// };
 
 const getSingleUserAllPaymentDataFromDB = async (userId: string) => {
      const result = await TenantPayment.find({ userId })

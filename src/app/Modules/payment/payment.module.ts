@@ -47,6 +47,9 @@ const TenantPaymentSchema = new Schema<TTenantPayment>({
     updatedAt:{
         type : Date
     },
+    lastDueDate:{
+        type : Date
+    },
 }, {
     timestamps: true,
     versionKey: false

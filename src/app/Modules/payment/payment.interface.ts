@@ -11,6 +11,7 @@ export type TTenantPayment = {
     createdAt: Date;
     updatedAt: Date;
     PaymentPlaced: Date;
+    lastDueDate: Date;
     paidAmount : number
     lateFee : number
   }

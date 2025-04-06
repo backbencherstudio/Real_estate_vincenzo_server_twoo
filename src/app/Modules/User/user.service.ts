@@ -127,9 +127,7 @@ const deleteFile = (filePath: string) => {
   }
 };
 
-const updateUserDataIntoDB = async (payload: Partial<TUser>) => {
-  console.log(payload);
-  
+const updateUserDataIntoDB = async (payload: Partial<TUser>) => {  
   try {
     const userData = await User.findById(payload.userId).select("profileImage");
 

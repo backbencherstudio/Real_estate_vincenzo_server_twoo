@@ -46,7 +46,8 @@ export interface TUser {
   percentage:number;
   planName: string;
   customerId: string;
-  bankAccountId: string
+  bankAccountId: string;
+  lastDueDateNumber: number;
 }
 
 

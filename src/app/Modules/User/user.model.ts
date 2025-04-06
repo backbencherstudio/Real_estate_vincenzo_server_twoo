@@ -113,6 +113,9 @@ const userSchema = new Schema<TUser>(
     percentage: {
       type: Number
     },
+    lastDueDateNumber: {
+      type: Number
+    },
   },
   {
     timestamps: true,
