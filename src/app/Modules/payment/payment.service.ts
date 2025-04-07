@@ -15,11 +15,12 @@ const stripe = new Stripe(config.stripe_test_secret_key as string);
 
 const stripeTenantPaymentFun = async (paymentData: any) => {
     const { paymentMethodId, amount, lateFee, monthlyPaymentId, ownerId, cashPay, paymentBy } = paymentData;
+      
 
     try {
         const paymentIntent = await stripe.paymentIntents.create({
             // amount: Math.round(amount * 100),
-            amount: Number((amount * 100).toFixed(0)),
+            amount: Math.round(Number(parseFloat(amount).toFixed(2)) * 100),
             currency: "usd",
             payment_method: paymentMethodId,
             payment_method_types: ["card"],
