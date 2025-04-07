@@ -18,7 +18,8 @@ const stripeTenantPaymentFun = async (paymentData: any) => {
 
     try {
         const paymentIntent = await stripe.paymentIntents.create({
-            amount: Math.round(amount * 100), // Ensure cents conversion
+            // amount: Math.round(amount * 100),
+            amount: Number((amount * 100).toFixed(0)),
             currency: "usd",
             payment_method: paymentMethodId,
             payment_method_types: ["card"],
