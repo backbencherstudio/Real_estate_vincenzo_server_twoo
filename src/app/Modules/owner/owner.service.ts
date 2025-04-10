@@ -15,6 +15,8 @@ import { TenantPayment } from "../payment/payment.module";
 import { Document } from "../document/document.module";
 import fs from 'fs';
 import { TransactionData } from '../admin/admin.module';
+import { maintenanceRequestConfiremed } from '../../utils/maintenanceRequestConfiremed';
+import { maintenanceComplete } from '../../utils/maintenanceComplete';
 
 
 const createPropertiesDB = async (payload: TProperties) => {
@@ -579,10 +581,31 @@ const getSingleMaintenanceRequestDataFromDB = async (id: string) => {
   return result
 }
 
+
 const maintenanceStatusChengeIntoDB = async (id: string, status: string) => {
-  const result = await Maintenance.findByIdAndUpdate({ _id: id }, { status: status }, { new: true, runValidators: true })
-  return result
+
+  const maintenanceData = await Maintenance.findById({_id : id}).select("userId").populate({
+    path : "userId",
+    select : ["email", "name"]
+  })
+
+  console.log(maintenanceData?.userId?.email);
+  console.log(maintenanceData?.userId?.name);
+  console.log(status);
+  
+  // const result = await Maintenance.findByIdAndUpdate({ _id: id }, { status: status }, { new: true, runValidators: true })
+  if (status === "In Progress") {
+    await maintenanceRequestConfiremed(maintenanceData?.userId?.email, maintenanceData?.userId?.name)        
+  }
+  if (status === "Completed") {
+    await maintenanceComplete(maintenanceData?.userId?.email, maintenanceData?.userId?.name)        
+  }  
+
+  // return result
+
 }
+
+
 
 const getAllDataOverviewByOwnerFromDB = async (ownerId: string): Promise<OverviewData> => {
   try {
