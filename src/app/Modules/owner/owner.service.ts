@@ -588,20 +588,16 @@ const maintenanceStatusChengeIntoDB = async (id: string, status: string) => {
     path : "userId",
     select : ["email", "name"]
   })
+  const user = maintenanceData?.userId as unknown as { email: string; name: string };
 
-  console.log(maintenanceData?.userId?.email);
-  console.log(maintenanceData?.userId?.name);
-  console.log(status);
-  
-  // const result = await Maintenance.findByIdAndUpdate({ _id: id }, { status: status }, { new: true, runValidators: true })
+  const result = await Maintenance.findByIdAndUpdate({ _id: id }, { status: status }, { new: true, runValidators: true })
   if (status === "In Progress") {
-    await maintenanceRequestConfiremed(maintenanceData?.userId?.email, maintenanceData?.userId?.name)        
+    await maintenanceRequestConfiremed(user?.email, user?.name)        
   }
   if (status === "Completed") {
-    await maintenanceComplete(maintenanceData?.userId?.email, maintenanceData?.userId?.name)        
+    await maintenanceComplete(user?.email, user?.name)        
   }  
-
-  // return result
+  return result
 
 }
 
