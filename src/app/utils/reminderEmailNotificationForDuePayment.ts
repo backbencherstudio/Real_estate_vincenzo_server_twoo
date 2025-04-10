@@ -33,15 +33,11 @@ export const reminderEmailNotificationForDuePayment = async (to: string[]) => {
     <p style="font-size: 16px; line-height: 1.5;">Dear Valued Tenant,</p>
     
     <div style="background-color: #f8f9fa; border-left: 4px solid #0052cc; padding: 15px; margin: 15px 0; border-radius: 4px;">
-      <p style="margin: 0; font-weight: bold;">This is a friendly reminder that your rent payment for this month is still pending.</p>
+      <p style="margin: 0; font-weight: bold;">This is a friendly reminder that your rent payment is still pending.</p>
     </div>
     
     <p style="font-size: 16px; line-height: 1.5;">Please ensure your payment is submitted as soon as possible to avoid late fees. As per our agreement, delayed payments will incur additional charges on top of the monthly rent amount.</p>
-    
-    <div style="background-color: #e8f4fd; padding: 15px; border-radius: 6px; margin: 20px 0; text-align: center;">
-      <p style="margin: 0; font-weight: bold; color: #0052cc;">Please submit your payment by the 5th of this month</p>
-    </div>
-    
+        
     <p style="font-size: 16px; line-height: 1.5;">Thank you for your prompt attention to this matter. We appreciate having you as our tenant!</p>
     
     <p style="margin-top: 20px;">Warm Regards,<br>
