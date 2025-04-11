@@ -252,14 +252,23 @@ const sendEmailToAllUser = async (payload: any) => {
 //==================================================================================
 
 const ContactUsService = async (payload: TContactUs) => {
-  // const result = await ContactUs.create(payload);   // ================================>>>> if client wnat to add this data in data base then uncomment this line
   // if(result){
-  //   await contactUsEmailSendToAdmin(payload.email, payload.message, payload.mobileNumber, payload.fullName)
-  // }
-  // return result   
+    //   await contactUsEmailSendToAdmin(payload.email, payload.message, payload.mobileNumber, payload.fullName)
+    // }
+  const result = await ContactUs.create(payload);
   await contactUsEmailSendToAdmin(payload.email, payload.message, payload.mobileNumber, payload.fullName)   // or comment / remove this line 
-  return true
+  return result
 }
+
+const getAllContactUsMessageFromDB = async ()=>{
+  return await ContactUs.find({}).sort({createdAt : 1})
+}
+
+const deleteContactUsDataFromDB = async (id : string) =>{
+  const result = await ContactUs.deleteOne({_id : id})
+  return result
+}
+
 
 const getAdvisersDataFromDB = async ()=>{
   const result = await RealEstateAdvisor.find()
@@ -288,6 +297,8 @@ export const UserServices = {
   refreshToken,
   sendEmailToAllUser,
   ContactUsService,
+  getAllContactUsMessageFromDB,
+  deleteContactUsDataFromDB,
   getAdvisersDataFromDB,
   emailCollectionIntoDB
 };

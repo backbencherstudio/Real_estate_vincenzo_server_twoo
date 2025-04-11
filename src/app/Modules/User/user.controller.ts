@@ -37,9 +37,7 @@ declare module 'express-session' {
 
 
 const createUser = catchAsync(async (req, res) => {
-
   const result = await UserServices.createUserIntoDB(req.body);
-
   req.session.otpData = {
     otp: result.otp,
     name : result.name,
@@ -208,6 +206,8 @@ const sendEmailToUser = catchAsync(async (req, res) => {
   });
 });
 
+
+
 const ContactUsController = catchAsync(async (req, res) => {
   const result = await UserServices.ContactUsService(req.body); 
   sendResponse(res, {
@@ -217,6 +217,28 @@ const ContactUsController = catchAsync(async (req, res) => {
     data: result,
   });
 });
+
+const getAllContactUsMessage = catchAsync(async (req, res) => {
+  const result = await UserServices.getAllContactUsMessageFromDB(); 
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Get All contact us message successfully',
+    data: result,
+  });
+});
+
+const deleteContactUsData = catchAsync(async (req, res) => {
+  const result = await UserServices.deleteContactUsDataFromDB(req.params.id); 
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Delete contact us data successfully',
+    data: result,
+  });
+});
+
+
 
 const getAdvisersData = catchAsync(async (req, res) => {
   const result = await UserServices.getAdvisersDataFromDB(); 
@@ -252,6 +274,8 @@ export const userController = {
   verifyOtpForResetPassword,
   sendEmailToUser,
   ContactUsController,
+  getAllContactUsMessage,
+  deleteContactUsData,
   getAdvisersData,
   emailCollection
 };

@@ -70,6 +70,16 @@ router.post(
 );
 
 router.get(
+  '/contactUs',
+  userController.getAllContactUsMessage,
+);
+
+router.delete(
+  '/contactUs/:id',
+  userController.deleteContactUsData,
+);
+
+router.get(
   '/getAdvisersData',
   userController.getAdvisersData,
 );
