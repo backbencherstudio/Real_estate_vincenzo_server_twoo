@@ -52,7 +52,7 @@ const createUser = catchAsync(async (req, res) => {
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
-    message: 'OTP sent, please check your email.',
+    message: 'OTP sent, please check your email inbox. Check spam if not in Inbox.',
     data: result,  
   });
 });
@@ -62,7 +62,7 @@ const verifyOTP = catchAsync(async (req, res) => {
   const sessionOtpData = req.session.otpData;
 
   if (!sessionOtpData) {
-    throw new AppError(400, 'OTP expired or not set.');
+    throw new AppError(400, 'OTP expired or not set. please resubmit');
   }
   const currentTime = Date.now();
   const elapsedTime = (currentTime - sessionOtpData.createdAt) / 1000;
