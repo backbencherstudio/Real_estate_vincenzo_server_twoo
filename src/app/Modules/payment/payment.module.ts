@@ -25,7 +25,7 @@ const TenantPaymentSchema = new Schema<TTenantPayment>({
     },
     status: {
         type: String,
-        enum: ["Pending", "Paid", "Cash Pay"],
+        enum: ["Pending", "Paid", "Cash Pay", "Processing"],
         default: "Pending",
     },
     invoice: {

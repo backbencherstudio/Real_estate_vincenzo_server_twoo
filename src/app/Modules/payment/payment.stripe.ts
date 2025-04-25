@@ -1034,13 +1034,11 @@ const handleChargeFailed = async (charge: Stripe.Charge) => {
       return;
     }
 
-    // Mark the payment as failed in your DB
     await TenantPayment.findByIdAndUpdate(
       { _id: monthlyPaymentId },
       {
         $set: {
           status: "Failed",
-          // failureReason: charge.failure_message || "ACH payment failed",
           updatedAt: new Date(),
         },
       }

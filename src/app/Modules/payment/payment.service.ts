@@ -86,25 +86,25 @@ const attachACHbankAccountService = async (payload: any) => {
 // const verifyBankAccountService = async (payload: any) => {
 //     try {
 //       const { customerId, bankAccountId, amounts } = payload;
-  
+
 //       // Retrieve bank account to check if it's in the correct status
 //       const bankAccount = await stripe.customers.retrieveSource(customerId, bankAccountId);
 //       console.log("Retrieved Bank Account:", bankAccount);
-  
+
 //       if (bankAccount.status !== 'pending_verification') {
 //         return {
 //           success: false,
 //           error: `Bank account not ready for verification. Current status: ${bankAccount.status}`
 //         };
 //       }
-  
+
 //       // Proceed with verification
 //       const verifiedAccount = await stripe.customers.verifySource(customerId, bankAccountId, {
 //         amounts,
 //       });
-  
+
 //       console.log("Verified Account:", verifiedAccount);
-  
+
 //       return {
 //         success: true,
 //         data: {
@@ -120,7 +120,7 @@ const attachACHbankAccountService = async (payload: any) => {
 //       return { success: false, error: error.message };
 //     }
 //   };
-  
+
 
 
 const verifyBankAccountService = async (payload: any) => {
@@ -137,7 +137,7 @@ const verifyBankAccountService = async (payload: any) => {
 }
 
 const payRentService = async (payload: any) => {
-    
+
     try {
         const { customerId, bankAccountId, amount, lateFee, monthlyPaymentId, ownerId, email, paymentBy } = payload;
         const charge = await stripe.charges.create({
@@ -155,7 +155,19 @@ const payRentService = async (payload: any) => {
             }
         });
 
+
+
         if (charge?.id) {
+            await TenantPayment.findByIdAndUpdate(
+                { _id: monthlyPaymentId },
+                {
+                    $set: {
+                        status: "Processing",
+                    },
+                },
+                { new: true, runValidators: true }
+            );
+
             await User.findOneAndUpdate(
                 { email },
                 { $set: { customerId, bankAccountId } },
