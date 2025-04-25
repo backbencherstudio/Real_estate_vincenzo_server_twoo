@@ -15,7 +15,7 @@ const stripe = new Stripe(config.stripe_test_secret_key as string);
 
 const stripeTenantPaymentFun = async (paymentData: any) => {
     const { paymentMethodId, amount, lateFee, monthlyPaymentId, ownerId, cashPay, paymentBy } = paymentData;
-      
+
 
     try {
         const paymentIntent = await stripe.paymentIntents.create({
@@ -42,233 +42,133 @@ const stripeTenantPaymentFun = async (paymentData: any) => {
 };
 
 // ============================= ACH Payment Start ==============================
-const createCustomerService = async (payload : any)=>{
+const createCustomerService = async (payload: any) => {
     try {
         const { name, email } = payload;
         const customer = await stripe.customers.create({ name, email });
-        return({ customerId: customer.id });
-      } catch (error : any) {
-        return({ error: error.message });
-      }
+        return ({ customerId: customer.id });
+    } catch (error: any) {
+        return ({ error: error.message });
+    }
 }
 
-const createBankTokenService = async (payload : any)=>{
+const createBankTokenService = async (payload: any) => {
     try {
         const { account_number, routing_number, account_holder_name } = payload;
-    
+
         const bankToken = await stripe.tokens.create({
-          bank_account: {
-            country: 'US',
-            currency: 'usd',
-            account_holder_name,
-            account_holder_type: 'individual',
-            routing_number,
-            account_number,
-          },
+            bank_account: {
+                country: 'US',
+                currency: 'usd',
+                account_holder_name,
+                account_holder_type: 'individual',
+                routing_number,
+                account_number,
+            },
         });
-    
-        return({ bankToken: bankToken.id });
-      } catch (error : any) {
-        return({ error: error.message });
-      }
+
+        return ({ bankToken: bankToken.id });
+    } catch (error: any) {
+        return ({ error: error.message });
+    }
 }
 
-const attachACHbankAccountService = async (payload : any)=>{
+const attachACHbankAccountService = async (payload: any) => {
     try {
         const { customerId, bankToken } = payload;
-    const bankAccount = await stripe.customers.createSource(customerId, { source: bankToken });
-        return(bankAccount);
-      } catch (error : any) {
-        return({ error: error.message });
-      }
+        const bankAccount = await stripe.customers.createSource(customerId, { source: bankToken });
+        return (bankAccount);
+    } catch (error: any) {
+        return ({ error: error.message });
+    }
 }
 
-const verifyBankAccountService = async(payload : any)=>{
+// const verifyBankAccountService = async (payload: any) => {
+//     try {
+//       const { customerId, bankAccountId, amounts } = payload;
+  
+//       // Retrieve bank account to check if it's in the correct status
+//       const bankAccount = await stripe.customers.retrieveSource(customerId, bankAccountId);
+//       console.log("Retrieved Bank Account:", bankAccount);
+  
+//       if (bankAccount.status !== 'pending_verification') {
+//         return {
+//           success: false,
+//           error: `Bank account not ready for verification. Current status: ${bankAccount.status}`
+//         };
+//       }
+  
+//       // Proceed with verification
+//       const verifiedAccount = await stripe.customers.verifySource(customerId, bankAccountId, {
+//         amounts,
+//       });
+  
+//       console.log("Verified Account:", verifiedAccount);
+  
+//       return {
+//         success: true,
+//         data: {
+//           verification: {
+//             id: verifiedAccount.id, // This is the bank account ID
+//             status: verifiedAccount.status,
+//           }
+//         },
+//         message: "Bank account verified successfully.",
+//       };
+//     } catch (error: any) {
+//       console.error("Error in verifyBankAccountService:", error);
+//       return { success: false, error: error.message };
+//     }
+//   };
+  
+
+
+const verifyBankAccountService = async (payload: any) => {
     try {
         const { customerId, bankAccountId, amounts } = payload;
-        
         const verification = await stripe.customers.verifySource(customerId, bankAccountId, {
-          amounts,
+            amounts,
         });
-    
-        return({ verification });
-      } catch (error : any) {
-        return({ error: error.message });
-      }
+
+        return ({ verification });
+    } catch (error: any) {
+        return ({ error: error.message });
+    }
 }
 
-const payRentService = async (payload : any)=>{    
+const payRentService = async (payload: any) => {
+    
     try {
-        const { customerId,bankAccountId, amount, lateFee, monthlyPaymentId, ownerId, email, paymentBy } = payload;    
+        const { customerId, bankAccountId, amount, lateFee, monthlyPaymentId, ownerId, email, paymentBy } = payload;
         const charge = await stripe.charges.create({
-          amount: amount * 100, 
-          currency: 'usd',
-          customer: customerId,
-          source: bankAccountId,
-          description: 'Monthly Rent Payment',
-          metadata: {
-            monthlyPaymentId,
-            ownerId,
-            lateFee,
-            email,
-            paymentBy
-          }
+            amount: amount * 100,
+            currency: 'usd',
+            customer: customerId,
+            source: bankAccountId,
+            description: 'Monthly Rent Payment',
+            metadata: {
+                monthlyPaymentId,
+                ownerId,
+                lateFee,
+                email,
+                paymentBy
+            }
         });
-        
-        if(charge?.id){            
-           await User.findOneAndUpdate(
+
+        if (charge?.id) {
+            await User.findOneAndUpdate(
                 { email },
                 { $set: { customerId, bankAccountId } },
                 { new: true, runValidators: true }
             )
-        }      
-        return(charge);
-      } catch (error : any ) {
-        return({ error: error.message });
-      }
+        }
+        return (charge);
+    } catch (error: any) {
+        return ({ error: error.message });
+    }
 }
 
 // ============================= ACH Payment End ==============================
-
-
-
-// const createAllTenantsForPaymentFormDB = async (ownerId: string) => {
-//     try {
-//         const ownerData = await User.findById({ _id: ownerId }).select("lastDueDateNumber");
-//         const tenants = await Tenant.find({ isDeleted: false, ownerId }).lean();
-        
-//         // const isExists = await TenantPayment.find({ownerId, lastDueDate})
-
-//         if (!tenants.length) throw new Error("No tenants found");
-//         if (!ownerData?.lastDueDateNumber) throw new Error("At first set your last due date");
-
-//         const today = new Date();
-//         const year = today.getFullYear();
-//         const month = today.getMonth() + 1; 
-//         const dueDay = ownerData?.lastDueDateNumber;
-
-//         const formattedDueDate = `${year}-${month.toString().padStart(2, '0')}-${dueDay.toString().padStart(2, '0')}`;
-
-//         const payments = tenants.map(({ _id, ...tenant }) => ({
-//             ...tenant,
-//             status: "Pending",
-//             invoice: "Upcoming",
-//             lastDueDate: new Date(formattedDueDate)
-//         }));
-//         const result = await TenantPayment.insertMany(payments);
-//         console.log(result);
-        
-//         return result;
-//     } catch (error) {
-//         console.error("Error inserting tenant payments:", error);
-//         throw error;
-//     }
-// };
-
-
-
-// const createAllTenantsForPaymentFormDB = async () => {
-//     try {
-//         const tenants = await Tenant.find({ isDeleted: false }).lean();
-//         if (!tenants.length) throw new Error("No tenants found");        
-
-//         const payments = tenants.map(({ _id, ...tenant }) => ({
-//             ...tenant,
-//             status: "Pending",
-//             invoice: "Upcoming",
-//         }));       
-
-//         const result = await TenantPayment.insertMany(payments);
-//         return result;
-//     } catch (error) {
-//         console.error("Error inserting tenant payments:", error);
-//         throw error;
-//     }
-// };
-
-
-
-// cron.schedule('0 0 1 * *', async () => {
-//     await createAllTenantsForPaymentFormDB();
-// });
-
-
-// const remindersTenantDueRentEmailNotification = async()=>{
-//     // const result = await TenantPayment.find({status : "Pending"})
-
-//     const result = await TenantPayment.aggregate([
-//         {
-//             $match : {status : "Pending"}
-//         },
-//         {
-//             $group : {
-//                 _id : "$userId"
-//             }
-//         },
-//         {
-//             $lookup : {
-//                 from :"users",
-//                 localField : "-id",
-//                 foreignField :"_id",
-//                 as : "userDetails"
-//             }
-//         },
-//         {
-//             $unwind : "$userDetails"
-//         }
-//     ])
-
-//     console.log(result);
-    
-
-//     return result
-// }
-
-
-
-// const createAllTenantsForPaymentFormDB = async () => {
-//     try {
-//         const tenants = await Tenant.find({ isDeleted: false }).lean();
-//         if (!tenants.length) throw new Error("No tenants found");
-
-//         const currentDate = new Date();
-//         const nextMonthDate = new Date();
-//         nextMonthDate.setMonth(nextMonthDate.getMonth() + 1); 
-
-//         const formatDate = (date: Date) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-
-//         const payments = tenants.flatMap(({ _id, userId, propertyId, unitId, ownerId }) => [
-//             {
-//                 userId,
-//                 propertyId,
-//                 unitId,
-//                 ownerId,
-//                 status: "Pending",
-//                 invoice: "Upcoming",
-//                 currentDate: formatDate(currentDate),
-//                 createdAt: new Date(),
-//                 updatedAt: new Date(),
-//             },
-//             {
-//                 userId,
-//                 propertyId,
-//                 unitId,
-//                 ownerId,
-//                 status: "Pending",
-//                 invoice: "Upcoming",
-//                 nextMonthDate: formatDate(nextMonthDate),
-//                 createdAt: new Date(),
-//                 updatedAt: new Date(),
-//             }
-//         ]);
-
-//         const result = await TenantPayment.insertMany(payments);
-//         return result;
-//     } catch (error) {
-//         console.error("Error inserting tenant payments:", error);
-//         throw error;
-//     }
-// };
 
 
 const createAllTenantsForPaymentFormDB = async (ownerId: string) => {
@@ -281,10 +181,10 @@ const createAllTenantsForPaymentFormDB = async (ownerId: string) => {
 
         const today = new Date();
         const year = today.getFullYear();
-        const month = today.getMonth(); 
+        const month = today.getMonth();
 
-        const dueDay = ownerData.lastDueDateNumber;                
-        const formattedDueDate = new Date(Date.UTC(year, month, dueDay, 0, 0, 0));      
+        const dueDay = ownerData.lastDueDateNumber;
+        const formattedDueDate = new Date(Date.UTC(year, month, dueDay, 0, 0, 0));
         const startOfMonth = new Date(year, month, 1);
         const endOfMonth = new Date(year, month + 1, 0, 23, 59, 59, 999);
 
@@ -318,29 +218,29 @@ const createAllTenantsForPaymentFormDB = async (ownerId: string) => {
 //     await createAllTenantsForPaymentFormDB();
 // });
 
-const remindersTenantDueRentEmailNotification = async (ownerId : string) => {    
+const remindersTenantDueRentEmailNotification = async (ownerId: string) => {
     const result = await TenantPayment.aggregate([
         {
             $match: { status: "Pending", ownerId: new ObjectId(ownerId) }
         },
         {
             $group: {
-                _id: "$userId" 
+                _id: "$userId"
             }
         },
         {
             $lookup: {
-                from: "users", 
-                localField: "_id", 
-                foreignField: "_id", 
+                from: "users",
+                localField: "_id",
+                foreignField: "_id",
                 as: "userDetails"
             }
         },
         {
-            $unwind: "$userDetails" 
+            $unwind: "$userDetails"
         },
         {
-            $project: { _id: 0, email: "$userDetails.email" } 
+            $project: { _id: 0, email: "$userDetails.email" }
         }
     ]);
 
@@ -363,9 +263,9 @@ const getAllTenantPaymentDataFromDB = async () => {
 
 
 const getSingleUserAllPaymentDataFromDB = async (userId: string) => {
-     const result = await TenantPayment.find({ userId })
+    const result = await TenantPayment.find({ userId })
         .populate([{ path: "userId" }, { path: "unitId" }, { path: "propertyId" }])
-        return result.reverse()
+    return result.reverse()
 };
 
 // =========================== PAYOUT FUNCTIONS ===========================
@@ -382,7 +282,7 @@ const getPayoutDataFromDBbyAdmin = async () => {
     return await OwnerPayout.find().sort({ createdAt: -1 }).lean();
 };
 
- const createConnectedAccount = async (email: string) => {    
+const createConnectedAccount = async (email: string) => {
     try {
         const connectedAccount = await stripe.accounts.create({
             type: "express",
@@ -399,14 +299,14 @@ const getPayoutDataFromDBbyAdmin = async () => {
     }
 };
 
- const createOnboardingLink = async (accountId: string) => {   
+const createOnboardingLink = async (accountId: string) => {
     try {
         const accountLink = await stripe.accountLinks.create({
             account: accountId,
             refresh_url: `${config.frontend_url}/admin/payOut`,
             return_url: `${config.frontend_url}/admin/payOut`,
             type: "account_onboarding",
-        });        
+        });
         console.log(110, accountLink);
         return accountLink.url;
     } catch (error: any) {
@@ -416,13 +316,13 @@ const getPayoutDataFromDBbyAdmin = async () => {
 };
 
 
-const sendPayoutRequestByOwnerToStripe = async (data: any) => {    
+const sendPayoutRequestByOwnerToStripe = async (data: any) => {
     try {
-        const {email} = data;
-        const  connectedAccount = await createConnectedAccount(email);
-        
-        const onboardingUrl = await createOnboardingLink(connectedAccount?.id);        
-        return { success: true, result: {onboardingUrl}, message: "✅ Payout processed successfully!" };
+        const { email } = data;
+        const connectedAccount = await createConnectedAccount(email);
+
+        const onboardingUrl = await createOnboardingLink(connectedAccount?.id);
+        return { success: true, result: { onboardingUrl }, message: "✅ Payout processed successfully!" };
     } catch (error: any) {
         console.error("🔥 Payout Error:", error);
         return { success: false, message: "❌ Error processing payout", error: error.message };
@@ -445,7 +345,7 @@ const sendPayoutRequestByAdminToStripe = async (data: any) => {
         const availableBalance = balance.available.find(b => b.currency === "usd")?.amount || 0;
 
         if (availableBalance < Math.round(amount * 100)) {
-            console.log(248, "❌ Insufficient funds in admin's Stripe balance.");            
+            console.log(248, "❌ Insufficient funds in admin's Stripe balance.");
             return { success: false, message: "❌ Insufficient funds in admin's Stripe balance." };
         }
 
@@ -463,19 +363,19 @@ const sendPayoutRequestByAdminToStripe = async (data: any) => {
         );
 
         const payout = await stripe.transfers.create({
-            amount: Math.round(amount * 100), 
-            currency: "usd",            
-            destination: accountId, 
+            amount: Math.round(amount * 100),
+            currency: "usd",
+            destination: accountId,
             description: "Payout from Admin to Owner",
             metadata: {
-                ownerId,  
+                ownerId,
                 payoutKey: key, // this key is payout _id 
                 email: owner.email,
             },
         });
 
         console.log(266, payout);
-        
+
 
         await OwnerPayout.findOneAndUpdate(
             { _id: key },

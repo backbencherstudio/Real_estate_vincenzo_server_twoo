@@ -536,7 +536,7 @@ const ACHTransferHandler = async (charge: Stripe.Charge) => {
     
     if (receiptUrl) {
       const emailSubject = "📄 Payment Receipt for Your Rent";
-      const emailText = `Hello, your rent payment has been successfully processed. You can view your receipt here2222222: ${receiptUrl}.`;
+      const emailText = `Hello, your rent payment has been successfully processed. You can view your receipt here: ${receiptUrl}.`;
       const emailHtml = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 20px auto; padding: 20px; background-color: #ffffff; border: 1px solid #e0e0e0; border-radius: 8px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);">
           <!-- Header Section -->
@@ -965,7 +965,7 @@ const handleChargeUpdated = async (charge: Stripe.Charge) => {
 
     if (receiptUrl) {
       const emailSubject = "📄 Payment Receipt for Your Rent";
-      const emailText = `Hello, your rent payment has been successfully processed. You can view your receipt here2222222: ${receiptUrl}.`;
+      const emailText = `Hello, your rent payment has been successfully processed. You can view your receipt here: ${receiptUrl}.`;
       const emailHtml = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 20px auto; padding: 20px; background-color: #ffffff; border: 1px solid #e0e0e0; border-radius: 8px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);">
           <!-- Header Section -->

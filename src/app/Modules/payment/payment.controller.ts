@@ -59,7 +59,7 @@ const payRentUserACHcontroller = catchAsync(async (req, res) => {
     sendResponse(res, {
         statusCode: httpStatus.OK,
         success: true,
-        message: 'Payment for this month has been successfully processed. please wait a moment for receipt',
+        message: 'Your payment for this month has been successfully processed. The receipt will be delivered within 4–5 business days. We kindly ask for your patience during this time.',
         data: result,
     });
 });
