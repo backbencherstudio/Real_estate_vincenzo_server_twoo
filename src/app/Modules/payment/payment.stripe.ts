@@ -765,6 +765,7 @@ Thank you for being a valued subscriber!
 
 
 
+
 const handleChargeUpdated = async (charge: Stripe.Charge) => {
   const customerId = charge.customer as string;
   const receiptUrl = charge.receipt_url;
@@ -1064,6 +1065,7 @@ const handleChargeFailed = async (charge: Stripe.Charge) => {
     console.error(`❌ Error handling charge.failed for ACH`, error);
   }
 };
+
 
 
 

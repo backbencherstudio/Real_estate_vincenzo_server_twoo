@@ -41,7 +41,10 @@ const stripeTenantPaymentFun = async (paymentData: any) => {
     }
 };
 
+
 // ============================= ACH Payment Start ==============================
+
+
 const createCustomerService = async (payload: any) => {
     try {
         const { name, email } = payload;
@@ -83,46 +86,6 @@ const attachACHbankAccountService = async (payload: any) => {
     }
 }
 
-// const verifyBankAccountService = async (payload: any) => {
-//     try {
-//       const { customerId, bankAccountId, amounts } = payload;
-
-//       // Retrieve bank account to check if it's in the correct status
-//       const bankAccount = await stripe.customers.retrieveSource(customerId, bankAccountId);
-//       console.log("Retrieved Bank Account:", bankAccount);
-
-//       if (bankAccount.status !== 'pending_verification') {
-//         return {
-//           success: false,
-//           error: `Bank account not ready for verification. Current status: ${bankAccount.status}`
-//         };
-//       }
-
-//       // Proceed with verification
-//       const verifiedAccount = await stripe.customers.verifySource(customerId, bankAccountId, {
-//         amounts,
-//       });
-
-//       console.log("Verified Account:", verifiedAccount);
-
-//       return {
-//         success: true,
-//         data: {
-//           verification: {
-//             id: verifiedAccount.id, // This is the bank account ID
-//             status: verifiedAccount.status,
-//           }
-//         },
-//         message: "Bank account verified successfully.",
-//       };
-//     } catch (error: any) {
-//       console.error("Error in verifyBankAccountService:", error);
-//       return { success: false, error: error.message };
-//     }
-//   };
-
-
-
 const verifyBankAccountService = async (payload: any) => {
     try {
         const { customerId, bankAccountId, amounts } = payload;
@@ -135,6 +98,7 @@ const verifyBankAccountService = async (payload: any) => {
         return ({ error: error.message });
     }
 }
+
 
 const payRentService = async (payload: any) => {
 
@@ -154,7 +118,6 @@ const payRentService = async (payload: any) => {
                 paymentBy
             }
         });
-
 
 
         if (charge?.id) {
@@ -179,6 +142,7 @@ const payRentService = async (payload: any) => {
         return ({ error: error.message });
     }
 }
+
 
 // ============================= ACH Payment End ==============================
 
