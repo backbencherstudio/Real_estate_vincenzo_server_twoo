@@ -922,7 +922,7 @@ const ACHTransferHandler = async (charge: Stripe.Charge) => {
   try {
     const tenantPayment = await TenantPayment.findOne({
       _id: monthlyPaymentId,
-      status: "Pending",
+      status: "Processing",
     });
 
     if (!tenantPayment) {
