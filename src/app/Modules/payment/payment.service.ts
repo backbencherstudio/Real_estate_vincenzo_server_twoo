@@ -86,16 +86,40 @@ const attachACHbankAccountService = async (payload: any) => {
     }
 }
 
+// const verifyBankAccountService = async (payload: any) => {
+//     try {
+//         const { customerId, bankAccountId, amounts } = payload;
+//         const verification = await stripe.customers.verifySource(customerId, bankAccountId, {
+//             amounts,
+//         });
+
+//         return ({ verification });
+//     } catch (error: any) {
+//         return ({ error: error.message });
+//     }
+// }
+
+
 const verifyBankAccountService = async (payload: any) => {
     try {
         const { customerId, bankAccountId, amounts } = payload;
-        const verification = await stripe.customers.verifySource(customerId, bankAccountId, {
-            amounts,
-        });
-
-        return ({ verification });
+        const verification = await stripe.customers.verifySource(
+            customerId, 
+            bankAccountId, 
+            { amounts }
+        );
+        
+        return { 
+            success: true,
+            data: { verification },
+            message: "Verification initiated"
+        };
     } catch (error: any) {
-        return ({ error: error.message });
+        console.error('Verification error:', error);
+        return { 
+            success: false, 
+            error: error.message 
+        };
     }
 }
 
