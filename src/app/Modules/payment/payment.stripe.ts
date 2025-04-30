@@ -1047,12 +1047,12 @@ const handleChargeFailed = async (charge: Stripe.Charge) => {
 
     // Optionally notify user
     if (email) {
-      const subject = "🚫 ACH Payment Failed";
+      const subject = "🚫 Payment Failed";
       const text = `Unfortunately, your payment for rent has failed. Reason: ${charge.failure_message || "Unknown"}. Please try again.`;
       const html = `
         <div style="font-family: Arial; padding: 20px;">
           <h2 style="color: #e74c3c;">🚫 Payment Failed</h2>
-          <p>Your rent payment via ACH could not be completed.</p>
+          <p>Your rent payment could not be completed.</p>
           <p><strong>Reason:</strong> ${charge.failure_message || "Unknown"}</p>
           <p>Please try again or contact support if you have questions.</p>
         </div>
@@ -1060,9 +1060,9 @@ const handleChargeFailed = async (charge: Stripe.Charge) => {
       await sendEmail(email, subject, text, html);
     }
 
-    console.log(`❌ ACH Payment failed for ${monthlyPaymentId}, user notified`);
+    console.log(`❌  Payment failed for ${monthlyPaymentId}, user notified`);
   } catch (error) {
-    console.error(`❌ Error handling charge.failed for ACH`, error);
+    console.error(`❌ Error handling charge.failed for `, error);
   }
 };
 

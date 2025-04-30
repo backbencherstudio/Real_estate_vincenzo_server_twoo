@@ -6,7 +6,7 @@ export type TTenantPayment = {
     propertyId : Schema.Types.ObjectId;
     unitId : Schema.Types.ObjectId;
     ownerId : Schema.Types.ObjectId;
-    status : 'Pending' | "Paid" | "Cash Pay" | "Processing ";
+    status : 'Pending' | "Paid" | "Cash Pay" | "Processing " | "Failed";
     invoice : string;
     createdAt: Date;
     updatedAt: Date;
